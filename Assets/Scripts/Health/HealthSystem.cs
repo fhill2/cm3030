@@ -1,7 +1,8 @@
 using UnityEngine;
 using Game.Shared;
+using Game.Core;
 
-namespace Game.Systems
+namespace Game.Health
 {
     public class HealthSystem : MonoBehaviour, IDamageable
     {
@@ -30,7 +31,7 @@ namespace Game.Systems
             lastHitTime = Time.time;
 
             currentHealth = Mathf.Max(0f, currentHealth - amount);
-            GameEvents.OnDamageDealt?.Invoke(gameObject, amount, type);
+            GameHub.Publish(new DamageDealt(gameObject, amount, type, source));
 
             if (currentHealth <= 0f)
             {
@@ -51,7 +52,16 @@ namespace Game.Systems
             if (!alive) return;
             alive = false;
             if (animator != null) animator.SetTrigger(AnimParams.Die);
+            GameHub.Publish(new EntityDied(gameObject));
             OnDeath();
+        }
+
+        /// <summary>Immediately set HP to zero and trigger death. Useful for testing or kill zones.</summary>
+        public virtual void Kill()
+        {
+            if (!alive) return;
+            currentHealth = 0f;
+            Die();
         }
 
         protected virtual void OnDeath() { }
