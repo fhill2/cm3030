@@ -1,6 +1,8 @@
+# --- Binary assets: tracked by Git LFS ---
 # 3D models / animation
 *.fbx   filter=lfs diff=lfs merge=lfs -text
 *.FBX   filter=lfs diff=lfs merge=lfs -text
+*.Fbx   filter=lfs diff=lfs merge=lfs -text
 *.obj   filter=lfs diff=lfs merge=lfs -text
 *.blend filter=lfs diff=lfs merge=lfs -text
 *.mesh  filter=lfs diff=lfs merge=lfs -text
@@ -18,21 +20,16 @@
 *.ogg   filter=lfs diff=lfs merge=lfs -text
 *.aif   filter=lfs diff=lfs merge=lfs -text
 *.aiff  filter=lfs diff=lfs merge=lfs -text
-# Unity binary asset files (LFS only, no locking)
-*.unity filter=lfs diff=lfs merge=lfs -text
-*.prefab filter=lfs diff=lfs merge=lfs -text
-*.controller filter=lfs diff=lfs merge=lfs -text
-*.overrideController filter=lfs diff=lfs merge=lfs -text
-*.anim  filter=lfs diff=lfs merge=lfs -text
-*.asset filter=lfs diff=lfs merge=lfs -text
-*.mat   filter=lfs diff=lfs merge=lfs -text
-*.physicMaterial filter=lfs diff=lfs merge=lfs -text
-# HDR / Substance / Unity binary gaps
+# HDR / Substance / binary Unity data
 *.hdr            filter=lfs diff=lfs merge=lfs -text
 *.sbs            filter=lfs diff=lfs merge=lfs -text
 *.terrainlayer   filter=lfs diff=lfs merge=lfs -text
 *.lighting       filter=lfs diff=lfs merge=lfs -text
-*.preset         filter=lfs diff=lfs merge=lfs -text
 # archives / imports
-*.zip   filter=lfs diff=lfs merge=lfs -text
-*.unitypackage filter=lfs diff=lfs merge=lfs -text
+*.zip            filter=lfs diff=lfs merge=lfs -text
+*.unitypackage   filter=lfs diff=lfs merge=lfs -text
+
+# --- Text (YAML) Unity assets: NOT in LFS (real text, diffable/mergeable) ---
+# Intentionally omitted from LFS:
+#   .unity .prefab .controller .overrideController .anim
+#   .asset .mat .physicMaterial .preset
