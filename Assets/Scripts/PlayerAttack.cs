@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Shared;
 
 public class PlayerAttack : MonoBehaviour
 {
@@ -23,9 +24,6 @@ public class PlayerAttack : MonoBehaviour
     private int comboStep;
     private float lastAttackTime = -999f;
 
-    private static readonly int AttackHash = Animator.StringToHash("Attack");
-    private static readonly int ComboStepHash = Animator.StringToHash("ComboStep");
-
     void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -43,8 +41,8 @@ public class PlayerAttack : MonoBehaviour
         if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame) return;
         if (Time.time - lastAttackTime < minTimeBetweenSwings) return;
         if (requireGrounded && controller != null && !controller.isGrounded) return;
-        animator.SetInteger(ComboStepHash, comboStep);
-        animator.SetTrigger(AttackHash);
+        animator.SetInteger(AnimParams.ComboStep, comboStep);
+        animator.SetTrigger(AnimParams.Attack);
 
         lastAttackTime = Time.time;
         comboStep = (comboStep + 1) % Mathf.Max(1, comboLength);

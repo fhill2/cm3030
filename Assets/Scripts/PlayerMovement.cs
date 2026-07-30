@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Shared;
 
 // Not within this file but tranform  is changed due to weird animation
 
@@ -32,10 +33,6 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private Vector3 velocity;
     private float turnSmoothVelocity;
-
-    private static readonly int SpeedHash = Animator.StringToHash("Speed");
-    private static readonly int GroundedHash = Animator.StringToHash("Grounded");
-    private static readonly int JumpHash = Animator.StringToHash("Jump");
 
     void Awake()
     {
@@ -76,12 +73,12 @@ public class PlayerMovement : MonoBehaviour
         if (animator == null) return;
         float speed01 = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
 
-        animator.SetFloat(SpeedHash, speed01, speedDampTime, Time.deltaTime);
+        animator.SetFloat(AnimParams.Speed, speed01, speedDampTime, Time.deltaTime);
 
         // Have falling and jumping be diff
-        animator.SetBool(GroundedHash, grounded && !jumped);
+        animator.SetBool(AnimParams.Grounded, grounded && !jumped);
 
-        if (jumped) animator.SetTrigger(JumpHash);
+        if (jumped) animator.SetTrigger(AnimParams.Jump);
     }
 
     Vector3 Move()
