@@ -52,6 +52,7 @@ namespace Game.UI
         {
             EnsureEventSystem();
             ResolvePlayerReferences();
+            ResolveEnemyReferences();
             BuildUI();
             RefreshAll();
         }
@@ -91,6 +92,16 @@ namespace Game.UI
             if (playerHealth   == null) playerHealth   = player.GetComponent<HealthSystem>();
             if (playerAnimator == null) playerAnimator = player.GetComponentInChildren<Animator>();
             if (playerAudio    == null) playerAudio    = player.GetComponent<ActorAudio>();
+        }
+
+        void ResolveEnemyReferences()
+        {
+            var enemy = GameObject.FindGameObjectWithTag("Enemy");
+            if (enemy == null) return;
+
+            if (enemyHealth   == null) enemyHealth   = enemy.GetComponent<HealthSystem>();
+            if (enemyAnimator == null) enemyAnimator = enemy.GetComponentInChildren<Animator>();
+            if (enemyAudio    == null) enemyAudio    = enemy.GetComponent<ActorAudio>();
         }
 
         // ── Event handlers ──────────────────────────────────────
@@ -146,7 +157,7 @@ namespace Game.UI
             if (playerHealth == null) return;
             float ratio = playerHealth.MaxHealth > 0f
                 ? playerHealth.CurrentHealth / playerHealth.MaxHealth : 0f;
-            if (playerHealthFill  != null) playerHealthFill.fillAmount = ratio;
+            if (playerHealthFill  != null) playerHealthFill.rectTransform.anchorMax = new Vector2(ratio, 1f);
             if (playerHealthLabel != null)
                 playerHealthLabel.text =
                     $"PLAYER  {playerHealth.CurrentHealth:0} / {playerHealth.MaxHealth:0}";
@@ -157,7 +168,7 @@ namespace Game.UI
             if (enemyHealth == null) return;
             float ratio = enemyHealth.MaxHealth > 0f
                 ? enemyHealth.CurrentHealth / enemyHealth.MaxHealth : 0f;
-            if (enemyHealthFill  != null) enemyHealthFill.fillAmount = ratio;
+            if (enemyHealthFill  != null) enemyHealthFill.rectTransform.anchorMax = new Vector2(ratio, 1f);
             if (enemyHealthLabel != null)
                 enemyHealthLabel.text =
                     $"ENEMY  {enemyHealth.CurrentHealth:0} / {enemyHealth.MaxHealth:0}";
@@ -328,9 +339,6 @@ namespace Game.UI
             fillRt.offsetMax = new Vector2(-2, -2);
             var fillImg = fillGo.AddComponent<Image>();
             fillImg.color = fillColor;
-            fillImg.type = Image.Type.Filled;
-            fillImg.fillMethod = Image.FillMethod.Horizontal;
-            fillImg.fillAmount = 1f;
             return fillImg;
         }
 
