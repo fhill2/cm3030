@@ -41,11 +41,7 @@ namespace Game.Health
             {
                 if (animator != null) animator.SetTrigger(AnimParams.Hit);
             }
-
-            OnHitTaken(type, source);
         }
-
-        protected virtual void OnHitTaken(DamageType type, GameObject source) { }
 
         protected virtual void Die()
         {
