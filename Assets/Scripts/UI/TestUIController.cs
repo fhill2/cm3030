@@ -4,13 +4,12 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using Game.Core;
 using Game.Health;
-using Game.Movement;
 using Game.Shared;
 
 namespace Game.UI
 {
     /// <summary>
-    /// Test harness for the GameHub communication system.
+    /// Test harness for the EventManagerScript communication system.
     /// Creates UI buttons at runtime that trigger events, and displays
     /// that react to them — demonstrating the full pub/sub flow.
     ///
@@ -42,14 +41,14 @@ namespace Game.UI
 
         void OnEnable()
         {
-            GameHub.Subscribe<DamageDealt>(OnDamageDealt);
-            GameHub.Subscribe<EntityDied>(OnEntityDied);
+            EventManagerScript.OnDamageDealt += OnDamageDealt;
+            EventManagerScript.OnEntityDied += OnEntityDied;
         }
 
         void OnDisable()
         {
-            GameHub.Unsubscribe<DamageDealt>(OnDamageDealt);
-            GameHub.Unsubscribe<EntityDied>(OnEntityDied);
+            EventManagerScript.OnDamageDealt -= OnDamageDealt;
+            EventManagerScript.OnEntityDied -= OnEntityDied;
         }
 
         // ── Target resolution ───────────────────────────────────
@@ -126,11 +125,11 @@ namespace Game.UI
 
             CreateButton(canvasGo.transform, "Test Footstep",
                 new Vector2(startX + (ButtonWidth + Spacing) * 2, topOffset),
-                () => GameHub.Publish(new Footstep()));
+                EventManagerScript.RaiseFootstep);
 
             CreateButton(canvasGo.transform, "Test Jump",
                 new Vector2(startX + (ButtonWidth + Spacing) * 3, topOffset),
-                () => GameHub.Publish(new Jump()));
+                EventManagerScript.RaiseJump);
 
             // Health display
             healthLabel = CreateText(canvasGo.transform, "HP: 100 / 100",

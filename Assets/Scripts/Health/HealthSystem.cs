@@ -31,7 +31,7 @@ namespace Game.Health
             lastHitTime = Time.time;
 
             currentHealth = Mathf.Max(0f, currentHealth - amount);
-            GameHub.Publish(new DamageDealt(gameObject, amount, type, source));
+            EventManagerScript.RaiseDamageDealt(new DamageDealt(gameObject, amount, type, source));
 
             if (currentHealth <= 0f)
             {
@@ -52,7 +52,7 @@ namespace Game.Health
             if (!alive) return;
             alive = false;
             if (animator != null) animator.SetTrigger(AnimParams.Die);
-            GameHub.Publish(new EntityDied(gameObject));
+            EventManagerScript.RaiseEntityDied(new EntityDied(gameObject));
             OnDeath();
         }
 

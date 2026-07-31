@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Game.Core
 {
     /// <summary>
-    /// Ensures GameHub starts clean when a scene loads.
+    /// Ensures EventManagerScript events start clean when a scene loads.
     /// Place on any GameObject in the scene (runs before other Awake calls).
     /// </summary>
     [DefaultExecutionOrder(-100)]
@@ -11,7 +11,7 @@ namespace Game.Core
     {
         void Awake()
         {
-            GameHub.Reset();
+            EventManagerScript.ClearAll();
         }
     }
 }

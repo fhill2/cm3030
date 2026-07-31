@@ -53,12 +53,12 @@ namespace Game.Movement
 
         void OnEnable()
         {
-            GameHub.Subscribe<EntityDied>(OnEntityDied);
+            EventManagerScript.OnEntityDied += OnEntityDied;
         }
 
         void OnDisable()
         {
-            GameHub.Unsubscribe<EntityDied>(OnEntityDied);
+            EventManagerScript.OnEntityDied -= OnEntityDied;
         }
 
         static void SetCursorLocked(bool locked)
@@ -78,10 +78,10 @@ namespace Game.Movement
             bool jumped = ApplyGravity(grounded);
 
             if (jumped)
-                GameHub.Publish(new Jump());
+                EventManagerScript.RaiseJump();
 
             if (!wasGrounded && grounded)
-                GameHub.Publish(new Land());
+                EventManagerScript.RaiseLand();
 
             wasGrounded = grounded;
 

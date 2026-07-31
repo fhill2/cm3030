@@ -1,12 +1,11 @@
 using UnityEngine;
 using Game.Core;
 using Game.Health;
-using Game.Movement;
 
 namespace Game.Audio
 {
     /// <summary>
-    /// Centralised audio playback driven entirely by GameHub events.
+    /// Centralised audio playback driven entirely by EventManagerScript events.
     /// Subscribes to notifications from other modules; never references
     /// HealthSystem, PlayerMovement, or any other module class directly.
     ///
@@ -32,20 +31,20 @@ namespace Game.Audio
 
         void OnEnable()
         {
-            GameHub.Subscribe<DamageDealt>(OnDamageDealt);
-            GameHub.Subscribe<EntityDied>(OnEntityDied);
-            GameHub.Subscribe<Footstep>(OnFootstep);
-            GameHub.Subscribe<Jump>(OnJump);
-            GameHub.Subscribe<Land>(OnLand);
+            EventManagerScript.OnDamageDealt += OnDamageDealt;
+            EventManagerScript.OnEntityDied += OnEntityDied;
+            EventManagerScript.OnFootstep += OnFootstep;
+            EventManagerScript.OnJump += OnJump;
+            EventManagerScript.OnLand += OnLand;
         }
 
         void OnDisable()
         {
-            GameHub.Unsubscribe<DamageDealt>(OnDamageDealt);
-            GameHub.Unsubscribe<EntityDied>(OnEntityDied);
-            GameHub.Unsubscribe<Footstep>(OnFootstep);
-            GameHub.Unsubscribe<Jump>(OnJump);
-            GameHub.Unsubscribe<Land>(OnLand);
+            EventManagerScript.OnDamageDealt -= OnDamageDealt;
+            EventManagerScript.OnEntityDied -= OnEntityDied;
+            EventManagerScript.OnFootstep -= OnFootstep;
+            EventManagerScript.OnJump -= OnJump;
+            EventManagerScript.OnLand -= OnLand;
         }
 
         // ── Event handlers ─────────────────────────────────────
@@ -60,17 +59,17 @@ namespace Game.Audio
             if (deathClip != null) sfxSource.PlayOneShot(deathClip);
         }
 
-        private void OnFootstep(Footstep e)
+        private void OnFootstep()
         {
             if (footstepClip != null) sfxSource.PlayOneShot(footstepClip);
         }
 
-        private void OnJump(Jump e)
+        private void OnJump()
         {
             if (jumpClip != null) sfxSource.PlayOneShot(jumpClip);
         }
 
-        private void OnLand(Land e)
+        private void OnLand()
         {
             if (landClip != null) sfxSource.PlayOneShot(landClip);
         }

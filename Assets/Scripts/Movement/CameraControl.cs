@@ -22,12 +22,12 @@ namespace Game.Movement
 
         void OnEnable()
         {
-            GameHub.Subscribe<EntityDied>(OnEntityDied);
+            EventManagerScript.OnEntityDied += OnEntityDied;
         }
 
         void OnDisable()
         {
-            GameHub.Unsubscribe<EntityDied>(OnEntityDied);
+            EventManagerScript.OnEntityDied -= OnEntityDied;
         }
 
         void LateUpdate()
