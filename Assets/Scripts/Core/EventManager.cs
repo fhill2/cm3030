@@ -25,32 +25,20 @@ namespace Game.Core
     {
         public delegate void DamageHandler(DamageArgs e);
         public delegate void DeathHandler(DeathArgs e);
-        public delegate void JumpHandler();
-        public delegate void LandHandler();
-        public delegate void FootstepHandler();
 
         public static event DamageHandler OnDamage;
         public static event DeathHandler OnDeath;
-        public static event JumpHandler OnJump;
-        public static event LandHandler OnLand;
-        public static event FootstepHandler OnFootstep;
 
         // ── Raise helpers (the only place events are actually invoked) ───────
 
         public static void RaiseDamage(DamageArgs e) => OnDamage?.Invoke(e);
         public static void RaiseDeath(DeathArgs e) => OnDeath?.Invoke(e);
-        public static void RaiseJump() => OnJump?.Invoke();
-        public static void RaiseLand() => OnLand?.Invoke();
-        public static void RaiseFootstep() => OnFootstep?.Invoke();
 
         /// <summary>Detach every subscriber. Call on scene load to avoid stale references.</summary>
         public static void ClearAll()
         {
             OnDamage = null;
             OnDeath = null;
-            OnJump = null;
-            OnLand = null;
-            OnFootstep = null;
         }
     }
 }

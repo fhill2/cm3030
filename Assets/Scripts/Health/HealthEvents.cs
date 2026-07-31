@@ -5,7 +5,7 @@ namespace Game.Health
 {
     /// <summary>
     /// Published by HealthSystem whenever any entity takes damage.
-    /// Consumers: AudioManager (hurt sound), UI (health bar), etc.
+    /// Consumers: ActorAudio (hurt sound), UI (health bar), etc.
     /// </summary>
     public readonly struct DamageArgs
     {
@@ -25,7 +25,7 @@ namespace Game.Health
 
     /// <summary>
     /// Published by HealthSystem when an entity dies.
-    /// Consumers: AudioManager (death sound), Movement (stop), Camera, etc.
+    /// Consumers: ActorAudio (death sound), Movement (stop), Camera, etc.
     /// </summary>
     public readonly struct DeathArgs
     {

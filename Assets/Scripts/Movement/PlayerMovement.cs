@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using Game.Shared;
 using Game.Core;
 using Game.Health;
+using Game.Audio;
 
 namespace Game.Movement
 {
@@ -26,6 +27,9 @@ namespace Game.Movement
         [Tooltip("Leave empty!")]
         [SerializeField] private Animator animator;
 
+        [Header("Audio")]
+        [SerializeField] private ActorAudio actorAudio;
+
         [Header("Animation")]
         [Tooltip("Smoothing on the Speed parameter, so blends aren't instant.")]
         [SerializeField] private float speedDampTime = 0.1f;
@@ -47,6 +51,8 @@ namespace Game.Movement
 
             // The Animator lives on the knight model
             if (animator == null) animator = GetComponentInChildren<Animator>();
+
+            if (actorAudio == null) actorAudio = GetComponent<ActorAudio>();
 
             if (lockCursor) SetCursorLocked(true);
         }
@@ -76,12 +82,6 @@ namespace Game.Movement
 
             Vector3 horizontal = Move();
             bool jumped = ApplyGravity(grounded);
-
-            if (jumped)
-                EventManager.RaiseJump();
-
-            if (!wasGrounded && grounded)
-                EventManager.RaiseLand();
 
             wasGrounded = grounded;
 
