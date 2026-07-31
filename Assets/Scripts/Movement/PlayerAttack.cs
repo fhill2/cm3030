@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Shared;
+using Game.Core;
+using Game.Health;
 
 namespace Game.Movement
 {
@@ -45,6 +47,8 @@ namespace Game.Movement
             if (requireGrounded && controller != null && !controller.isGrounded) return;
             animator.SetInteger(AnimParams.ComboStep, comboStep);
             animator.SetTrigger(AnimParams.Attack);
+
+            EventManager.RaiseHit(new HitArgs(gameObject));
 
             lastAttackTime = Time.time;
             comboStep = (comboStep + 1) % Mathf.Max(1, comboLength);

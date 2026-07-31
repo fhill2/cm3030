@@ -123,7 +123,7 @@ namespace Game.UI
         void PlayerHit()
         {
             if (playerAnimator != null) playerAnimator.SetTrigger(AnimParams.Attack);
-            playerAudio?.PlayEffort();
+            if (playerHealth != null) EventManager.RaiseHit(new HitArgs(playerHealth.gameObject));
         }
 
         void PlayerDamage()
@@ -137,7 +137,7 @@ namespace Game.UI
         void EnemyHit()
         {
             if (enemyAnimator != null) enemyAnimator.SetTrigger(AnimParams.Attack);
-            enemyAudio?.PlayEffort();
+            if (enemyHealth != null) EventManager.RaiseHit(new HitArgs(enemyHealth.gameObject));
         }
 
         void EnemyDamage()

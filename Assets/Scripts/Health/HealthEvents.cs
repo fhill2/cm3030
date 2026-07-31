@@ -36,4 +36,18 @@ namespace Game.Health
             Entity = entity;
         }
     }
+
+    /// <summary>
+    /// Raised when an entity performs an attack/hit action.
+    /// Consumers: ActorAudio (effort grunt + weapon swing).
+    /// </summary>
+    public readonly struct HitArgs
+    {
+        public readonly GameObject Entity;
+
+        public HitArgs(GameObject entity)
+        {
+            Entity = entity;
+        }
+    }
 }

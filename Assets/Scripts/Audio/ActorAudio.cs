@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Game.Core;
 using Game.Health;
@@ -15,13 +16,16 @@ namespace Game.Audio
     [RequireComponent(typeof(AudioSource))]
     public class ActorAudio : MonoBehaviour
     {
-        private static readonly string EffortPath = "Grunts/effort";
-        private static readonly string DamagePath = "Grunts/damage";
-        private static readonly string DeathPath  = "Grunts/death";
+        private static readonly string EffortPath  = "Grunts/effort";
+        private static readonly string DamagePath  = "Grunts/damage";
+        private static readonly string DeathPath   = "Grunts/death";
+        private static readonly string WeaponPath  = "Weapon/swing";
+        private const float SwingDelay = 0.03f;
 
         private static AudioClip[] s_effortClips;
         private static AudioClip[] s_damageClips;
         private static AudioClip[] s_deathClips;
+        private static AudioClip[] s_swingClips;
 
         private AudioSource source;
 
@@ -37,18 +41,21 @@ namespace Game.Audio
             s_effortClips = Resources.LoadAll<AudioClip>(EffortPath);
             s_damageClips = Resources.LoadAll<AudioClip>(DamagePath);
             s_deathClips  = Resources.LoadAll<AudioClip>(DeathPath);
+            s_swingClips  = Resources.LoadAll<AudioClip>(WeaponPath);
         }
 
         void OnEnable()
         {
             EventManager.OnDamage += HandleDamage;
             EventManager.OnDeath += HandleDeath;
+            EventManager.OnHit += HandleHit;
         }
 
         void OnDisable()
         {
             EventManager.OnDamage -= HandleDamage;
             EventManager.OnDeath -= HandleDeath;
+            EventManager.OnHit -= HandleHit;
         }
 
         // ── Event-driven combat audio ──────────────────────────
@@ -65,9 +72,26 @@ namespace Game.Audio
                 Play(RandomClip(s_deathClips));
         }
 
+        void HandleHit(HitArgs e)
+        {
+            if (e.Entity == gameObject)
+            {
+                Play(RandomClip(s_effortClips));
+                StartCoroutine(SwingRoutine());
+            }
+        }
+
         // ── Direct-call API ────────────────────────────────────
 
         public void PlayEffort()   => Play(RandomClip(s_effortClips));
+
+        public void PlaySwing() => StartCoroutine(SwingRoutine());
+
+        private IEnumerator SwingRoutine()
+        {
+            yield return new WaitForSeconds(SwingDelay);
+            Play(RandomClip(s_swingClips));
+        }
 
         private static AudioClip RandomClip(AudioClip[] clips)
         {
