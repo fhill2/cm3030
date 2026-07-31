@@ -5,7 +5,7 @@ using Game.Health;
 namespace Game.Audio
 {
     /// <summary>
-    /// Centralised audio playback driven entirely by EventManagerScript events.
+    /// Centralised audio playback driven entirely by EventManager events.
     /// Subscribes to notifications from other modules; never references
     /// HealthSystem, PlayerMovement, or any other module class directly.
     ///
@@ -31,30 +31,30 @@ namespace Game.Audio
 
         void OnEnable()
         {
-            EventManagerScript.OnDamageDealt += OnDamageDealt;
-            EventManagerScript.OnEntityDied += OnEntityDied;
-            EventManagerScript.OnFootstep += OnFootstep;
-            EventManagerScript.OnJump += OnJump;
-            EventManagerScript.OnLand += OnLand;
+            EventManager.OnDamage += OnDamage;
+            EventManager.OnDeath += OnDeath;
+            EventManager.OnFootstep += OnFootstep;
+            EventManager.OnJump += OnJump;
+            EventManager.OnLand += OnLand;
         }
 
         void OnDisable()
         {
-            EventManagerScript.OnDamageDealt -= OnDamageDealt;
-            EventManagerScript.OnEntityDied -= OnEntityDied;
-            EventManagerScript.OnFootstep -= OnFootstep;
-            EventManagerScript.OnJump -= OnJump;
-            EventManagerScript.OnLand -= OnLand;
+            EventManager.OnDamage -= OnDamage;
+            EventManager.OnDeath -= OnDeath;
+            EventManager.OnFootstep -= OnFootstep;
+            EventManager.OnJump -= OnJump;
+            EventManager.OnLand -= OnLand;
         }
 
         // ── Event handlers ─────────────────────────────────────
 
-        private void OnDamageDealt(DamageDealt e)
+        private void OnDamage(DamageArgs e)
         {
             if (hurtClip != null) sfxSource.PlayOneShot(hurtClip);
         }
 
-        private void OnEntityDied(EntityDied e)
+        private void OnDeath(DeathArgs e)
         {
             if (deathClip != null) sfxSource.PlayOneShot(deathClip);
         }

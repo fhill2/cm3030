@@ -53,12 +53,12 @@ namespace Game.Movement
 
         void OnEnable()
         {
-            EventManagerScript.OnEntityDied += OnEntityDied;
+            EventManager.OnDeath += OnDeath;
         }
 
         void OnDisable()
         {
-            EventManagerScript.OnEntityDied -= OnEntityDied;
+            EventManager.OnDeath -= OnDeath;
         }
 
         static void SetCursorLocked(bool locked)
@@ -78,10 +78,10 @@ namespace Game.Movement
             bool jumped = ApplyGravity(grounded);
 
             if (jumped)
-                EventManagerScript.RaiseJump();
+                EventManager.RaiseJump();
 
             if (!wasGrounded && grounded)
-                EventManagerScript.RaiseLand();
+                EventManager.RaiseLand();
 
             wasGrounded = grounded;
 
@@ -171,7 +171,7 @@ namespace Game.Movement
             return Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
         }
 
-        void OnEntityDied(EntityDied e)
+        void OnDeath(DeathArgs e)
         {
             if (e.Entity == gameObject)
                 enabled = false;

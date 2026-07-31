@@ -6,7 +6,7 @@ namespace Game.Health
     {
         protected override void OnDeath()
         {
-            // EntityDied event is already published by the base class.
+            // Death event is already published by the base class.
             // Add player-specific death logic here (disable input, show UI, etc.).
             Debug.Log($"[PlayerHealth] Player died at {gameObject.name}");
         }

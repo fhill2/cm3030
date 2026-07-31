@@ -13,26 +13,32 @@ namespace Game.Core
     /// overwrite the delegate directly. Publishers raise events through the
     /// static Raise*() helpers below, keeping the actual Invoke() in this class.
     ///
+    /// Naming: every event derives from one stem —
+    ///   delegate  &lt;Stem&gt;Handler
+    ///   field     On&lt;Stem&gt;
+    ///   payload   &lt;Stem&gt;Args   (data-carrying events only)
+    ///   raise     Raise&lt;Stem&gt;
+    ///
     /// Place this component on the GameManager object in the scene.
     /// </summary>
-    public class EventManagerScript : MonoBehaviour
+    public class EventManager : MonoBehaviour
     {
-        public delegate void DamageDealtHandler(DamageDealt e);
-        public delegate void EntityDiedHandler(EntityDied e);
+        public delegate void DamageHandler(DamageArgs e);
+        public delegate void DeathHandler(DeathArgs e);
         public delegate void JumpHandler();
         public delegate void LandHandler();
         public delegate void FootstepHandler();
 
-        public static event DamageDealtHandler OnDamageDealt;
-        public static event EntityDiedHandler OnEntityDied;
+        public static event DamageHandler OnDamage;
+        public static event DeathHandler OnDeath;
         public static event JumpHandler OnJump;
         public static event LandHandler OnLand;
         public static event FootstepHandler OnFootstep;
 
         // ── Raise helpers (the only place events are actually invoked) ───────
 
-        public static void RaiseDamageDealt(DamageDealt e) => OnDamageDealt?.Invoke(e);
-        public static void RaiseEntityDied(EntityDied e) => OnEntityDied?.Invoke(e);
+        public static void RaiseDamage(DamageArgs e) => OnDamage?.Invoke(e);
+        public static void RaiseDeath(DeathArgs e) => OnDeath?.Invoke(e);
         public static void RaiseJump() => OnJump?.Invoke();
         public static void RaiseLand() => OnLand?.Invoke();
         public static void RaiseFootstep() => OnFootstep?.Invoke();
@@ -40,8 +46,8 @@ namespace Game.Core
         /// <summary>Detach every subscriber. Call on scene load to avoid stale references.</summary>
         public static void ClearAll()
         {
-            OnDamageDealt = null;
-            OnEntityDied = null;
+            OnDamage = null;
+            OnDeath = null;
             OnJump = null;
             OnLand = null;
             OnFootstep = null;

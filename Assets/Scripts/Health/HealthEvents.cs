@@ -7,14 +7,14 @@ namespace Game.Health
     /// Published by HealthSystem whenever any entity takes damage.
     /// Consumers: AudioManager (hurt sound), UI (health bar), etc.
     /// </summary>
-    public readonly struct DamageDealt
+    public readonly struct DamageArgs
     {
         public readonly GameObject Target;
         public readonly float Amount;
         public readonly DamageType Type;
         public readonly GameObject Source;
 
-        public DamageDealt(GameObject target, float amount, DamageType type, GameObject source)
+        public DamageArgs(GameObject target, float amount, DamageType type, GameObject source)
         {
             Target = target;
             Amount = amount;
@@ -27,11 +27,11 @@ namespace Game.Health
     /// Published by HealthSystem when an entity dies.
     /// Consumers: AudioManager (death sound), Movement (stop), Camera, etc.
     /// </summary>
-    public readonly struct EntityDied
+    public readonly struct DeathArgs
     {
         public readonly GameObject Entity;
 
-        public EntityDied(GameObject entity)
+        public DeathArgs(GameObject entity)
         {
             Entity = entity;
         }

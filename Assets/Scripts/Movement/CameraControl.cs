@@ -22,12 +22,12 @@ namespace Game.Movement
 
         void OnEnable()
         {
-            EventManagerScript.OnEntityDied += OnEntityDied;
+            EventManager.OnDeath += OnDeath;
         }
 
         void OnDisable()
         {
-            EventManagerScript.OnEntityDied -= OnEntityDied;
+            EventManager.OnDeath -= OnDeath;
         }
 
         void LateUpdate()
@@ -77,7 +77,7 @@ namespace Game.Movement
                 character.rotation = Quaternion.LookRotation(forward, Vector3.up);
         }
 
-        void OnEntityDied(EntityDied e)
+        void OnDeath(DeathArgs e)
         {
             if (character != null && e.Entity == character.gameObject)
                 enabled = false;
