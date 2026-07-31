@@ -8,24 +8,27 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Std_Skin_Leg
-  m_Shader: {fileID: -6465566751694194690, guid: 93e6d915c8e66ea4782e9402aaf9a8de, type: 3}
+  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - BOOLEAN_USE_SSS_ON
-  - ENUM_DISPLACEMENT_MODE_NONE
-  - ENUM_WRINKLE_MODE_NONE
+  - _EMISSION
+  - _METALLICSPECGLOSSMAP
+  - _NORMALMAP
   m_InvalidKeywords:
   - BOOLEAN_USE_CAVITY_ON
+  - BOOLEAN_USE_SSS_ON
   - BOOLEAN_USE_TEXTURE_PACKING_ON
+  - ENUM_DISPLACEMENT_MODE_NONE
+  - ENUM_WRINKLE_MODE_NONE
   - _DISABLE_SSR_TRANSPARENT
-  - _EMISSION
-  m_LightmapFlags: 2
+  m_LightmapFlags: 6
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap:
     MotionVector: User
+    RenderType: Opaque
   disabledShaderPasses:
   - TransparentDepthPrepass
   - TransparentDepthPostpass
@@ -36,6 +39,14 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 84a19de8f626a4a8d9f2b0ebfec1f7f0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 44144044251b14899901e8772d6e6cb0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _CFULCMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -45,6 +56,18 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ColorBlendMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -68,7 +91,15 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 84a19de8f626a4a8d9f2b0ebfec1f7f0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MaskMap:
+        m_Texture: {fileID: 2800000, guid: e67a5fe7e1d674e488d5579632e52ff9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
         m_Texture: {fileID: 2800000, guid: e67a5fe7e1d674e488d5579632e52ff9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -84,12 +115,24 @@ Material:
         m_Texture: {fileID: 2800000, guid: 44144044251b14899901e8772d6e6cb0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _RGBAMask:
         m_Texture: {fileID: 2800000, guid: 738b8beb01e1e43d8b0dd4a87c54abb7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SSSThicknessPack:
         m_Texture: {fileID: 2800000, guid: aabb496b57b534ba98981230e77ffe3e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecGlossMap:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SubsurfaceBlurMap:
@@ -141,24 +184,43 @@ Material:
     - _AOStrength: 1
     - _AScatterScale: 1
     - _ASmoothnessMod: 0
+    - _AddPrecomputedVelocity: 0
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
     - _BScatterScale: 1
     - _BSmoothnessMod: 0
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 1
+    - _BumpScale: 1
     - _BumpStrength: 0
     - _CavityStrength: 0.7400828
     - _CheekScatterScale: 1
     - _CheekSmoothnessMod: 0
     - _ChinScatterScale: 1
     - _ChinSmoothnessMod: 0
+    - _ClearCoatMask: 0
+    - _ClearCoatSmoothness: 0
     - _ColorBlendStrength: 0.5
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DetailAlbedoMapScale: 1
+    - _DetailNormalMapScale: 1
     - _DisplacementLevel: 0.5
     - _DisplacementStrength: 0
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _EarScatterScale: 1
     - _EarSmoothnessMod: 0
+    - _EnvironmentReflections: 1
     - _ForeheadScatterScale: 1
     - _ForeheadSmoothnessMod: 0
     - _GScatterScale: 1
     - _GSmoothnessMod: 0
+    - _GlossMapScale: 0
+    - _Glossiness: 0
+    - _GlossyReflections: 0
     - _LipsCavityAO: 2.5
+    - _Metallic: 0
     - _MicroNormalStrength: 0.125
     - _MicroNormalTiling: 40
     - _MicroSmoothnessMod: -0.047
@@ -168,17 +230,26 @@ Material:
     - _NormalBlendStrength: 0.5
     - _NormalStrength: 1
     - _NostrilCavityAO: 2.5
+    - _OcclusionStrength: 1
+    - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
     - _RScatterScale: 1
     - _RSmoothnessMod: 0
+    - _ReceiveShadows: 1
     - _SSSBlend: 0.35
     - _SSSDistortion: 0.5
     - _SSSTransmission: 5
+    - _Smoothness: 0.5
     - _SmoothnessContrast: 1.35
     - _SmoothnessMax: 0.78936
     - _SmoothnessMin: 0.14999998
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
     - _SubsurfaceScale: 1.4025
+    - _Surface: 0
     - _ThicknessScale: 0.9
     - _ThicknessScaleMin: 0.4
     - _UnmaskedScatterScale: 1
@@ -187,10 +258,16 @@ Material:
     - _UpperLipSmoothnessMod: 0
     - _UseBlend: 0
     - _UseCavity: 1
+    - _WorkflowMode: 1
     - _WrinkleDisplacementStrength: 1
+    - _ZWrite: 1
     m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DiffuseColor: {r: 0.99999994, g: 0.99999994, b: 0.99999994, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColor: {r: 0, g: 0, b: 0, a: 0}
+    - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SubsurfaceFalloff: {r: 1, g: 0.37, b: 0.3, a: 1}
     - _WrinkleValueSet12CL: {r: 0, g: 0, b: 0, a: 0}
     - _WrinkleValueSet12CR: {r: 0, g: 0, b: 0, a: 0}
