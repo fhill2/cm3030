@@ -1,16 +1,15 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Game.Shared;
-using Game.Core;
 using Game.Health;
-using Game.Audio;
 
 namespace Game.Movement
 {
-    // Not within this file but tranform  is changed due to weird animation
-
-    [RequireComponent(typeof(CharacterController))]
-    public class PlayerMovement : MonoBehaviour
+    /// <summary>
+    /// Input-driven movement for the player. Inherits gravity, ground detection,
+    /// animation updates, and death handling from <see cref="CharacterMotor"/>.
+    /// Adds WASD movement, sprint, jump, camera-relative turning, and cursor lock.
+    /// </summary>
+    public class PlayerMovement : CharacterMotor
     {
         [Header("Movement")]
         [SerializeField] private float walkSpeed = 1.5f;
@@ -19,89 +18,44 @@ namespace Game.Movement
 
         [Header("Jumping")]
         [SerializeField] private float jumpHeight = 1.5f;
-        [SerializeField] private float gravity = -20f;
 
         [Header("References")]
-        [Tooltip("Leave empty!")]
+        [Tooltip("Leave empty to auto-resolve to Camera.main.")]
         [SerializeField] private Transform cameraTransform;
-        [Tooltip("Leave empty!")]
-        [SerializeField] private Animator animator;
-
-        [Header("Audio")]
-        [SerializeField] private ActorAudio actorAudio;
-
-        [Header("Animation")]
-        [Tooltip("Smoothing on the Speed parameter, so blends aren't instant.")]
-        [SerializeField] private float speedDampTime = 0.1f;
 
         [Header("Cursor")]
         [Tooltip("Hide and lock the cursor so mouse-look isn't interrupted.")]
         [SerializeField] private bool lockCursor = true;
 
-        private CharacterController controller;
-        private Vector3 velocity;
         private float turnSmoothVelocity;
-        private bool wasGrounded = true;
 
-        void Awake()
+        protected override void Awake()
         {
-            controller = GetComponent<CharacterController>();
+            base.Awake();
+
             if (cameraTransform == null && Camera.main != null)
                 cameraTransform = Camera.main.transform;
-
-            // The Animator lives on the knight model
-            if (animator == null) animator = GetComponentInChildren<Animator>();
-
-            if (actorAudio == null) actorAudio = GetComponent<ActorAudio>();
 
             if (lockCursor) SetCursorLocked(true);
         }
 
-        void OnEnable()
+        protected override void Update()
         {
-            EventManager.OnDeath += OnDeath;
-        }
-
-        void OnDisable()
-        {
-            EventManager.OnDeath -= OnDeath;
-        }
-
-        static void SetCursorLocked(bool locked)
-        {
-            Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
-            Cursor.visible = !locked;
-        }
-
-        void Update()
-        {
-            //HandleCursorToggle();
-
-            // Before any Move() call this frame can reset it
             bool grounded = controller.isGrounded;
 
             Vector3 horizontal = Move();
-            bool jumped = ApplyGravity(grounded);
+            ApplyGravity(grounded);
+
+            bool jumped = grounded && JumpPressed();
+            if (jumped)
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
             wasGrounded = grounded;
 
-            Vector3 motion = horizontal + Vector3.up * velocity.y;
-            controller.Move(motion * Time.deltaTime);
+            MoveActor(horizontal);
 
-            UpdateAnimator(horizontal, grounded, jumped);
-        }
-
-        void UpdateAnimator(Vector3 horizontal, bool grounded, bool jumped)
-        {
-            if (animator == null) return;
             float speed01 = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
-
-            animator.SetFloat(AnimParams.Speed, speed01, speedDampTime, Time.deltaTime);
-
-            // Have falling and jumping be diff
-            animator.SetBool(AnimParams.Grounded, grounded && !jumped);
-
-            if (jumped) animator.SetTrigger(AnimParams.Jump);
+            UpdateAnimator(speed01, grounded, jumped);
         }
 
         Vector3 Move()
@@ -116,7 +70,7 @@ namespace Game.Movement
             camForward.Normalize();
             camRight.Normalize();
 
-            Vector3 direction = (camForward * input.y + camRight * input.x);
+            Vector3 direction = camForward * input.y + camRight * input.x;
             if (direction.sqrMagnitude > 1f) direction.Normalize();
 
             if (direction.sqrMagnitude > 0.001f)
@@ -131,20 +85,6 @@ namespace Game.Movement
             }
 
             return Vector3.zero;
-        }
-
-        bool ApplyGravity(bool grounded)
-        {
-            // Small downward bias
-            if (grounded && velocity.y < 0f)
-                velocity.y = -2f;
-
-            bool jumped = grounded && JumpPressed();
-            if (jumped)
-                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-
-            velocity.y += gravity * Time.deltaTime;
-            return jumped;
         }
 
         Vector2 ReadMoveInput()
@@ -171,21 +111,17 @@ namespace Game.Movement
             return Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
         }
 
-        void OnDeath(DeathArgs e)
+        static void SetCursorLocked(bool locked)
         {
-            if (e.Entity == gameObject)
-                enabled = false;
+            Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !locked;
         }
 
-        // For when the game is finished
-        //void HandleCursorToggle()
-        //{
-        //    if (!lockCursor) return;
-
-        //    if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        //        SetCursorLocked(false);
-        //    else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-        //        SetCursorLocked(true);
-        //}
+        protected override void HandleDeath(DeathArgs e)
+        {
+            base.HandleDeath(e);
+            if (e.Entity == gameObject)
+                SetCursorLocked(false);
+        }
     }
 }
