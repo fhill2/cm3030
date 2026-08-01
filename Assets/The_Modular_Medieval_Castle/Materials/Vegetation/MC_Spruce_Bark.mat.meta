@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d49b37184451ed3428a79d611f45c1cf
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 301806
+  packageName: The Horror Church
+  packageVersion: 1.0
+  assetPath: Assets/The_Horror_Church/Materials/Vegetation/HC_Spruce_Bark.mat
+  uploadId: 706523
