@@ -162,8 +162,6 @@ SkinnedMeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -186,11 +184,9 @@ SkinnedMeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -1329,6 +1325,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 4300000, guid: 4bea444d6621943e08e81f8b564a1d63, type: 2}
+    - target: {fileID: 5197118176682910397, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
+      propertyPath: 'm_Materials.Array.data[5]'
+      value: 
+      objectReference: {fileID: 2100000, guid: c7c92ffbfa38d4319836309226e135fe, type: 2}
     - target: {fileID: 8608622271414082882, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
       propertyPath: m_Materials.Array.size
       value: 2
@@ -1411,369 +1411,13 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6053072900602627462}
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
-      insertIndex: 1
-      addedObject: {fileID: 6347972157011619521}
-    - targetCorrespondingSourceObject: {fileID: -7900108922952681256, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1665521931918022572}
     - targetCorrespondingSourceObject: {fileID: -7900108922952681256, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3958444426441731774}
     - targetCorrespondingSourceObject: {fileID: 7060037832096331798, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5960298205181375406}
-    - targetCorrespondingSourceObject: {fileID: 7060037832096331798, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 3772382694539047161}
   m_SourcePrefab: {fileID: 100100000, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
---- !u!1 &104891162817479258 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
-  m_PrefabInstance: {fileID: 987920152963940107}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &6347972157011619521
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 104891162817479258}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56bc35a6425d98b49b5a4ae1a960562b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: soupday.cc3_unity_tools.runtime::Reallusion.Import.ColliderManager
-  currentEditType: 8
-  availableColliderTypes: 0
-  manipulator: 0
-  manipulatorArray:
-  - Position
-  - Rotation
-  - Scale
-  transformSymmetrically: 1
-  frameSymmetryPair: 0
-  selectedMirrorPlane: 0
-  magicaCloth2Available: 0
-  dynamicBoneAvailable: 0
-  hasGizmoUtility: 0
-  abstractedCapsuleColliders:
-  - transform: {fileID: 8809586790324588653}
-    isEnabled: 1
-    localPosition: {x: -0.00004642547, y: 0.22397627, z: -0.015022745}
-    localRotation: {x: -0.000000064261236, y: 6.984917e-10, z: 0.0000000034492573, w: 1}
-    height: 0.4433453
-    radius: 0.059677366
-    name: CC_Base_L_Calf_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 8244716695625972281}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 4530578610055281069}
-    isEnabled: 1
-    localPosition: {x: 0.0021523023, y: 0.20499805, z: 0.01315007}
-    localRotation: {x: -0.052304212, y: -0.0018264996, z: 0.03485168, w: 0.99802125}
-    height: 0.5095898
-    radius: 0.07119798
-    name: CC_Base_L_Thigh_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 5353670913259842314}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 4007360873904244089}
-    isEnabled: 1
-    localPosition: {x: 0.00008072743, y: 0.22397585, z: -0.015952028}
-    localRotation: {x: -0.0000000372529, y: 0.000000004016328, z: 0.000000038155118, w: 1}
-    height: 0.4433398
-    radius: 0.059567124
-    name: CC_Base_R_Calf_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 5091087084755515349}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 871070055362897681}
-    isEnabled: 1
-    localPosition: {x: -0.0021751286, y: 0.2050032, z: 0.013174785}
-    localRotation: {x: -0.052304167, y: 0.0018264991, z: -0.034851626, w: 0.9980212}
-    height: 0.50954217
-    radius: 0.070871025
-    name: CC_Base_R_Thigh_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 1828729135613726650}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 3190835775183060503}
-    isEnabled: 1
-    localPosition: {x: -0.0014009604, y: 0.052803803, z: 0.013305345}
-    localRotation: {x: -0.000000037252885, y: -0.00000013361563, z: 0.000000044592504, w: 1}
-    height: 0.11148921
-    radius: 0.03225844
-    name: CC_Base_L_Hand_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 892539931864561676}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 6276803610063003223}
-    isEnabled: 1
-    localPosition: {x: 0.000010902994, y: 0.10661575, z: 0.00001770723}
-    localRotation: {x: -0.000000065947454, y: -0.00000013551833, z: -3.629101e-10, w: 1}
-    height: 0.289775
-    radius: 0.046214417
-    name: CC_Base_L_Forearm_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 2245991170322123144}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 868960596153878926}
-    isEnabled: 1
-    localPosition: {x: -0.012570429, y: 0.11158755, z: -0.0055867247}
-    localRotation: {x: 0.000000029802319, y: 0.000000087544315, z: -0.000000069849186, w: -1}
-    height: 0.34011927
-    radius: 0.05710181
-    name: CC_Base_L_Upperarm_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 6959270746958497098}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 4334455936279369390}
-    isEnabled: 1
-    localPosition: {x: -0.00000057935944, y: 0.06734569, z: 0.019014623}
-    localRotation: {x: -0.7079999, y: 0.0000071616987, z: -0.00000064751083, w: 0.70621264}
-    height: 0.2369867
-    radius: 0.07933418
-    name: CC_Base_Head_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 6440766369181467713}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 451324056640494163}
-    isEnabled: 1
-    localPosition: {x: 0.00000017644196, y: 0.021289097, z: 0.00000888016}
-    localRotation: {x: 0.00000007450579, y: 1.6825649e-11, z: 1.2391863e-11, w: 1}
-    height: 0.16907188
-    radius: 0.060954068
-    name: CC_Base_NeckTwist01_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 3700957157140690044}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 8627115690159430172}
-    isEnabled: 1
-    localPosition: {x: -0.000029687879, y: -0.11019076, z: 0.035110522}
-    localRotation: {x: 0.000000029802312, y: -0.7071068, z: -0.00000003725289, w: 0.7071067}
-    height: 0.43119267
-    radius: 0.11830682
-    name: CC_Base_NeckTwist01_Capsule(0)
-    axis: 2
-    colliderTypes: 1
-    nativeRef: {fileID: 3286425496199741019}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 7015877163762989581}
-    isEnabled: 1
-    localPosition: {x: 0.069987856, y: -0.12592255, z: 0.08144515}
-    localRotation: {x: -0.2980698, y: -0.6412131, z: 0.29806972, w: 0.6412133}
-    height: 0.3026719
-    radius: 0.085631154
-    name: CC_Base_NeckTwist01_Capsule(1)
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 4642050143373026993}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 8105888978875641540}
-    isEnabled: 1
-    localPosition: {x: -0.0700121, y: -0.12592246, z: 0.08144518}
-    localRotation: {x: -0.2980698, y: -0.6412131, z: 0.29806972, w: 0.6412133}
-    height: 0.3026719
-    radius: 0.085631154
-    name: CC_Base_NeckTwist01_Capsule(2)
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 320497641355438776}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 8029066922290400300}
-    isEnabled: 1
-    localPosition: {x: 0.0016522307, y: 0.052955467, z: 0.010661005}
-    localRotation: {x: -0, y: 0.000000080355655, z: 0.00000016563986, w: 1}
-    height: 0.11150354
-    radius: 0.03489797
-    name: CC_Base_R_Hand_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 2363066231233607941}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 3591150185399893375}
-    isEnabled: 1
-    localPosition: {x: -0.000018925874, y: 0.106554724, z: 0.000024589877}
-    localRotation: {x: 0.000000093188625, y: 0.000000073836404, z: -0.00000001545724, w: 1}
-    height: 0.28962645
-    radius: 0.046212688
-    name: CC_Base_R_Forearm_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 8044216114290548266}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 4946154482507837563}
-    isEnabled: 1
-    localPosition: {x: 0.0125658335, y: 0.11166121, z: -0.005584774}
-    localRotation: {x: 0.000000044703473, y: 0.00000010430811, z: -0.000000048661594, w: 1}
-    height: 0.34026247
-    radius: 0.057098914
-    name: CC_Base_R_Upperarm_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 7691570202009746984}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 6771190077888546921}
-    isEnabled: 1
-    localPosition: {x: 0.00000037239218, y: 0.15139642, z: 0.0007308051}
-    localRotation: {x: -0.036970057, y: -0.7061397, z: 0.036970086, w: 0.7061396}
-    height: 0.30486786
-    radius: 0.09937515
-    name: CC_Base_Spine01_Capsule(1)
-    axis: 2
-    colliderTypes: 1
-    nativeRef: {fileID: 9187160784107141006}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 2186830227775097923}
-    isEnabled: 1
-    localPosition: {x: 0.054484297, y: 0.058527038, z: -0.00632234}
-    localRotation: {x: 0.1721627, y: 0.022665624, z: 0.12854323, w: 0.9763826}
-    height: 0.40410036
-    radius: 0.08022169
-    name: CC_Base_Hip_Capsule
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 5404102986849646588}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 3375799942760177945}
-    isEnabled: 1
-    localPosition: {x: -0.05448437, y: 0.058527216, z: -0.0063222656}
-    localRotation: {x: 0.17216267, y: -0.022665631, z: -0.12854324, w: 0.9763826}
-    height: 0.40410036
-    radius: 0.08022169
-    name: CC_Base_Hip_Capsule(0)
-    axis: 1
-    colliderTypes: 1
-    nativeRef: {fileID: 3005550832481631452}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  - transform: {fileID: 680034440858068911}
-    isEnabled: 1
-    localPosition: {x: 0, y: 1, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 1}
-    height: 1.8
-    radius: 0.4
-    name: Hitbox
-    axis: 0
-    colliderTypes: 1
-    nativeRef: {fileID: 8580302411859986119}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  cachedSelectedCollider:
-    transform: {fileID: 0}
-    isEnabled: 0
-    localPosition: {x: 0, y: 0, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 0}
-    height: 0
-    radius: 0
-    name: 
-    axis: 0
-    colliderTypes: 0
-    nativeRef: {fileID: 0}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  cachedMirrorImageCollider:
-    transform: {fileID: 0}
-    isEnabled: 0
-    localPosition: {x: 0, y: 0, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 0}
-    height: 0
-    radius: 0
-    name: 
-    axis: 0
-    colliderTypes: 0
-    nativeRef: {fileID: 0}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  selectedAbstractCapsuleCollider:
-    transform: {fileID: 0}
-    isEnabled: 0
-    localPosition: {x: 0, y: 0, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 0}
-    height: 0
-    radius: 0
-    name: 
-    axis: 0
-    colliderTypes: 0
-    nativeRef: {fileID: 0}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  mirrorImageAbstractCapsuleCollider:
-    transform: {fileID: 0}
-    isEnabled: 0
-    localPosition: {x: 0, y: 0, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 0}
-    height: 0
-    radius: 0
-    name: 
-    axis: 0
-    colliderTypes: 0
-    nativeRef: {fileID: 0}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  gizmoNames:
-  - CapsuleCollider
-  - Cloth
-  - SphereCollider
-  - BoxCollider
-  - MagicaCapsuleCollider
-  - MagicaCloth
-  - MagicaSphereCollider
-  - MagicaPlaneCollider
-  colliders:
-  - {fileID: 5404102986849646588}
-  - {fileID: 3005550832481631452}
-  - {fileID: 5353670913259842314}
-  - {fileID: 8244716695625972281}
-  - {fileID: 1828729135613726650}
-  - {fileID: 5091087084755515349}
-  - {fileID: 9187160784107141006}
-  - {fileID: 3700957157140690044}
-  - {fileID: 3286425496199741019}
-  - {fileID: 4642050143373026993}
-  - {fileID: 320497641355438776}
-  - {fileID: 6440766369181467713}
-  - {fileID: 6959270746958497098}
-  - {fileID: 2245991170322123144}
-  - {fileID: 892539931864561676}
-  - {fileID: 7691570202009746984}
-  - {fileID: 8044216114290548266}
-  - {fileID: 2363066231233607941}
-  clothMeshes:
-  - GameObject: {fileID: 2299334929548281811}
-    EnabledStatus: 1
-  - GameObject: {fileID: 7804605275414382365}
-    EnabledStatus: 1
-  magicaClothMeshes: []
-  settings: []
-  characterGUID: 601ee1964ab504d09a5f793b1e842ff1
 --- !u!4 &133044359321989520 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 895485179724615323, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
@@ -1799,46 +1443,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: -7900108922952681256, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
   m_PrefabInstance: {fileID: 987920152963940107}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1665521931918022572
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2299334929548281811}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04fff1e7039522941a2f6cee42cee6e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: soupday.cc3_unity_tools.runtime::Reallusion.Import.WeightMapper
-  settings:
-  - name: Pauldron
-    maxDistance: 20
-    maxPenetration: 10
-    weightMap: {fileID: 2800000, guid: 74ed53326d63f4413905c548fa0cfe5a, type: 3}
-    weightMapPower: 1
-    weightMapOffset: 0
-    weightMapScale: 1
-    activate: 1
-    gravity: 1
-    mass: 5
-    friction: 0.2
-    damping: 0.2
-    drag: 0
-    stretch: 0
-    bending: 0
-    softRigidCollision: 1
-    softRigidMargin: 2
-    selfCollision: 0
-    selfMargin: 0
-    solverFrequency: 150
-    stiffnessFrequency: 15
-    colliderThreshold: 0.5
-  updateColliders: 1
-  optimizeColliders: 1
-  includeAllLimbColliders: 0
-  updateConstraints: 1
-  characterGUID: 601ee1964ab504d09a5f793b1e842ff1
 --- !u!183 &3958444426441731774
 Cloth:
   m_ObjectHideFlags: 0
@@ -12517,46 +12121,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7060037832096331798, guid: 601ee1964ab504d09a5f793b1e842ff1, type: 3}
   m_PrefabInstance: {fileID: 987920152963940107}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5960298205181375406
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7804605275414382365}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04fff1e7039522941a2f6cee42cee6e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: soupday.cc3_unity_tools.runtime::Reallusion.Import.WeightMapper
-  settings:
-  - name: Tasset
-    maxDistance: 20
-    maxPenetration: 10
-    weightMap: {fileID: 2800000, guid: bb164f16dfb8b4ed1aa9ea7023f8307d, type: 3}
-    weightMapPower: 1
-    weightMapOffset: 0
-    weightMapScale: 1
-    activate: 1
-    gravity: 1
-    mass: 5
-    friction: 0.2
-    damping: 0.2
-    drag: 0
-    stretch: 0
-    bending: 0
-    softRigidCollision: 1
-    softRigidMargin: 2
-    selfCollision: 0
-    selfMargin: 0
-    solverFrequency: 150
-    stiffnessFrequency: 15
-    colliderThreshold: 0.5
-  updateColliders: 1
-  optimizeColliders: 1
-  includeAllLimbColliders: 0
-  updateConstraints: 1
-  characterGUID: 601ee1964ab504d09a5f793b1e842ff1
 --- !u!183 &3772382694539047161
 Cloth:
   m_ObjectHideFlags: 0
