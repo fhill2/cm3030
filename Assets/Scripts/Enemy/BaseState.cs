@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Game.Shared;
+using Game.Combat;
 
 namespace Game.Enemy
 {
@@ -33,6 +34,7 @@ namespace Game.Enemy
 
         protected float attackCooldown;
         protected float attackWindup;
+        protected float attackActiveWindow;
         protected float attackDamage;
         protected DamageType damageType;
         protected bool requireLineOfSight;
@@ -41,6 +43,7 @@ namespace Game.Enemy
         protected NavMeshAgent agent;
         protected GameObject player;
         protected Animator animator;
+        protected WeaponHitbox weaponHitbox;
         protected NpcFSM FSM;
 
         /// <summary>
@@ -64,14 +67,16 @@ namespace Game.Enemy
 
             attackCooldown     = npc.attackCooldown;
             attackWindup       = npc.attackWindup;
+            attackActiveWindow = npc.attackActiveWindow;
             attackDamage       = npc.attackDamage;
             damageType         = npc.damageType;
             requireLineOfSight = npc.requireLineOfSight;
 
-            agent    = npc.agent;
-            player   = npc.player;
-            animator = npc.animator;
-            FSM      = npc;
+            agent        = npc.agent;
+            player       = npc.player;
+            animator     = npc.animator;
+            weaponHitbox = npc.weaponHitbox;
+            FSM          = npc;
         }
 
         /// <summary>

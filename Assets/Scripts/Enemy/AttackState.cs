@@ -82,15 +82,14 @@ namespace Game.Enemy
                 if (animator != null) animator.SetTrigger(AnimParams.Attack);
                 EventManager.RaiseHit(new HitArgs(FSM.gameObject));
 
-                // Wait for the swing to connect (synced to the windup).
+                // Windup: blade not yet dangerous.
                 yield return new WaitForSeconds(attackWindup);
 
-                // Apply damage if the player is still reachable.
-                if (WithinAttackRange() && HasLineOfSight() && FSM.playerAlive)
-                {
-                    var target = player.GetComponent<IDamageable>();
-                    target?.TakeDamage(attackDamage, damageType, FSM.gameObject);
-                }
+                // Active window: arm the weapon hitbox. Contact with the player's
+                // body hitbox deals damage via WeaponHitbox -> IDamageable.
+                if (weaponHitbox != null) weaponHitbox.BeginSwing();
+                yield return new WaitForSeconds(attackActiveWindow);
+                if (weaponHitbox != null) weaponHitbox.EndSwing();
 
                 yield return null;
             }

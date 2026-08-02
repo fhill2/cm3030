@@ -4,6 +4,7 @@ using UnityEngine.AI;
 using Game.Shared;
 using Game.Core;
 using Game.Health;
+using Game.Combat;
 
 namespace Game.Enemy
 {
@@ -62,9 +63,11 @@ namespace Game.Enemy
         [Header("Attack")]
         [Tooltip("Shortest gap between swings.")]
         public float attackCooldown = 1.5f;
-        [Tooltip("Delay after the swing animation starts before damage is applied.")]
+        [Tooltip("Delay after the swing starts before the weapon hitbox is armed.")]
         public float attackWindup = 0.3f;
-        [Tooltip("Damage applied on a successful hit.")]
+        [Tooltip("How long the weapon hitbox stays armed (the damage window).")]
+        public float attackActiveWindow = 0.3f;
+        [Tooltip("Unused if a WeaponHitbox is assigned — damage comes from the hitbox.")]
         public float attackDamage = 10f;
         [Tooltip("Damage type passed to IDamageable.TakeDamage.")]
         public DamageType damageType = DamageType.Light;
@@ -84,6 +87,7 @@ namespace Game.Enemy
         [HideInInspector] public NavMeshAgent agent;
         [HideInInspector] public GameObject player;
         [HideInInspector] public Animator animator;
+        [HideInInspector] public WeaponHitbox weaponHitbox; // on the enemy's weapon/hand
 
         // ── Runtime flags (set by event handlers, read by states) ────
         [HideInInspector] public bool playerAlive = true;
@@ -97,6 +101,7 @@ namespace Game.Enemy
             agent = GetComponent<NavMeshAgent>();
             animator = GetComponentInChildren<Animator>();
             player = GameObject.FindGameObjectWithTag("Player");
+            weaponHitbox = GetComponentInChildren<WeaponHitbox>();
 
             BaseState startState;
             switch (initialState)

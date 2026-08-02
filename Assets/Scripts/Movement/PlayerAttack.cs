@@ -1,8 +1,10 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Shared;
 using Game.Core;
 using Game.Health;
+using Game.Combat;
 
 namespace Game.Movement
 {
@@ -24,9 +26,16 @@ namespace Game.Movement
         [Tooltip("Stop the player swinging while in mid-air.")]
         [SerializeField] private bool requireGrounded = true;
 
+        [Header("Hitbox")]
+        [Tooltip("The weapon hitbox armed during a swing. Leave empty for animation-only.")]
+        [SerializeField] private WeaponHitbox weaponHitbox;
+        [Tooltip("How long the weapon hitbox stays armed (the damage window).")]
+        [SerializeField] private float swingWindow = 0.5f;
+
         private CharacterController controller;
         private int comboStep;
         private float lastAttackTime = -999f;
+        private Coroutine swingRoutine;
 
         void Awake()
         {
@@ -50,8 +59,22 @@ namespace Game.Movement
 
             EventManager.RaiseHit(new HitArgs(gameObject));
 
+            // Arm the weapon hitbox for the damage window.
+            if (weaponHitbox != null)
+            {
+                if (swingRoutine != null) StopCoroutine(swingRoutine);
+                swingRoutine = StartCoroutine(SwingRoutine());
+            }
+
             lastAttackTime = Time.time;
             comboStep = (comboStep + 1) % Mathf.Max(1, comboLength);
+        }
+
+        private IEnumerator SwingRoutine()
+        {
+            weaponHitbox.BeginSwing();
+            yield return new WaitForSeconds(swingWindow);
+            weaponHitbox.EndSwing();
         }
     }
 }
