@@ -1,3 +1,4 @@
+using UnityEngine;
 using Game.Health;
 
 namespace Game.Enemy
@@ -13,7 +14,7 @@ namespace Game.Enemy
     {
         protected override void OnDeath()
         {
-            // TODO: enemy-specific death logic (score, drops, wave notify).
+            Debug.Log($"[EnemyHealth] Enemy died at {gameObject.name}");
         }
     }
 }

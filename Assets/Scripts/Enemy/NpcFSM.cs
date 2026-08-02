@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Game.Shared;
+using Game.Core;
+using Game.Health;
 
 namespace Game.Enemy
 {
@@ -11,11 +13,11 @@ namespace Game.Enemy
     /// Holds shared tuning fields and runtime references that every state reads
     /// via <see cref="BaseState.EnterState(NpcFSM)"/>. State instances are plain
     /// C# objects (they do NOT inherit from MonoBehaviour), so any coroutine work
-    /// must be started through this component via <c>FSM.StartCoroutine(...)</c>.
+    /// must be started through this component via <c>StartCoroutine(...)</c>.
     ///
     /// Talks to the rest of the game exclusively through
-    /// <see cref="Game.Core.EventManager"/> events and the
-    /// <see cref="Game.Shared.IDamageable"/> interface — it never references
+    /// <see cref="EventManager"/> events and the
+    /// <see cref="IDamageable"/> interface — it never references
     /// <see cref="HealthSystem"/> or <see cref="Game.Audio.ActorAudio"/> directly.
     /// </summary>
     public enum InitialEnemyState { Patrol, Chase, Attack, Death }
@@ -83,34 +85,61 @@ namespace Game.Enemy
         [HideInInspector] public GameObject player;
         [HideInInspector] public Animator animator;
 
+        // ── Runtime flags (set by event handlers, read by states) ────
+        [HideInInspector] public bool playerAlive = true;
+        [HideInInspector] public bool wasHit; // extension hook for a future stagger state
+
         /// <summary>Currently active state.</summary>
         public BaseState CurrentState { get; private set; }
 
         void Start()
         {
-            // TODO: resolve agent / player (tag "Player") / animator, then
-            //       switch initialState -> s_Patrol/s_Chase/s_Attack/s_Death
-            //       and MoveToState(the chosen state).
+            agent = GetComponent<NavMeshAgent>();
+            animator = GetComponentInChildren<Animator>();
+            player = GameObject.FindGameObjectWithTag("Player");
+
+            BaseState startState;
+            switch (initialState)
+            {
+                case InitialEnemyState.Chase:  startState = s_Chase;  break;
+                case InitialEnemyState.Attack: startState = s_Attack; break;
+                case InitialEnemyState.Death:  startState = s_Death;  break;
+                default:                       startState = s_Patrol; break;
+            }
+            MoveToState(startState);
         }
 
         void Update()
         {
-            // TODO: tick the active state — CurrentState?.UpdateState(this).
+            CurrentState?.UpdateState(this);
         }
 
         void OnEnable()
         {
-            // TODO: subscribe EventManager.OnDeath:
-            //         - e.Entity == gameObject  -> MoveToState(s_Death)
-            //         - e.Entity == player      -> playerAlive = false
-            //       subscribe EventManager.OnDamage:
-            //         - e.Target == gameObject  -> wasHit = true (extension stub)
+            EventManager.OnDeath  += HandleDeath;
+            EventManager.OnDamage += HandleDamage;
         }
 
         void OnDisable()
         {
-            // TODO: unsubscribe every EventManager handler added in OnEnable.
+            EventManager.OnDeath  -= HandleDeath;
+            EventManager.OnDamage -= HandleDamage;
         }
+
+        // ── EventManager handlers ────────────────────────────────────
+
+        void HandleDeath(DeathArgs e)
+        {
+            if (e.Entity == gameObject)       MoveToState(s_Death);
+            else if (e.Entity == player)      playerAlive = false;
+        }
+
+        void HandleDamage(DamageArgs e)
+        {
+            if (e.Target == gameObject) wasHit = true;
+        }
+
+        // ── State transitions ────────────────────────────────────────
 
         /// <summary>
         /// Transition to a new state. Calls <see cref="BaseState.ExitState"/> on
@@ -119,9 +148,9 @@ namespace Game.Enemy
         /// </summary>
         public void MoveToState(BaseState state)
         {
-            // TODO: CurrentState?.ExitState(this);
-            //       CurrentState = state;
-            //       state.EnterState(this);
+            CurrentState?.ExitState(this);
+            CurrentState = state;
+            state.EnterState(this);
         }
     }
 }

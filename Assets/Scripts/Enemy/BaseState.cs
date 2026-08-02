@@ -40,17 +40,38 @@ namespace Game.Enemy
         // ── Runtime references ───────────────────────────────────────
         protected NavMeshAgent agent;
         protected GameObject player;
-        protected GameObject npc;
         protected Animator animator;
         protected NpcFSM FSM;
 
         /// <summary>
         /// Cache all shared references off the FSM context. Marked virtual so
-        /// concrete states can override and add their own setup after base.
+        /// concrete states can override and add their own setup after calling base.
         /// </summary>
         public virtual void EnterState(NpcFSM npc)
         {
-            // TODO: copy every protected field above from the FSM context.
+            patrolTargets    = npc.patrolTargets;
+            targetIndex      = npc.targetIndex;
+            waitTime         = npc.waitTime;
+            checkTime        = npc.checkTime;
+            distanceToTarget = npc.distanceToTarget;
+
+            chaseTriggerDistance = npc.chaseTriggerDistance;
+            chaseQuitDistance    = npc.chaseQuitDistance;
+            attackRange          = npc.attackRange;
+
+            patrolSpeed = npc.npcPatrolSpeed;
+            chaseSpeed  = npc.npcChaseSpeed;
+
+            attackCooldown     = npc.attackCooldown;
+            attackWindup       = npc.attackWindup;
+            attackDamage       = npc.attackDamage;
+            damageType         = npc.damageType;
+            requireLineOfSight = npc.requireLineOfSight;
+
+            agent    = npc.agent;
+            player   = npc.player;
+            animator = npc.animator;
+            FSM      = npc;
         }
 
         /// <summary>
@@ -64,7 +85,7 @@ namespace Game.Enemy
         /// </summary>
         public virtual void ExitState(NpcFSM npc)
         {
-            // TODO: optional cleanup (stop coroutines, reset flags, etc.).
+            // Default: no cleanup.
         }
     }
 }
