@@ -7,14 +7,17 @@ namespace Game.Movement
     /// <summary>
     /// Input-driven movement for the player. Inherits gravity, ground detection,
     /// animation updates, and death handling from <see cref="CharacterMotor"/>.
-    /// Adds WASD movement, sprint, jump, camera-relative turning, and cursor lock.
+    ///
+    /// Control scheme: the <see cref="FollowCamera"/> handles mouse-look (orbit
+    /// + player aim). WASD strafes camera-relative (A/D strafe, W/S forward/back);
+    /// Shift sprints; Space jumps. This class does NOT rotate the character —
+    /// facing is driven by the camera.
     /// </summary>
     public class PlayerMovement : CharacterMotor
     {
         [Header("Movement")]
         [SerializeField] private float walkSpeed = 1.5f;
         [SerializeField] private float sprintSpeed = 5f;
-        [SerializeField] private float turnTime = 0.1f;
 
         [Header("Jumping")]
         [SerializeField] private float jumpHeight = 1.5f;
@@ -26,8 +29,6 @@ namespace Game.Movement
         [Header("Cursor")]
         [Tooltip("Hide and lock the cursor so mouse-look isn't interrupted.")]
         [SerializeField] private bool lockCursor = true;
-
-        private float turnSmoothVelocity;
 
         protected override void Awake()
         {
@@ -43,7 +44,7 @@ namespace Game.Movement
         {
             bool grounded = controller.isGrounded;
 
-            Vector3 horizontal = Move();
+            Vector3 horizontal = Move();      // strafe movement (no turning)
             ApplyGravity(grounded);
 
             bool jumped = grounded && JumpPressed();
@@ -58,13 +59,14 @@ namespace Game.Movement
             UpdateAnimator(speed01, grounded, jumped);
         }
 
+        // Camera-relative strafe movement. Does NOT rotate the character —
+        // facing is driven by the FollowCamera (aim follows the view).
         Vector3 Move()
         {
             Vector2 input = ReadMoveInput();
 
-            // Flatten the camera
             Vector3 camForward = cameraTransform != null ? cameraTransform.forward : Vector3.forward;
-            Vector3 camRight = cameraTransform != null ? cameraTransform.right : Vector3.right;
+            Vector3 camRight   = cameraTransform != null ? cameraTransform.right   : Vector3.right;
             camForward.y = 0f;
             camRight.y = 0f;
             camForward.Normalize();
@@ -73,18 +75,8 @@ namespace Game.Movement
             Vector3 direction = camForward * input.y + camRight * input.x;
             if (direction.sqrMagnitude > 1f) direction.Normalize();
 
-            if (direction.sqrMagnitude > 0.001f)
-            {
-                float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle,
-                                                    ref turnSmoothVelocity, turnTime);
-                transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
-                float speed = IsSprinting() ? sprintSpeed : walkSpeed;
-                return direction * speed;
-            }
-
-            return Vector3.zero;
+            float speed = IsSprinting() ? sprintSpeed : walkSpeed;
+            return direction * speed;
         }
 
         Vector2 ReadMoveInput()
