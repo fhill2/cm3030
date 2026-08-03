@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Health;
+using Game.Shared;
 
 namespace Game.Movement
 {
@@ -64,6 +65,9 @@ namespace Game.Movement
             // Feed the 2D directional locomotion blend (camera-relative input).
             Vector2 blend = input.sqrMagnitude > 1f ? input.normalized : input;
             SetMoveInput(blend.x, blend.y);
+
+            // Block stance: hold right-click to raise the shield.
+            if (animator != null) animator.SetBool(AnimParams.Block, Mouse.current != null && Mouse.current.rightButton.isPressed);
         }
 
         // Camera-relative strafe movement. Does NOT rotate the character —
