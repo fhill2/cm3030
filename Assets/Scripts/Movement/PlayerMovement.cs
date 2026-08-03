@@ -18,6 +18,8 @@ namespace Game.Movement
         [Header("Movement")]
         [SerializeField] private float walkSpeed = 1.5f;
         [SerializeField] private float sprintSpeed = 5f;
+        [Tooltip("Multiplier applied to movement speed (used by PlayerAttack to slow the player during a swing).")]
+        public float speedScale = 1f;
 
         [Header("Jumping")]
         [SerializeField] private float jumpHeight = 1.5f;
@@ -44,7 +46,8 @@ namespace Game.Movement
         {
             bool grounded = controller.isGrounded;
 
-            Vector3 horizontal = Move();      // strafe movement (no turning)
+            Vector2 input = ReadMoveInput();
+            Vector3 horizontal = Move(input);      // strafe movement (no turning)
             ApplyGravity(grounded);
 
             bool jumped = grounded && JumpPressed();
@@ -57,14 +60,16 @@ namespace Game.Movement
 
             float speed01 = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
             UpdateAnimator(speed01, grounded, jumped);
+
+            // Feed the 2D directional locomotion blend (camera-relative input).
+            Vector2 blend = input.sqrMagnitude > 1f ? input.normalized : input;
+            SetMoveInput(blend.x, blend.y);
         }
 
         // Camera-relative strafe movement. Does NOT rotate the character —
         // facing is driven by the FollowCamera (aim follows the view).
-        Vector3 Move()
+        Vector3 Move(Vector2 input)
         {
-            Vector2 input = ReadMoveInput();
-
             Vector3 camForward = cameraTransform != null ? cameraTransform.forward : Vector3.forward;
             Vector3 camRight   = cameraTransform != null ? cameraTransform.right   : Vector3.right;
             camForward.y = 0f;
@@ -75,7 +80,7 @@ namespace Game.Movement
             Vector3 direction = camForward * input.y + camRight * input.x;
             if (direction.sqrMagnitude > 1f) direction.Normalize();
 
-            float speed = IsSprinting() ? sprintSpeed : walkSpeed;
+            float speed = (IsSprinting() ? sprintSpeed : walkSpeed) * speedScale;
             return direction * speed;
         }
 

@@ -6,12 +6,15 @@ namespace Game.Shared
     {
         // ── Movement ───────────────────────────────
         public static readonly int Speed       = Animator.StringToHash("Speed");
+        public static readonly int MoveX       = Animator.StringToHash("MoveX");
+        public static readonly int MoveZ       = Animator.StringToHash("MoveZ");
         public static readonly int Grounded    = Animator.StringToHash("Grounded");
         public static readonly int Jump        = Animator.StringToHash("Jump");
 
         // ── Combat ─────────────────────────────────
         public static readonly int Attack      = Animator.StringToHash("Attack");
         public static readonly int ComboStep   = Animator.StringToHash("ComboStep");
+        public static readonly int InCombat    = Animator.StringToHash("InCombat");
         public static readonly int Block       = Animator.StringToHash("Block");
         public static readonly int Parry       = Animator.StringToHash("Parry");
 

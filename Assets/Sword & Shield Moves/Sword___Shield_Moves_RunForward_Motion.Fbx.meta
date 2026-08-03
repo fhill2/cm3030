@@ -38,8 +38,8 @@ ModelImporter:
       name: RunForward
       takeName: RunForward
       internalID: 3898671758408027237
-      firstFrame: 66.4
-      lastFrame: 158
+      firstFrame: 63
+      lastFrame: 156
       wrapMode: 0
       orientationOffsetY: -40
       level: 0
