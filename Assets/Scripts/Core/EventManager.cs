@@ -23,6 +23,9 @@ namespace Game.Core
     /// </summary>
     public class EventManager : MonoBehaviour
     {
+        /// <summary>Minimum seconds between attacks for any actor (player and enemy).</summary>
+        public const float AttackWindow = 3f;
+
         public delegate void DamageHandler(DamageArgs e);
         public delegate void DeathHandler(DeathArgs e);
         public delegate void HitHandler(HitArgs e);

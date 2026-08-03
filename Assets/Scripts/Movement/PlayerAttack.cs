@@ -19,8 +19,6 @@ namespace Game.Movement
         [SerializeField] private int comboLength = 4;
         [Tooltip("Click again within this long to continue the chain, else it restarts.")]
         [SerializeField] private float comboResetTime;
-        [Tooltip("Shortest gap between swings")]
-        [SerializeField] private float minTimeBetweenSwings;
 
         [Header("Rules")]
         [Tooltip("Stop the player swinging while in mid-air.")]
@@ -70,7 +68,7 @@ namespace Game.Movement
                 comboStep = 0;
 
             if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame) return;
-            if (Time.time - lastAttackTime < minTimeBetweenSwings) return;
+            if (Time.time - lastAttackTime < EventManager.AttackWindow) return;
             if (requireGrounded && controller != null && !controller.isGrounded) return;
             animator.SetInteger(AnimParams.ComboStep, comboStep);
             animator.SetTrigger(AnimParams.Attack);
