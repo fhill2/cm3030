@@ -20,6 +20,7 @@ namespace Game.Shared
 
         // ── Health ─────────────────────────────────
         public static readonly int Hit         = Animator.StringToHash("Hit");
+        public static readonly int GetHitIndex = Animator.StringToHash("GetHitIndex");
         public static readonly int Die         = Animator.StringToHash("Die");
     }
 }
