@@ -57,7 +57,10 @@ namespace Game.Movement
             animator.SetInteger(AnimParams.ComboStep, comboStep);
             animator.SetTrigger(AnimParams.Attack);
 
-            EventManager.RaiseHit(new HitArgs(gameObject));
+            // Swing and effort SFX are fired by Animation Events on the attack
+            // clips (see AnimationAudioRelay), not from here. Raising OnHit on
+            // the click tied the sound to input, so mashing the mouse stacked
+            // one sound per click instead of one per swing.
 
             // Arm the weapon hitbox for the damage window.
             if (weaponHitbox != null)
