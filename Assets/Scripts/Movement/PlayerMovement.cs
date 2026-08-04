@@ -33,12 +33,37 @@ namespace Game.Movement
         [Tooltip("Hide and lock the cursor so mouse-look isn't interrupted.")]
         [SerializeField] private bool lockCursor = true;
 
+        [Header("Block Aim")]
+        [Tooltip("Constant base lean (degrees) always applied to the chest while blocking. Set 0 to disable.")]
+        [SerializeField] private float blockBaseLean = 0f;
+        [Tooltip("Max degrees the camera pitch adds on top of the base lean. Set 0 to disable.")]
+        [SerializeField] private float blockAimPitchRange = 0f;
+        [Tooltip("Max degrees the torso yaws (left/right) while blocking. Set 0 to disable.")]
+        [SerializeField] private float blockAimYawRange = 0f;
+        [Tooltip("How quickly the torso follows the camera aim (higher = snappier).")]
+        [SerializeField] private float blockAimSpeed = 0f;
+        [Tooltip("Mouse sensitivity for left/right block aiming (degrees per pixel).")]
+        [SerializeField] private float blockYawSensitivity = 0f;
+        [Tooltip("Constant yaw offset to center the guard (degrees). Set 0 for no offset.")]
+        [SerializeField] private float blockCenterOffset = 0f;
+
+        private Transform chestBone;
+        private bool isBlocking;
+        private float blockTorsoPitch;
+        private float blockTorsoYaw;
+
         protected override void Awake()
         {
             base.Awake();
 
             if (cameraTransform == null && Camera.main != null)
                 cameraTransform = Camera.main.transform;
+
+            if (animator != null && animator.isHuman)
+            {
+                chestBone = animator.GetBoneTransform(HumanBodyBones.Chest);
+                animator.stabilizeFeet = true;
+            }
 
             if (lockCursor) SetCursorLocked(true);
         }
@@ -67,7 +92,43 @@ namespace Game.Movement
             SetMoveInput(blend.x, blend.y);
 
             // Block stance: hold right-click to raise the shield.
-            if (animator != null) animator.SetBool(AnimParams.Block, Mouse.current != null && Mouse.current.rightButton.isPressed);
+            isBlocking = Mouse.current != null && Mouse.current.rightButton.isPressed;
+            if (animator != null) animator.SetBool(AnimParams.Block, isBlocking);
+
+            // While blocking, capture mouse X delta for independent torso yaw
+            // (the camera rotates the whole body, so this adds a LOCAL torso twist
+            // on top — lets the player angle the shield left/right without turning).
+            if (isBlocking && Mouse.current != null)
+            {
+                float mouseX = Mouse.current.delta.x.ReadValue();
+                blockTorsoYaw = Mathf.Clamp(blockTorsoYaw + mouseX * blockYawSensitivity, -blockAimYawRange, blockAimYawRange);
+            }
+        }
+
+        /// <summary>
+        /// Procedural block aim: ONLY while blocking — the chest bone pitches/yaws
+        /// to follow the camera and mouse. When not blocking, nothing runs.
+        /// </summary>
+        private void LateUpdate()
+        {
+            if (!isBlocking)
+            {
+                blockTorsoPitch = 0f;
+                blockTorsoYaw = 0f;
+                return;
+            }
+
+            if (chestBone == null || cameraTransform == null) return;
+
+            // Pitch: always apply blockAimPitchRange as a base lean (reversed),
+            // then camera pitch adds variation on top.
+            float camPitch = cameraTransform.eulerAngles.x;
+            if (camPitch > 180f) camPitch -= 360f;
+            float targetPitch = blockBaseLean + Mathf.Clamp(-camPitch, -blockAimPitchRange, blockAimPitchRange);
+            blockTorsoPitch = Mathf.Lerp(blockTorsoPitch, targetPitch, blockAimSpeed * Time.deltaTime);
+
+            // Apply torso aim (pitch + yaw + center offset) on top of the animation
+            chestBone.localRotation *= Quaternion.Euler(blockTorsoPitch, blockTorsoYaw + blockCenterOffset, 0f);
         }
 
         // Camera-relative strafe movement. Does NOT rotate the character —
