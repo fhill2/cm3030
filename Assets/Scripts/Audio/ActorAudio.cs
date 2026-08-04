@@ -20,12 +20,14 @@ namespace Game.Audio
         private static readonly string DamagePath  = "Grunts/damage";
         private static readonly string DeathPath   = "Grunts/death";
         private static readonly string WeaponPath  = "Weapon/swing";
+        private static readonly string BlockPath   = "Shield/hit";
         private const float SwingDelay = 0.03f;
 
         private static AudioClip[] s_effortClips;
         private static AudioClip[] s_damageClips;
         private static AudioClip[] s_deathClips;
         private static AudioClip[] s_swingClips;
+        private static AudioClip[] s_blockClips;
 
         private AudioSource source;
 
@@ -42,6 +44,7 @@ namespace Game.Audio
             s_damageClips = Resources.LoadAll<AudioClip>(DamagePath);
             s_deathClips  = Resources.LoadAll<AudioClip>(DeathPath);
             s_swingClips  = Resources.LoadAll<AudioClip>(WeaponPath);
+            s_blockClips  = Resources.LoadAll<AudioClip>(BlockPath);
         }
 
         void OnEnable()
@@ -49,6 +52,7 @@ namespace Game.Audio
             EventManager.OnDamage += HandleDamage;
             EventManager.OnDeath += HandleDeath;
             EventManager.OnHit += HandleHit;
+            EventManager.OnBlock += HandleBlock;
         }
 
         void OnDisable()
@@ -56,6 +60,7 @@ namespace Game.Audio
             EventManager.OnDamage -= HandleDamage;
             EventManager.OnDeath -= HandleDeath;
             EventManager.OnHit -= HandleHit;
+            EventManager.OnBlock -= HandleBlock;
         }
 
         // ── Event-driven combat audio ──────────────────────────
@@ -79,6 +84,12 @@ namespace Game.Audio
                 Play(RandomClip(s_effortClips));
                 StartCoroutine(SwingRoutine());
             }
+        }
+
+        void HandleBlock(BlockArgs e)
+        {
+            if (e.Defender == gameObject)
+                Play(RandomClip(s_blockClips));
         }
 
         // ── Direct-call API ────────────────────────────────────
