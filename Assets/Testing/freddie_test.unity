@@ -5732,35 +5732,35 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.00001639843
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.27573133
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.16071413
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.4985896
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.86683816
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.00000046652332
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.000000298112
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 120.187
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 992896019374779310, guid: 3fb6cffec48debc4ebf4dd8443975f59, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
@@ -8622,15 +8622,43 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.04
+      value: 0.0388
       objectReference: {fileID: 0}
     - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.05
+      value: -0.0726
       objectReference: {fileID: 0}
     - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.004
+      value: -0.0339
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.63445854
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.77164984
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.028538018
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.034705378
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 102.26401
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -25
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095382760055336898, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -24.497986
       objectReference: {fileID: 0}
     - target: {fileID: 4314532609198378059, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_LocalPosition.x
