@@ -29,16 +29,19 @@ namespace Game.Core
         public delegate void DamageHandler(DamageArgs e);
         public delegate void DeathHandler(DeathArgs e);
         public delegate void HitHandler(HitArgs e);
+        public delegate void BlockHandler(BlockArgs e);
 
         public static event DamageHandler OnDamage;
         public static event DeathHandler OnDeath;
         public static event HitHandler OnHit;
+        public static event BlockHandler OnBlock;
 
         // ── Raise helpers (the only place events are actually invoked) ───────
 
         public static void RaiseDamage(DamageArgs e) => OnDamage?.Invoke(e);
         public static void RaiseDeath(DeathArgs e) => OnDeath?.Invoke(e);
         public static void RaiseHit(HitArgs e) => OnHit?.Invoke(e);
+        public static void RaiseBlock(BlockArgs e) => OnBlock?.Invoke(e);
 
         /// <summary>Detach every subscriber. Call on scene load to avoid stale references.</summary>
         public static void ClearAll()
@@ -46,6 +49,7 @@ namespace Game.Core
             OnDamage = null;
             OnDeath = null;
             OnHit = null;
+            OnBlock = null;
         }
     }
 }
