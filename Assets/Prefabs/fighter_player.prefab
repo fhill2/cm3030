@@ -2215,7 +2215,7 @@ MonoBehaviour:
   moveDampTime: 0.15
   gravity: -20
   actorAudio: {fileID: 0}
-  walkSpeed: 1.5
+  walkSpeed: 2
   sprintSpeed: 5
   speedScale: 1
   jumpHeight: 1.5

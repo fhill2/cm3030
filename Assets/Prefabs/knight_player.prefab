@@ -9004,7 +9004,7 @@ Animator:
   m_GameObject: {fileID: 7374763041175265674}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 10af0e89d0888024f92cbb8f99f511ca, type: 3}
-  m_Controller: {fileID: 9100000, guid: ed20c5ccad992a5b8ae6a0cbca1e7031, type: 2}
+  m_Controller: {fileID: 9100000, guid: 127a9a7067fe6f2ecbbc9ce09b29577d, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -9058,7 +9058,7 @@ MonoBehaviour:
   moveDampTime: 0.15
   gravity: -20
   actorAudio: {fileID: 0}
-  walkSpeed: 1.5
+  walkSpeed: 2
   sprintSpeed: 5
   speedScale: 1
   jumpHeight: 1.5
