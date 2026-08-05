@@ -90,8 +90,6 @@ namespace Game.Movement
 
                     if (w && a && !d) targetOffset = -diagonalTurnAngle;
                     else if (w && d && !a) targetOffset = diagonalTurnAngle;
-                    else if (s && a && !d) targetOffset = diagonalTurnAngle;
-                    else if (s && d && !a) targetOffset = -diagonalTurnAngle;
                 }
                 turnOffset = Mathf.Lerp(turnOffset, targetOffset, turnSmooth * Time.deltaTime);
                 target.rotation = Quaternion.Euler(0f, yaw + turnOffset, 0f);
