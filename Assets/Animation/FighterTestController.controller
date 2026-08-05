@@ -360,7 +360,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Atk_SlashLeft
-  m_Speed: 1
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -2862187506319909364}
@@ -1254,7 +1254,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Atk_SlashRight
-  m_Speed: 1
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1736195365761633158}
@@ -1468,7 +1468,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Atk_SlashDown
-  m_Speed: 1.5
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -7362803380064962670}
@@ -1525,7 +1525,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BlockIdle
-  m_Speed: 1.8
+  m_Speed: 6
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 27123331505186523}
@@ -1617,10 +1617,10 @@ AnimatorStateMachine:
     m_Position: {x: -70, y: -150, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -6798935547240531539}
-    m_Position: {x: 375, y: 185, z: 0}
+    m_Position: {x: 150, y: -70, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 521568342277279456}
-    m_Position: {x: 445, y: 315, z: 0}
+    m_Position: {x: 220, y: 50, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: 141246104831970274}

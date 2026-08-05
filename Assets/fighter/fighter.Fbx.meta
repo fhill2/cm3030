@@ -729,7 +729,7 @@ ModelImporter:
     - name: CC_Base_Hip
       parentName: CC_Base_BoneRoot
       position: {x: 2.910383e-13, y: -0.0000000023841857, z: 0.9907156}
-      rotation: {x: 0.7071063, y: -0.000046454683, z: 0.000045989433, w: 0.70710725}
+      rotation: {x: 0.70648944, y: 0, z: 0, w: 0.7077236}
       scale: {x: 0.99999994, y: 0.9999999, z: 0.9999999}
     - name: CC_Base_Pelvis
       parentName: CC_Base_Hip
@@ -939,7 +939,7 @@ ModelImporter:
     - name: CC_Base_L_Index1
       parentName: CC_Base_L_Hand
       position: {x: 0.005744841, y: 0.09304977, z: 0.04555301}
-      rotation: {x: 0.06251612, y: 0.0019406592, z: 0.03281546, w: 0.9975025}
+      rotation: {x: 0.062516116, y: 0.0019406592, z: 0.032815456, w: 0.9975025}
       scale: {x: 0.9999997, y: 0.9999995, z: 0.9999999}
     - name: CC_Base_L_Index2
       parentName: CC_Base_L_Index1
@@ -954,7 +954,7 @@ ModelImporter:
     - name: CC_Base_L_Mid1
       parentName: CC_Base_L_Hand
       position: {x: 0.00643224, y: 0.096224666, z: 0.022017183}
-      rotation: {x: 0.06335459, y: 0.0011095124, z: 0.034185342, w: 0.99740475}
+      rotation: {x: 0.0633546, y: 0.0011095125, z: 0.034185346, w: 0.9974048}
       scale: {x: 0.99999976, y: 0.99999994, z: 0.99999964}
     - name: CC_Base_L_Mid2
       parentName: CC_Base_L_Mid1
@@ -1004,7 +1004,7 @@ ModelImporter:
     - name: CC_Base_L_Thumb2
       parentName: CC_Base_L_Thumb1
       position: {x: 0.00000014305114, y: 0.06224922, z: -0.00000034332274}
-      rotation: {x: -0.058130957, y: 0.01364077, z: -0.011220995, w: 0.9981527}
+      rotation: {x: -0.05813096, y: 0.013640771, z: -0.011220996, w: 0.99815273}
       scale: {x: 1.0000001, y: 1.0000001, z: 0.99999994}
     - name: CC_Base_L_Thumb3
       parentName: CC_Base_L_Thumb2
@@ -1134,7 +1134,7 @@ ModelImporter:
     - name: CC_Base_R_Index1
       parentName: CC_Base_R_Hand
       position: {x: -0.0057343123, y: 0.09304901, z: 0.04555515}
-      rotation: {x: 0.06251355, y: -0.0019364427, z: -0.03286806, w: 0.99750096}
+      rotation: {x: 0.06251353, y: -0.0019364427, z: -0.03286805, w: 0.99750096}
       scale: {x: 0.99999994, y: 1, z: 0.99999994}
     - name: CC_Base_R_Index2
       parentName: CC_Base_R_Index1
