@@ -16,6 +16,7 @@ namespace Game.Shared
         public static readonly int ComboStep   = Animator.StringToHash("ComboStep");
         public static readonly int InCombat    = Animator.StringToHash("InCombat");
         public static readonly int Block       = Animator.StringToHash("Block");
+        public static readonly int Sprint      = Animator.StringToHash("Sprint");
         public static readonly int Parry       = Animator.StringToHash("Parry");
 
         // ── Health ─────────────────────────────────

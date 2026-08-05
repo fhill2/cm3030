@@ -33,8 +33,15 @@ namespace Game.Movement
         [Tooltip("If on, the player yaws to match the camera's heading (aim follows view).")]
         [SerializeField] private bool rotateTarget = true;
 
+        [Header("Diagonal Turn")]
+        [Tooltip("Degrees the player turns when pressing W+A or W+D.")]
+        [SerializeField] private float diagonalTurnAngle = 35f;
+        [Tooltip("How fast the turn blends in/out (higher = snappier).")]
+        [SerializeField] private float turnSmooth = 8f;
+
         private float yaw;
         private float pitch = 15f;
+        private float turnOffset;
 
         void Awake()
         {
@@ -69,9 +76,26 @@ namespace Game.Movement
             transform.position = focus + rot * new Vector3(0f, 0f, -distance);
             transform.rotation = rot;   // looks straight at the focus point
 
-            // Player faces the camera's heading so the weapon aims where you look.
+            // Player faces the camera heading plus a diagonal turn offset.
             if (rotateTarget)
-                target.rotation = Quaternion.Euler(0f, yaw, 0f);
+            {
+                float targetOffset = 0f;
+                var kb = Keyboard.current;
+                if (kb != null && kb.leftShiftKey.isPressed)
+                {
+                    bool w = kb.wKey.isPressed || kb.upArrowKey.isPressed;
+                    bool a = kb.aKey.isPressed || kb.leftArrowKey.isPressed;
+                    bool d = kb.dKey.isPressed || kb.rightArrowKey.isPressed;
+                    bool s = kb.sKey.isPressed || kb.downArrowKey.isPressed;
+
+                    if (w && a && !d) targetOffset = -diagonalTurnAngle;
+                    else if (w && d && !a) targetOffset = diagonalTurnAngle;
+                    else if (s && a && !d) targetOffset = diagonalTurnAngle;
+                    else if (s && d && !a) targetOffset = -diagonalTurnAngle;
+                }
+                turnOffset = Mathf.Lerp(turnOffset, targetOffset, turnSmooth * Time.deltaTime);
+                target.rotation = Quaternion.Euler(0f, yaw + turnOffset, 0f);
+            }
         }
     }
 }

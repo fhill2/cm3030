@@ -73,9 +73,18 @@ namespace Game.Movement
             float speed01 = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
             UpdateAnimator(speed01, grounded, jumped);
 
-            // Feed the 2D directional locomotion blend (camera-relative input).
-            Vector2 blend = input.sqrMagnitude > 1f ? input.normalized : input;
-            SetMoveInput(blend.x, blend.y);
+            // Feed the directional locomotion blend.
+            // Forward/backward takes priority — W+S+A/D plays forward/backward only (no strafe blend).
+            // Pure A/D (no W/S) plays strafe animations.
+            Vector2 animInput;
+            if (Mathf.Abs(input.y) > 0.1f)
+                animInput = new Vector2(0f, input.y);
+            else
+                animInput = new Vector2(input.x, 0f);
+            SetMoveInput(animInput.x, animInput.y);
+
+            // Sprint: Shift toggles between walk and run animations.
+            if (animator != null) animator.SetBool(AnimParams.Sprint, IsSprinting());
 
             // Block stance: hold right-click to raise the shield.
             bool isBlocking = Mouse.current != null && Mouse.current.rightButton.isPressed;
