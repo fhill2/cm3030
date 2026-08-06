@@ -71,7 +71,7 @@ namespace Game.Enemy
                     yield break;
                 }
 
-                if (Time.time - lastAttackTime < attackCooldown)
+                if (Time.time - lastAttackTime < EventManager.AttackWindow)
                 {
                     yield return null;
                     continue;

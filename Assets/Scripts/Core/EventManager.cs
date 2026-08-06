@@ -20,20 +20,26 @@ namespace Game.Core
     // Goes on the GameManager object in the scene.
     public class EventManager : MonoBehaviour
     {
+        /// <summary>Minimum seconds between attacks for any actor (player and enemy).</summary>
+        public const float AttackWindow = 0.75f;
+
         public delegate void DamageHandler(DamageArgs e);
         public delegate void DeathHandler(DeathArgs e);
         public delegate void HitHandler(HitArgs e);
+        public delegate void BlockHandler(BlockArgs e);
         public delegate void GameStateChangedHandler(GameStateChangedArgs e);
 
         public static event DamageHandler OnDamage;
         public static event DeathHandler OnDeath;
         public static event HitHandler OnHit;
+        public static event BlockHandler OnBlock;
         public static event GameStateChangedHandler OnGameStateChanged;
 
         // ── Raise helpers (the only place events are actually invoked) ───────
         public static void RaiseDamage(DamageArgs e) => OnDamage?.Invoke(e);
         public static void RaiseDeath(DeathArgs e) => OnDeath?.Invoke(e);
         public static void RaiseHit(HitArgs e) => OnHit?.Invoke(e);
+        public static void RaiseBlock(BlockArgs e) => OnBlock?.Invoke(e);
         public static void RaiseGameStateChanged(GameStateChangedArgs e) => OnGameStateChanged?.Invoke(e);
 
         // Clears every subscriber. Call on scene load so we don't keep
@@ -43,6 +49,7 @@ namespace Game.Core
             OnDamage = null;
             OnDeath = null;
             OnHit = null;
+            OnBlock = null;
             OnGameStateChanged = null;
         }
     }

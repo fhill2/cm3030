@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Shared;
+using Game.Core;
+using Game.Health;
 
 namespace Game.Combat
 {
@@ -11,17 +13,18 @@ namespace Game.Combat
         [SerializeField] private float damage = 10f;
         [SerializeField] private DamageType damageType = DamageType.Light;
 
-        private readonly HashSet<Collider> m_hitThisSwing = new();
+        private readonly HashSet<IDamageable> m_hitTargets = new();
+        private readonly HashSet<Transform> m_blockedRoots = new();
         private bool m_swinging;
 
         public void BeginSwing()
         {
-            m_hitThisSwing.Clear();
+            m_hitTargets.Clear();
+            m_blockedRoots.Clear();
             m_swinging = true;
 
             var col = GetComponent<Collider>();
             var overlaps = Physics.OverlapBox(col.bounds.center, col.bounds.extents, transform.rotation);
-            Debug.Log($"SWING START — overlapping {overlaps.Length} colliders");
             foreach (var other in overlaps)
                 TryHit(other);
         }
@@ -33,19 +36,22 @@ namespace Game.Combat
         private void TryHit(Collider other)
         {
             if (!m_swinging) return;
-            if (m_hitThisSwing.Contains(other)) return;
-            if (other.transform.root == transform.root)
+            if (other.transform.root == transform.root) return;
+
+            // Shield block detection — collider tagged "Shield" intercepts the blow.
+            if (other.CompareTag("Shield"))
             {
-                Debug.Log($"REJECTED self: {other.name}");
+                if (m_blockedRoots.Add(other.transform.root))
+                    EventManager.RaiseBlock(new BlockArgs(other.transform.root.gameObject, gameObject));
                 return;
             }
-
-            Debug.Log($"TOUCHED: {other.name}");
 
             var damageable = other.GetComponentInParent<IDamageable>();
             if (damageable != null && damageable.IsAlive)
             {
-                m_hitThisSwing.Add(other);
+                if (m_blockedRoots.Contains(other.transform.root)) return;
+                if (!m_hitTargets.Add(damageable)) return;
+                Debug.Log($"[WeaponHitbox] {damage} damage to {other.transform.root.name}");
                 damageable.TakeDamage(damage, damageType, gameObject);
             }
         }

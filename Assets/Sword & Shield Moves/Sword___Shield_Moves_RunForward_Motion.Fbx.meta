@@ -38,8 +38,8 @@ ModelImporter:
       name: RunForward
       takeName: RunForward
       internalID: 3898671758408027237
-      firstFrame: 66.4
-      lastFrame: 158
+      firstFrame: 63
+      lastFrame: 156
       wrapMode: 0
       orientationOffsetY: -40
       level: 0
@@ -49,12 +49,12 @@ ModelImporter:
       loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 1
-      loopBlendPositionY: 0
+      loopBlendPositionY: 1
       loopBlendPositionXZ: 0
       keepOriginalOrientation: 0
-      keepOriginalPositionY: 1
+      keepOriginalPositionY: 0
       keepOriginalPositionXZ: 0
-      heightFromFeet: 0
+      heightFromFeet: 1
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
