@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using Game.Core;
 using Game.Health;
 using Game.Shared;
@@ -233,7 +234,10 @@ namespace Game.UI
             if (FindFirstObjectByType<EventSystem>() != null) return;
             var es = new GameObject("EventSystem");
             es.AddComponent<EventSystem>();
-            es.AddComponent<StandaloneInputModule>();
+            // InputSystemUIInputModule, not StandaloneInputModule: the project is
+            // set to Input System only, and the legacy module throws from
+            // EventSystem.Update() every frame when it reads UnityEngine.Input.
+            es.AddComponent<InputSystemUIInputModule>();
         }
 
         void CreateButtonRow(Transform parent, float y, float btnW,
