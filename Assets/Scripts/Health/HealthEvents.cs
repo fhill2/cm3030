@@ -50,4 +50,20 @@ namespace Game.Health
             Entity = entity;
         }
     }
+
+    /// <summary>
+    /// Raised when a weapon hit is blocked by a shield collider.
+    /// Consumers: ActorAudio (shield clang), UI (stamina/blocked flash).
+    /// </summary>
+    public readonly struct BlockArgs
+    {
+        public readonly GameObject Defender;
+        public readonly GameObject Attacker;
+
+        public BlockArgs(GameObject defender, GameObject attacker)
+        {
+            Defender = defender;
+            Attacker = attacker;
+        }
+    }
 }

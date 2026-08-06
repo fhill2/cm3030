@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Health;
+using Game.Shared;
+using Game.Combat;
 
 namespace Game.Movement
 {
@@ -18,6 +20,8 @@ namespace Game.Movement
         [Header("Movement")]
         [SerializeField] private float walkSpeed = 1.5f;
         [SerializeField] private float sprintSpeed = 5f;
+        [Tooltip("Multiplier applied to movement speed (used by PlayerAttack to slow the player during a swing).")]
+        public float speedScale = 1f;
 
         [Header("Jumping")]
         [SerializeField] private float jumpHeight = 1.5f;
@@ -30,12 +34,22 @@ namespace Game.Movement
         [Tooltip("Hide and lock the cursor so mouse-look isn't interrupted.")]
         [SerializeField] private bool lockCursor = true;
 
+        [Header("Block")]
+        [Tooltip("ShieldBlock component on the shield. Leave empty to auto-find.")]
+        [SerializeField] private ShieldBlock shieldBlock;
+
         protected override void Awake()
         {
             base.Awake();
 
             if (cameraTransform == null && Camera.main != null)
                 cameraTransform = Camera.main.transform;
+
+            if (animator != null && animator.isHuman)
+                animator.stabilizeFeet = true;
+
+            if (shieldBlock == null)
+                shieldBlock = GetComponentInChildren<ShieldBlock>();
 
             if (lockCursor) SetCursorLocked(true);
         }
@@ -44,7 +58,8 @@ namespace Game.Movement
         {
             bool grounded = controller.isGrounded;
 
-            Vector3 horizontal = Move();      // strafe movement (no turning)
+            Vector2 input = ReadMoveInput();
+            Vector3 horizontal = Move(input);      // strafe movement (no turning)
             ApplyGravity(grounded);
 
             bool jumped = grounded && JumpPressed();
@@ -57,14 +72,30 @@ namespace Game.Movement
 
             float speed01 = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
             UpdateAnimator(speed01, grounded, jumped);
+
+            // Feed the directional locomotion blend.
+            // Forward/backward takes priority — W+S+A/D plays forward/backward only (no strafe blend).
+            // Pure A/D (no W/S) plays strafe animations.
+            Vector2 animInput;
+            if (Mathf.Abs(input.y) > 0.1f)
+                animInput = new Vector2(0f, input.y);
+            else
+                animInput = new Vector2(input.x, 0f);
+            SetMoveInput(animInput.x, animInput.y);
+
+            // Sprint: Shift toggles between walk and run animations.
+            if (animator != null) animator.SetBool(AnimParams.Sprint, IsSprinting());
+
+            // Block stance: hold right-click to raise the shield.
+            bool isBlocking = Mouse.current != null && Mouse.current.rightButton.isPressed;
+            if (animator != null) animator.SetBool(AnimParams.Block, isBlocking);
+            if (shieldBlock != null) shieldBlock.IsBlocking = isBlocking;
         }
 
         // Camera-relative strafe movement. Does NOT rotate the character —
         // facing is driven by the FollowCamera (aim follows the view).
-        Vector3 Move()
+        Vector3 Move(Vector2 input)
         {
-            Vector2 input = ReadMoveInput();
-
             Vector3 camForward = cameraTransform != null ? cameraTransform.forward : Vector3.forward;
             Vector3 camRight   = cameraTransform != null ? cameraTransform.right   : Vector3.right;
             camForward.y = 0f;
@@ -75,7 +106,7 @@ namespace Game.Movement
             Vector3 direction = camForward * input.y + camRight * input.x;
             if (direction.sqrMagnitude > 1f) direction.Normalize();
 
-            float speed = IsSprinting() ? sprintSpeed : walkSpeed;
+            float speed = (IsSprinting() ? sprintSpeed : walkSpeed) * speedScale;
             return direction * speed;
         }
 

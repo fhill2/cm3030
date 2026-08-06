@@ -13,6 +13,7 @@ namespace Game.Health
         protected bool alive = true;
         protected Animator animator;
         protected float lastHitTime = float.NegativeInfinity;
+        private int getHitIndex;
 
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
@@ -39,7 +40,12 @@ namespace Game.Health
             }
             else
             {
-                if (animator != null) animator.SetTrigger(AnimParams.Hit);
+                if (animator != null)
+                {
+                    animator.SetTrigger(AnimParams.Hit);
+                    getHitIndex = (getHitIndex + 1) % 2;
+                    animator.SetInteger(AnimParams.GetHitIndex, getHitIndex);
+                }
             }
         }
 

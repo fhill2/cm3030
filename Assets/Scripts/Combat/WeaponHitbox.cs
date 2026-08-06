@@ -1,23 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Shared;
+using Game.Core;
+using Game.Health;
 
 namespace Game.Combat
 {
-    /// <summary>
-    /// Physics-based melee hit detection. Lives on a GameObject with a trigger
-    /// collider that represents the weapon's blade volume (usually parented to
-    /// the attacker's hand bone, so it sweeps with the swing animation).
-    ///
-    /// During a swing the attacker calls <see cref="BeginSwing"/>; while active,
-    /// <see cref="OnTriggerEnter"/> bridges to <see cref="IDamageable.TakeDamage"/>
-    /// on whatever body hitbox the blade enters. A per-swing HashSet prevents a
-    /// single swing from hitting the same target more than once.
-    ///
-    /// This is the foundation of the directional combat system: later, weapon-
-    /// vs-weapon/shield colliders can return "blocked" instead of damaging,
-    /// by filtering on tag/layer in OnTriggerEnter.
-    /// </summary>
     [RequireComponent(typeof(Collider))]
     public class WeaponHitbox : MonoBehaviour
     {
@@ -25,29 +13,45 @@ namespace Game.Combat
         [SerializeField] private float damage = 10f;
         [SerializeField] private DamageType damageType = DamageType.Light;
 
-        private readonly HashSet<Collider> m_hitThisSwing = new();
+        private readonly HashSet<IDamageable> m_hitTargets = new();
+        private readonly HashSet<Transform> m_blockedRoots = new();
         private bool m_swinging;
 
-        /// <summary>Call when a swing begins — clears the hit list and arms the hitbox.</summary>
         public void BeginSwing()
         {
-            m_hitThisSwing.Clear();
+            m_hitTargets.Clear();
+            m_blockedRoots.Clear();
             m_swinging = true;
+
+            var col = GetComponent<Collider>();
+            var overlaps = Physics.OverlapBox(col.bounds.center, col.bounds.extents, transform.rotation);
+            foreach (var other in overlaps)
+                TryHit(other);
         }
 
-        /// <summary>Call when the swing's damage window ends.</summary>
         public void EndSwing() => m_swinging = false;
 
-        void OnTriggerEnter(Collider other)
+        void OnTriggerEnter(Collider other) => TryHit(other);
+
+        private void TryHit(Collider other)
         {
             if (!m_swinging) return;
-            if (m_hitThisSwing.Contains(other)) return;             // one hit per swing per target
-            if (other.transform.root == transform.root) return;     // never hit self
+            if (other.transform.root == transform.root) return;
+
+            // Shield block detection — collider tagged "Shield" intercepts the blow.
+            if (other.CompareTag("Shield"))
+            {
+                if (m_blockedRoots.Add(other.transform.root))
+                    EventManager.RaiseBlock(new BlockArgs(other.transform.root.gameObject, gameObject));
+                return;
+            }
 
             var damageable = other.GetComponentInParent<IDamageable>();
             if (damageable != null && damageable.IsAlive)
             {
-                m_hitThisSwing.Add(other);
+                if (m_blockedRoots.Contains(other.transform.root)) return;
+                if (!m_hitTargets.Add(damageable)) return;
+                Debug.Log($"[WeaponHitbox] {damage} damage to {other.transform.root.name}");
                 damageable.TakeDamage(damage, damageType, gameObject);
             }
         }

@@ -9,7 +9,9 @@ namespace Game.Enemy
     /// <summary>
     /// Attack behaviour: stop, face the player, swing on a cooldown, and apply
     /// damage after a windup delay. Exits to ChaseState when the player leaves
-    /// <c>attackRange</c> or dies.
+    /// <c>attackRange</c>, dies, or line of sight is blocked (e.g. player ducks
+    /// behind cover) — the enemy re-chases to reposition rather than swinging
+    /// blindly through a wall.
     ///
     /// Integration:
     ///   - <see cref="AnimParams.Attack"/>       trigger on the animator
@@ -64,14 +66,15 @@ namespace Game.Enemy
         {
             while (true)
             {
-                // Player slipped out of range (or died) — hand back to Chase.
-                if (!WithinAttackRange() || !FSM.playerAlive)
+                // Player slipped out of range, died, or is no longer visible —
+                // hand back to Chase so the enemy repositions.
+                if (!WithinAttackRange() || !FSM.playerAlive || !HasLineOfSight())
                 {
                     FSM.MoveToState(FSM.s_Chase);
                     yield break;
                 }
 
-                if (Time.time - lastAttackTime < attackCooldown)
+                if (Time.time - lastAttackTime < EventManager.AttackWindow)
                 {
                     yield return null;
                     continue;
