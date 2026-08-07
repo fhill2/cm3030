@@ -65,7 +65,7 @@ namespace Game.Core
                 Debug.Log($"[GameState] {previous} -> {CurrentState.Id}");
             }
 
-            EventManager.RaiseGameStateChanged(new GameStateChangedArgs(previous, CurrentState.Id));
+            EventManager.RaiseGameStateChanged(new GameStateChangedArgs(previous, CurrentState.Id, CurrentWave));
         }
 
         // Same thing but by enum, easier to call from other scripts and to test.

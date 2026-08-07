@@ -16,7 +16,9 @@ namespace Game.Core
     public class WaveSpawner : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private GameStateMachine stateMachine;
+        // GameStateMachine lives on the same GameManager object, so it is
+        // resolved in Awake rather than wired as a serialized reference.
+        private GameStateMachine stateMachine;
         [SerializeField] private Transform player;
         [SerializeField] private Transform[] spawnPoints;
 
@@ -28,6 +30,14 @@ namespace Game.Core
 
         // Enemies from the current wave that are still alive.
         private readonly List<GameObject> liveEnemies = new List<GameObject>();
+
+        // Wave number captured from the GameStateChanged payload (GSM owns it).
+        private int currentWave;
+
+        private void Awake()
+        {
+            stateMachine = GetComponent<GameStateMachine>();
+        }
 
         private void OnEnable()
         {
@@ -41,9 +51,10 @@ namespace Game.Core
             EventManager.OnGameStateChanged -= HandleStateChanged;
         }
 
-        // Start spawning as soon as we enter WaveActive.
+        // Capture the wave number from the payload, then spawn on WaveActive.
         private void HandleStateChanged(GameStateChangedArgs e)
         {
+            currentWave = e.Wave;
             if (e.Current == GameStateId.WaveActive) StartCoroutine(SpawnWave());
         }
 
@@ -51,7 +62,7 @@ namespace Game.Core
         {
             liveEnemies.Clear();
 
-            WaveConfig config = ConfigForWave(stateMachine.CurrentWave);
+            WaveConfig config = ConfigForWave(currentWave);
             if (config == null)
             {
                 Debug.LogWarning("[WaveSpawner] No wave config assigned.");
@@ -116,8 +127,6 @@ namespace Game.Core
         private void HandleDeath(DeathArgs e)
         {
             if (!liveEnemies.Remove(e.Entity)) return;   // not one of ours, ignore
-
-            Debug.Log($"[WaveSpawner] {liveEnemies.Count} left in wave {stateMachine.CurrentWave}");
 
             if (liveEnemies.Count == 0) stateMachine.MoveToState(GameStateId.WaveComplete);
         }

@@ -16,11 +16,14 @@ namespace Game.Core
     {
         public GameStateId Previous;
         public GameStateId Current;
+        // Wave number at the moment of the transition; only meaningful for WaveActive.
+        public int Wave;
 
-        public GameStateChangedArgs(GameStateId previous, GameStateId current)
+        public GameStateChangedArgs(GameStateId previous, GameStateId current, int wave)
         {
             Previous = previous;
             Current = current;
+            Wave = wave;
         }
     }
 }
