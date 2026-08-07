@@ -80,6 +80,10 @@ namespace Game.Movement
                 animator.SetBool(AnimParams.InCombat, true);
             }
 
+            // TODO: this ties the swing/effort SFX to the mouse click, so mashing
+            // the button stacks one sound per click rather than one per swing.
+            // Intended fix is AnimSwing/AnimEffort Animation Events on the attack
+            // clips via AnimationAudioRelay, then dropping this call.
             EventManager.RaiseHit(new HitArgs(gameObject));
 
             // Slow the player and arm the weapon hitbox for the damage window.

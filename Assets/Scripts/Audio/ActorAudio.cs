@@ -21,6 +21,9 @@ namespace Game.Audio
         private static readonly string DeathPath   = "Grunts/death";
         private static readonly string WeaponPath  = "Weapon/swing";
         private static readonly string BlockPath   = "Shield/hit";
+        // The cuts folder holds individual steps; the parent folder holds the
+        // full uncut recordings, which are too long to use as one-shots.
+        private static readonly string FootstepPath = "Footsteps/cuts";
         private const float SwingDelay = 0.03f;
 
         private static AudioClip[] s_effortClips;
@@ -28,6 +31,7 @@ namespace Game.Audio
         private static AudioClip[] s_deathClips;
         private static AudioClip[] s_swingClips;
         private static AudioClip[] s_blockClips;
+        private static AudioClip[] s_footstepClips;
 
         private AudioSource source;
 
@@ -45,6 +49,7 @@ namespace Game.Audio
             s_deathClips  = Resources.LoadAll<AudioClip>(DeathPath);
             s_swingClips  = Resources.LoadAll<AudioClip>(WeaponPath);
             s_blockClips  = Resources.LoadAll<AudioClip>(BlockPath);
+            s_footstepClips = Resources.LoadAll<AudioClip>(FootstepPath);
         }
 
         void OnEnable()
@@ -97,6 +102,15 @@ namespace Game.Audio
         public void PlayEffort()   => Play(RandomClip(s_effortClips));
 
         public void PlaySwing() => StartCoroutine(SwingRoutine());
+
+        public void PlayFootstep() => Play(RandomClip(s_footstepClips));
+
+        // Resources has no dedicated jump/land clips yet. An effort grunt reads
+        // as exertion on take-off and a footstep reads as the landing impact;
+        // swap these for real clips once they exist.
+        public void PlayJump() => Play(RandomClip(s_effortClips));
+
+        public void PlayLand() => Play(RandomClip(s_footstepClips));
 
         private IEnumerator SwingRoutine()
         {

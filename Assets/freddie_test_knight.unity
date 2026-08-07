@@ -819,6 +819,10 @@ MonoBehaviour:
   minPitch: -10
   maxPitch: 60
   rotateTarget: 1
+  diagonalTurnAngle: 35
+  turnSmooth: 8
+  firstPerson: 0
+  firstPersonHeight: 1.7
 --- !u!1001 &245107972
 PrefabInstance:
   m_ObjectHideFlags: 0
