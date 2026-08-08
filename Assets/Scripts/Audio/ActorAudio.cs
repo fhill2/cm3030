@@ -11,7 +11,7 @@ namespace Game.Audio
     /// Combat grunts are driven by EventManager OnDamage/OnDeath, filtered
     /// so only events belonging to this entity are played.
     /// Movement SFX (jump/land/footstep) are triggered via direct calls.
-    /// Effort grunts are triggered explicitly by callers (e.g. CombatDemoController).
+    /// Effort grunts are triggered by callers via PlayEffort/PlayJump.
     /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public class ActorAudio : MonoBehaviour
