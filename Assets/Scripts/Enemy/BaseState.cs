@@ -32,18 +32,12 @@ namespace Game.Enemy
         protected float patrolSpeed;
         protected float chaseSpeed;
 
-        protected float attackCooldown;
-        protected float attackWindup;
-        protected float attackActiveWindow;
-        protected float attackDamage;
-        protected DamageType damageType;
         protected bool requireLineOfSight;
 
         // ── Runtime references ───────────────────────────────────────
         protected NavMeshAgent agent;
         protected GameObject player;
-        protected Animator animator;
-        protected WeaponHitbox weaponHitbox;
+        protected WeaponCollider weaponCollider;
         protected NpcFSM FSM;
 
         /// <summary>
@@ -65,17 +59,11 @@ namespace Game.Enemy
             patrolSpeed = npc.npcPatrolSpeed;
             chaseSpeed  = npc.npcChaseSpeed;
 
-            attackCooldown     = npc.attackCooldown;
-            attackWindup       = npc.attackWindup;
-            attackActiveWindow = npc.attackActiveWindow;
-            attackDamage       = npc.attackDamage;
-            damageType         = npc.damageType;
             requireLineOfSight = npc.requireLineOfSight;
 
             agent        = npc.agent;
             player       = npc.player;
-            animator     = npc.animator;
-            weaponHitbox = npc.weaponHitbox;
+            weaponCollider = npc.weaponCollider;
             FSM          = npc;
         }
 

@@ -16,4 +16,4 @@ MonoBehaviour:
   spawnInterval: 0.5
   healthMultiplier: 1
   enemyPrefabs:
-  - {fileID: 1317598910100994657, guid: df81e9e98d3798c4eb5abd95a5c69ae2, type: 3}
+  - {fileID: 2759925646633051954, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}

@@ -6,16 +6,20 @@ using Game.Health;
 
 namespace Game.Combat
 {
+    // Physics-based melee hit detection. Lives on the weapon's blade collider.
+    // Melee arms it (BeginSwing/EndSwing) around the weapon's damage window.
+    // Damage/damageType are owned by the weapon (WeaponDef), reached through
+    // the Weapon component — this class only does hit detection.
     [RequireComponent(typeof(Collider))]
-    public class WeaponHitbox : MonoBehaviour
+    public class WeaponCollider : MonoBehaviour
     {
-        [Header("Damage")]
-        [SerializeField] private float damage = 10f;
-        [SerializeField] private DamageType damageType = DamageType.Light;
-
         private readonly HashSet<IDamageable> m_hitTargets = new();
         private readonly HashSet<Transform> m_blockedRoots = new();
         private bool m_swinging;
+
+        // The weapon's data, reached through the Weapon component on the weapon
+        // root. Null if no weapon is equipped (damage falls back to zero).
+        private WeaponDef ResolveDef() => GetComponentInParent<Weapon>()?.Def;
 
         public void BeginSwing()
         {
@@ -51,8 +55,11 @@ namespace Game.Combat
             {
                 if (m_blockedRoots.Contains(other.transform.root)) return;
                 if (!m_hitTargets.Add(damageable)) return;
-                Debug.Log($"[WeaponHitbox] {damage} damage to {other.transform.root.name}");
-                damageable.TakeDamage(damage, damageType, gameObject);
+
+                var def = ResolveDef();
+                float dmg = def != null ? def.Damage : 0f;
+                var type = def != null ? def.DamageType : DamageType.Light;
+                damageable.TakeDamage(dmg, type, gameObject);
             }
         }
     }

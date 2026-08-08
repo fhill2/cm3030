@@ -35,8 +35,8 @@ namespace Game.Movement
         [SerializeField] private bool lockCursor = true;
 
         [Header("Block")]
-        [Tooltip("ShieldBlock component on the shield. Leave empty to auto-find.")]
-        [SerializeField] private ShieldBlock shieldBlock;
+        [Tooltip("ShieldCollider component on the shield. Leave empty to auto-find.")]
+        [SerializeField] private ShieldCollider shieldCollider;
 
         protected override void Awake()
         {
@@ -48,8 +48,8 @@ namespace Game.Movement
             if (animator != null && animator.isHuman)
                 animator.stabilizeFeet = true;
 
-            if (shieldBlock == null)
-                shieldBlock = GetComponentInChildren<ShieldBlock>();
+            if (shieldCollider == null)
+                shieldCollider = GetComponentInChildren<ShieldCollider>();
 
             if (lockCursor) SetCursorLocked(true);
         }
@@ -89,7 +89,7 @@ namespace Game.Movement
             // Block stance: hold right-click to raise the shield.
             bool isBlocking = Mouse.current != null && Mouse.current.rightButton.isPressed;
             if (animator != null) animator.SetBool(AnimParams.Block, isBlocking);
-            if (shieldBlock != null) shieldBlock.IsBlocking = isBlocking;
+            if (shieldCollider != null) shieldCollider.IsBlocking = isBlocking;
         }
 
         // Camera-relative strafe movement. Does NOT rotate the character —

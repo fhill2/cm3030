@@ -60,17 +60,9 @@ namespace Game.Enemy
         public float npcChaseSpeed = 3.5f;
 
         // ── Attack tuning ────────────────────────────────────────────
+        // Attack timing/damage now live on the equipped weapon (WeaponDef) and are
+        // executed by Melee. The FSM only keeps AI-side attack knobs here.
         [Header("Attack")]
-        [Tooltip("Shortest gap between swings.")]
-        public float attackCooldown = 1.5f;
-        [Tooltip("Delay after the swing starts before the weapon hitbox is armed.")]
-        public float attackWindup = 0.3f;
-        [Tooltip("How long the weapon hitbox stays armed (the damage window).")]
-        public float attackActiveWindow = 0.3f;
-        [Tooltip("Unused if a WeaponHitbox is assigned — damage comes from the hitbox.")]
-        public float attackDamage = 10f;
-        [Tooltip("Damage type passed to IDamageable.TakeDamage.")]
-        public DamageType damageType = DamageType.Light;
         [Tooltip("Require an unobstructed ray to the player before applying damage.")]
         public bool requireLineOfSight = true;
 
@@ -86,8 +78,7 @@ namespace Game.Enemy
         // ── Runtime references (assigned in Start, hidden from inspector) ──
         [HideInInspector] public NavMeshAgent agent;
         [HideInInspector] public GameObject player;
-        [HideInInspector] public Animator animator;
-        [HideInInspector] public WeaponHitbox weaponHitbox; // on the enemy's weapon/hand
+        [HideInInspector] public WeaponCollider weaponCollider; // on the enemy's weapon/hand
 
         // ── Runtime flags (set by event handlers, read by states) ────
         [HideInInspector] public bool playerAlive = true;
@@ -99,9 +90,8 @@ namespace Game.Enemy
         void Start()
         {
             agent = GetComponent<NavMeshAgent>();
-            animator = GetComponentInChildren<Animator>();
             player = GameObject.FindGameObjectWithTag("Player");
-            weaponHitbox = GetComponentInChildren<WeaponHitbox>();
+            weaponCollider = GetComponentInChildren<WeaponCollider>();
 
             BaseState startState;
             switch (initialState)

@@ -1,29 +1,15 @@
 using System.Collections;
 using UnityEngine;
-using Game.Shared;
-using Game.Core;
-using Game.Health;
+using Game.Combat;
 
 namespace Game.Enemy
 {
-    /// <summary>
-    /// Attack behaviour: stop, face the player, swing on a cooldown, and apply
-    /// damage after a windup delay. Exits to ChaseState when the player leaves
-    /// <c>attackRange</c>, dies, or line of sight is blocked (e.g. player ducks
-    /// behind cover) — the enemy re-chases to reposition rather than swinging
-    /// blindly through a wall.
-    ///
-    /// Integration:
-    ///   - <see cref="AnimParams.Attack"/>       trigger on the animator
-    ///   - <see cref="EventManager.RaiseHit"/>   plays effort grunt + swing SFX
-    ///   - <see cref="IDamageable.TakeDamage"/>  on the player after windup
-    /// </summary>
     public class AttackState : BaseState
     {
         private const float FaceSpeed = 540f; // degrees per second
 
-        private Coroutine attackRoutine;
-        private float lastAttackTime = float.NegativeInfinity;
+        private Melee melee;
+        private Coroutine driverRoutine;
 
         public override void EnterState(NpcFSM npc)
         {
@@ -35,8 +21,8 @@ namespace Game.Enemy
                 agent.updateRotation = false; // we face the player manually
             }
 
-            lastAttackTime = float.NegativeInfinity;
-            attackRoutine = npc.StartCoroutine(AttackLoop());
+            melee = FSM.GetComponent<Melee>();
+            driverRoutine = npc.StartCoroutine(AttackDriver());
         }
 
         public override void UpdateState(NpcFSM npc)
@@ -47,10 +33,10 @@ namespace Game.Enemy
 
         public override void ExitState(NpcFSM npc)
         {
-            if (attackRoutine != null)
+            if (driverRoutine != null)
             {
-                npc.StopCoroutine(attackRoutine);
-                attackRoutine = null;
+                npc.StopCoroutine(driverRoutine);
+                driverRoutine = null;
             }
 
             if (agent != null)
@@ -60,9 +46,9 @@ namespace Game.Enemy
             }
         }
 
-        // ── Attack loop ──────────────────────────────────────────────
-
-        private IEnumerator AttackLoop()
+        // Polls the Melee component each tick; it gates the rate internally so the
+        // enemy swings as soon as the cooldown allows. No timing lives here.
+        private IEnumerator AttackDriver()
         {
             while (true)
             {
@@ -74,25 +60,7 @@ namespace Game.Enemy
                     yield break;
                 }
 
-                if (Time.time - lastAttackTime < EventManager.AttackWindow)
-                {
-                    yield return null;
-                    continue;
-                }
-
-                // Swing.
-                lastAttackTime = Time.time;
-                if (animator != null) animator.SetTrigger(AnimParams.Attack);
-                EventManager.RaiseHit(new HitArgs(FSM.gameObject));
-
-                // Windup: blade not yet dangerous.
-                yield return new WaitForSeconds(attackWindup);
-
-                // Active window: arm the weapon hitbox. Contact with the player's
-                // body hitbox deals damage via WeaponHitbox -> IDamageable.
-                if (weaponHitbox != null) weaponHitbox.BeginSwing();
-                yield return new WaitForSeconds(attackActiveWindow);
-                if (weaponHitbox != null) weaponHitbox.EndSwing();
+                if (melee != null) melee.TryAttack();
 
                 yield return null;
             }

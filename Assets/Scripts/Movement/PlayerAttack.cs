@@ -1,13 +1,14 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Shared;
-using Game.Core;
-using Game.Health;
 using Game.Combat;
 
 namespace Game.Movement
 {
+    // Player attack input + combo bookkeeping. The actual swing (rate, windup,
+    // damage window, blade arming) is delegated to Melee so the timing is shared
+    // with the enemy. This class only decides WHEN (left click + the combo/
+    // grounded rules) and feeds the combo step to the animator.
     public class PlayerAttack : MonoBehaviour
     {
         [Header("References")]
@@ -24,12 +25,6 @@ namespace Game.Movement
         [Tooltip("Stop the player swinging while in mid-air.")]
         [SerializeField] private bool requireGrounded = true;
 
-        [Header("Hitbox")]
-        [Tooltip("The weapon hitbox armed during a swing. Leave empty for animation-only.")]
-        [SerializeField] private WeaponHitbox weaponHitbox;
-        [Tooltip("How long the weapon hitbox stays armed (the damage window).")]
-        [SerializeField] private float swingWindow = 0.5f;
-
         [Header("Combat Idle")]
         [Tooltip("Seconds after the last swing before the stance relaxes back to Idle_Ready.")]
         [SerializeField] private float idleTimeout = 5f;
@@ -40,16 +35,35 @@ namespace Game.Movement
 
         private CharacterController controller;
         private PlayerMovement movement;
+        private Melee melee;
         private int comboStep;
         private float lastAttackTime = -999f;
         private bool inCombat;
-        private Coroutine swingRoutine;
 
         void Awake()
         {
             controller = GetComponent<CharacterController>();
             movement = GetComponent<PlayerMovement>();
+            melee = GetComponent<Melee>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
+        }
+
+        void OnEnable()
+        {
+            if (melee != null)
+            {
+                melee.OnAttackStart += OnSwingStart;
+                melee.OnAttackEnd += OnSwingEnd;
+            }
+        }
+
+        void OnDisable()
+        {
+            if (melee != null)
+            {
+                melee.OnAttackStart -= OnSwingStart;
+                melee.OnAttackEnd -= OnSwingEnd;
+            }
         }
 
         void Update()
@@ -63,43 +77,39 @@ namespace Game.Movement
                 animator.SetBool(AnimParams.InCombat, false);
             }
 
-            // Let the chain lapse if they stopped clicking, so the next swing
+            // Let the chain lapse if they stopped clicking.
             if (comboStep > 0 && Time.time - lastAttackTime > comboResetTime)
                 comboStep = 0;
 
             if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame) return;
-            if (Time.time - lastAttackTime < EventManager.AttackWindow) return;
             if (requireGrounded && controller != null && !controller.isGrounded) return;
+
+            // Feed the combo step to the animator, then ask Melee to swing. It owns
+            // the rate/timing; we only advance the combo if it actually did.
             animator.SetInteger(AnimParams.ComboStep, comboStep);
-            animator.SetTrigger(AnimParams.Attack);
-
-            // Entering/refreshing combat raises the idle stance to Idle_Battle.
-            if (!inCombat)
+            if (melee != null && melee.TryAttack())
             {
-                inCombat = true;
-                animator.SetBool(AnimParams.InCombat, true);
+                lastAttackTime = Time.time;
+                comboStep = (comboStep + 1) % Mathf.Max(1, comboLength);
+
+                // Entering/refreshing combat raises the idle stance to Idle_Battle.
+                if (!inCombat)
+                {
+                    inCombat = true;
+                    animator.SetBool(AnimParams.InCombat, true);
+                }
             }
-
-            // TODO: this ties the swing/effort SFX to the mouse click, so mashing
-            // the button stacks one sound per click rather than one per swing.
-            // Intended fix is AnimSwing/AnimEffort Animation Events on the attack
-            // clips via AnimationAudioRelay, then dropping this call.
-            EventManager.RaiseHit(new HitArgs(gameObject));
-
-            // Slow the player and arm the weapon hitbox for the damage window.
-            if (swingRoutine != null) StopCoroutine(swingRoutine);
-            swingRoutine = StartCoroutine(SwingRoutine());
-
-            lastAttackTime = Time.time;
-            comboStep = (comboStep + 1) % Mathf.Max(1, comboLength);
         }
 
-        private IEnumerator SwingRoutine()
+        // Melee fires these at the start/end of the swing so the player slows down
+        // for its duration without any timing logic living here.
+        private void OnSwingStart()
         {
             if (movement != null) movement.speedScale = swingSlowFactor;
-            if (weaponHitbox != null) weaponHitbox.BeginSwing();
-            yield return new WaitForSeconds(swingWindow);
-            if (weaponHitbox != null) weaponHitbox.EndSwing();
+        }
+
+        private void OnSwingEnd()
+        {
             if (movement != null) movement.speedScale = 1f;
         }
     }

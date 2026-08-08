@@ -8,10 +8,10 @@ namespace Game.Combat
     ///
     /// The shield collider must be tagged "Shield" and be a trigger Collider on
     /// a child of this GameObject (or this GameObject itself).
-    /// WeaponHitbox checks for the "Shield" tag to detect blocks.
+    /// WeaponCollider checks for the "Shield" tag to detect blocks.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public class ShieldBlock : MonoBehaviour
+    public class ShieldCollider : MonoBehaviour
     {
         private Collider shieldCollider;
 
@@ -26,7 +26,7 @@ namespace Game.Combat
                 if (shieldCollider != null)
                 {
                     shieldCollider.enabled = value;
-                    Debug.Log($"[ShieldBlock] {gameObject.name} IsBlocking={value}");
+                    Debug.Log($"[ShieldCollider] {gameObject.name} IsBlocking={value}");
                 }
             }
         }
@@ -37,11 +37,11 @@ namespace Game.Combat
             if (shieldCollider != null)
             {
                 shieldCollider.enabled = false;
-                Debug.Log($"[ShieldBlock] {gameObject.name} initialized — collider: {shieldCollider.GetType().Name}, tag='{shieldCollider.tag}', isTrigger={shieldCollider.isTrigger}");
+                Debug.Log($"[ShieldCollider] {gameObject.name} initialized — collider: {shieldCollider.GetType().Name}, tag='{shieldCollider.tag}', isTrigger={shieldCollider.isTrigger}");
             }
             else
             {
-                Debug.LogError($"[ShieldBlock] {gameObject.name} — no Collider component found on this GameObject!");
+                Debug.LogError($"[ShieldCollider] {gameObject.name} — no Collider component found on this GameObject!");
             }
         }
     }
