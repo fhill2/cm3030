@@ -17,3 +17,5 @@ MonoBehaviour:
   healthMultiplier: 1.6
   enemyPrefabs:
   - {fileID: 2759925646633051954, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
+  weaponOverride: {fileID: 1523444829220646909, guid: a29db9773a81744af806479985625ee3, type: 3}
+  shieldOverride: {fileID: 1895577389145918011, guid: 0a2edd723ab434504af00ec21d4ecaf8, type: 3}

@@ -21,9 +21,17 @@ namespace Game.Core
         [Header("Enemies")]
         [SerializeField] private GameObject[] enemyPrefabs;    // picked from at random
 
+        [Header("Equipment Override (optional)")]
+        [Tooltip("Weapon prefab to equip on all enemies in this wave. Leave empty to use the enemy's default.")]
+        [SerializeField] private GameObject weaponOverride;
+        [Tooltip("Shield prefab to equip on all enemies in this wave. Leave empty to use the enemy's default.")]
+        [SerializeField] private GameObject shieldOverride;
+
         public int EnemyCount => enemyCount;
         public float SpawnInterval => spawnInterval;
         public float HealthMultiplier => healthMultiplier;
+        public GameObject WeaponOverride => weaponOverride;
+        public GameObject ShieldOverride => shieldOverride;
 
         // Random pick, so a wave can mix enemy types once Munya has more than one.
         public GameObject RandomEnemyPrefab()

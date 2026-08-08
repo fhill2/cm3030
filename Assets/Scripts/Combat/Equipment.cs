@@ -29,7 +29,12 @@ namespace Game.Combat
         private GameObject weaponInstance;
         private GameObject shieldInstance;
 
-        void Awake()
+        // Allow external code (e.g. WaveSpawner) to override the prefabs
+        // before Start() loads them.
+        public GameObject WeaponPrefab { get => weaponPrefab; set => weaponPrefab = value; }
+        public GameObject ShieldPrefab { get => shieldPrefab; set => shieldPrefab = value; }
+
+        void Start()
         {
             if (weaponPrefab != null && weaponSocket != null)
             {

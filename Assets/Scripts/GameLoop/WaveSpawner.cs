@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Health;
+using Game.Combat;
 
 namespace Game.Core
 {
@@ -100,6 +101,19 @@ namespace Game.Core
             // Scale difficulty by bumping health above whatever the prefab has.
             EnemyHealth health = enemy.GetComponent<EnemyHealth>();
             if (health != null) health.ApplyHealthMultiplier(config.HealthMultiplier);
+
+            // Override equipment from the wave config — gives each wave control
+            // over what weapon/shield the spawned enemies wield. Must happen before
+            // Equipment.Start() (which runs next frame), so the override takes effect.
+            if (config.WeaponOverride != null || config.ShieldOverride != null)
+            {
+                var equipment = enemy.GetComponent<Equipment>();
+                if (equipment != null)
+                {
+                    if (config.WeaponOverride != null) equipment.WeaponPrefab = config.WeaponOverride;
+                    if (config.ShieldOverride != null) equipment.ShieldPrefab = config.ShieldOverride;
+                }
+            }
 
             liveEnemies.Add(enemy);
         }
