@@ -2,17 +2,73 @@ using UnityEngine;
 
 namespace Game.Combat
 {
-    [CreateAssetMenu(fileName = "Weapon", menuName = "Equipment/Weapon")]
-    public class WeaponDef : ScriptableObject
+    /// <summary>
+    /// Sockets equipment prefabs (weapon, shield) onto the actor's hand bones
+    /// at startup. Offsets are read from the WeaponDef / ShieldDef .asset files
+    /// so each weapon/shield carries its own grip position.
+    /// Enable Live Tuning during Play to adjust offsets in real-time.
+    /// </summary>
+    public class Equipment : MonoBehaviour
     {
-        [Header("Attributes")]
-        [Tooltip("Damage dealt per hit.")]
-        [SerializeField] private float damage = 10f;
+        [Header("Weapon")]
+        [Tooltip("Weapon prefab to instantiate on the weapon hand at startup.")]
+        [SerializeField] private GameObject weaponPrefab;
+        [Tooltip("The hand bone to parent the weapon to.")]
+        [SerializeField] private Transform weaponSocket;
 
-        [Tooltip("Full swing duration in seconds — the blade stays armed for this long, and the next attack can't start until it elapses.")]
-        [SerializeField] private float speed = 3f;
+        [Header("Shield")]
+        [Tooltip("Shield prefab to instantiate on the shield hand at startup (optional).")]
+        [SerializeField] private GameObject shieldPrefab;
+        [Tooltip("The hand bone to parent the shield to.")]
+        [SerializeField] private Transform shieldSocket;
 
-        public float Damage => damage;
-        public float Speed => speed;
+        [Header("Tuning")]
+        [Tooltip("Re-read offsets from the .asset every frame for live tuning during Play. Uncheck for production.")]
+        [SerializeField] private bool liveTuning;
+
+        private GameObject weaponInstance;
+        private GameObject shieldInstance;
+
+        void Awake()
+        {
+            if (weaponPrefab != null && weaponSocket != null)
+            {
+                weaponInstance = Instantiate(weaponPrefab, weaponSocket);
+                ApplyWeaponOffset();
+            }
+
+            if (shieldPrefab != null && shieldSocket != null)
+            {
+                shieldInstance = Instantiate(shieldPrefab, shieldSocket);
+                ApplyShieldOffset();
+            }
+        }
+
+        void LateUpdate()
+        {
+            if (!liveTuning) return;
+            if (weaponInstance != null) ApplyWeaponOffset();
+            if (shieldInstance != null) ApplyShieldOffset();
+        }
+
+        private void ApplyWeaponOffset()
+        {
+            var weapon = weaponInstance.GetComponent<Weapon>();
+            if (weapon != null && weapon.Def != null)
+            {
+                weaponInstance.transform.localPosition = weapon.Def.PositionOffset;
+                weaponInstance.transform.localRotation = Quaternion.Euler(weapon.Def.RotationOffset);
+            }
+        }
+
+        private void ApplyShieldOffset()
+        {
+            var shield = shieldInstance.GetComponent<Shield>();
+            if (shield != null && shield.Def != null)
+            {
+                shieldInstance.transform.localPosition = shield.Def.PositionOffset;
+                shieldInstance.transform.localRotation = Quaternion.Euler(shield.Def.RotationOffset);
+            }
+        }
     }
 }
