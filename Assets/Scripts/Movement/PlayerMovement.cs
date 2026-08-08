@@ -48,10 +48,15 @@ namespace Game.Movement
             if (animator != null && animator.isHuman)
                 animator.stabilizeFeet = true;
 
+            if (lockCursor) SetCursorLocked(true);
+        }
+
+        protected void Start()
+        {
+            // Resolve the ShieldCollider AFTER Equipment.Start() has loaded the shield.
+            // If we do this in Awake, the shield doesn't exist yet (Equipment loads it in Start).
             if (shieldCollider == null)
                 shieldCollider = GetComponentInChildren<ShieldCollider>();
-
-            if (lockCursor) SetCursorLocked(true);
         }
 
         protected override void Update()

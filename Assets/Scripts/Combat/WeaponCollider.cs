@@ -33,14 +33,6 @@ namespace Game.Combat
             var col = GetComponent<Collider>();
             var overlaps = Physics.OverlapBox(col.bounds.center, col.bounds.extents, transform.rotation);
 
-            if (overlaps.Length > 0)
-            {
-                string info = "";
-                foreach (var o in overlaps)
-                    info += $"'{o.name}'(tag:{o.tag}) ";
-                Debug.Log($"[WC] blade overlaps: {info}");
-            }
-
             foreach (var other in overlaps)
             {
                 TryHit(other);
@@ -56,11 +48,8 @@ namespace Game.Combat
 
             if (other.CompareTag("Shield"))
             {
-                if (m_blockedRoots.Add(other.transform.root))
-                {
-                    EventManager.RaiseBlock(new BlockArgs(other.transform.root.gameObject, gameObject));
-                    m_resultRegistered = true;
-                }
+                if (other.enabled)
+                    RegisterBlock(other.transform.root);
                 return;
             }
 
@@ -68,6 +57,13 @@ namespace Game.Combat
             if (damageable != null && damageable.IsAlive)
             {
                 if (m_blockedRoots.Contains(other.transform.root)) return;
+
+                if (IsBlockedByShield(other.transform.root))
+                {
+                    RegisterBlock(other.transform.root);
+                    return;
+                }
+
                 if (!m_hitTargets.Add(damageable)) return;
 
                 var def = ResolveDef();
@@ -75,6 +71,31 @@ namespace Game.Combat
                 damageable.TakeDamage(dmg, DamageType.Melee, gameObject);
                 m_resultRegistered = true;
             }
+        }
+
+        private void RegisterBlock(Transform root)
+        {
+            if (m_blockedRoots.Add(root))
+            {
+                EventManager.RaiseBlock(new BlockArgs(root.gameObject, gameObject));
+                m_resultRegistered = true;
+            }
+        }
+
+        private bool IsBlockedByShield(Transform targetRoot)
+        {
+            var bladeCol = GetComponent<Collider>();
+            if (bladeCol == null) return false;
+
+            foreach (var col in targetRoot.GetComponentsInChildren<Collider>())
+            {
+                if (!col.CompareTag("Shield")) continue;
+                if (!col.enabled) continue;
+
+                if (bladeCol.bounds.Intersects(col.bounds))
+                    return true;
+            }
+            return false;
         }
     }
 }
