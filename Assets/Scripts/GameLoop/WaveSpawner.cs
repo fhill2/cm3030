@@ -16,7 +16,6 @@ namespace Game.Core
     public class WaveSpawner : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private Transform player;
         [Tooltip("Parent whose direct children are the spawn points.")]
         [SerializeField] private Transform spawnPointRoot;
 
@@ -101,21 +100,6 @@ namespace Game.Core
             // Scale difficulty by bumping health above whatever the prefab has.
             EnemyHealth health = enemy.GetComponent<EnemyHealth>();
             if (health != null) health.ApplyHealthMultiplier(config.HealthMultiplier);
-
-            // Point the placeholder movement at the player.
-            ChaseTarget chase = enemy.GetComponent<ChaseTarget>();
-            if (chase == null)
-            {
-                Debug.LogWarning("[WaveSpawner] Enemy prefab has no ChaseTarget, it won't move.");
-            }
-            else if (player == null)
-            {
-                Debug.LogWarning("[WaveSpawner] Player reference is empty, enemies won't move.");
-            }
-            else
-            {
-                chase.SetTarget(player);
-            }
 
             liveEnemies.Add(enemy);
         }
