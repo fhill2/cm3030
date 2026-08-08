@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0740d4442ed4c499d01e4e745a657e, type: 3}
   m_Name: axe
   m_EditorClassIdentifier: 
-  damage: 10
-  speed: 3
-  positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  damage: 7
+  speed: 1.5
+  positionOffset: {x: 0.03, y: 0.09, z: 0.2}
+  rotationOffset: {x: 180, y: 0, z: 60}
