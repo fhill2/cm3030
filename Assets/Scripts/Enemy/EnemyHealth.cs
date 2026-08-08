@@ -1,20 +1,28 @@
 using UnityEngine;
-using Game.Health;
 
-namespace Game.Enemy
+namespace Game.Health
 {
-    /// <summary>
-    /// Enemy health. Inherits all damage/death handling from <see cref="HealthSystem"/>,
-    /// which already implements <see cref="Game.Shared.IDamageable"/>, fires the
-    /// OnDamage/OnDeath events through <see cref="Game.Core.EventManager"/>, and
-    /// plays the Hit/Die animation triggers.
-    /// Add enemy-specific death logic (score, drops, wave manager notify) in OnDeath.
-    /// </summary>
+    // Health for enemies. Everything is inherited from HealthSystem —
+    // we add cleanup on death, and a way for the spawner to scale
+    // difficulty per wave.
     public class EnemyHealth : HealthSystem
     {
+        [SerializeField] private float destroyDelay = 2f;   // time for the death animation to play
+
+        // Called by WaveSpawner straight after Instantiate. Has to run before
+        // any damage lands, which it does, because Awake has already set
+        // currentHealth from maxHealth by this point.
+        public void ApplyHealthMultiplier(float multiplier)
+        {
+            if (multiplier <= 0f) return;
+
+            maxHealth *= multiplier;
+            currentHealth = maxHealth;
+        }
+
         protected override void OnDeath()
         {
-            Debug.Log($"[EnemyHealth] Enemy died at {gameObject.name}");
+            Destroy(gameObject, destroyDelay);
         }
     }
 }
