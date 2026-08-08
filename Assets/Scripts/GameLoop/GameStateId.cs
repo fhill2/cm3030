@@ -26,4 +26,15 @@ namespace Game.Core
             Wave = wave;
         }
     }
+
+    // Sent when a wave is cleared; Wave is the number that was just finished.
+    public struct WaveClearedArgs
+    {
+        public readonly int Wave;
+
+        public WaveClearedArgs(int wave)
+        {
+            Wave = wave;
+        }
+    }
 }

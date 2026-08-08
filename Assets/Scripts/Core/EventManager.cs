@@ -28,12 +28,14 @@ namespace Game.Core
         public delegate void HitHandler(HitArgs e);
         public delegate void BlockHandler(BlockArgs e);
         public delegate void GameStateChangedHandler(GameStateChangedArgs e);
+        public delegate void WaveClearedHandler(WaveClearedArgs e);
 
         public static event DamageHandler OnDamage;
         public static event DeathHandler OnDeath;
         public static event HitHandler OnHit;
         public static event BlockHandler OnBlock;
         public static event GameStateChangedHandler OnGameStateChanged;
+        public static event WaveClearedHandler OnWaveCleared;
 
         // ── Raise helpers (the only place events are actually invoked) ───────
         public static void RaiseDamage(DamageArgs e) => OnDamage?.Invoke(e);
@@ -41,6 +43,7 @@ namespace Game.Core
         public static void RaiseHit(HitArgs e) => OnHit?.Invoke(e);
         public static void RaiseBlock(BlockArgs e) => OnBlock?.Invoke(e);
         public static void RaiseGameStateChanged(GameStateChangedArgs e) => OnGameStateChanged?.Invoke(e);
+        public static void RaiseWaveCleared(WaveClearedArgs e) => OnWaveCleared?.Invoke(e);
 
         // Clears every subscriber. Call on scene load so we don't keep
         // references to objects that no longer exist.
@@ -51,6 +54,7 @@ namespace Game.Core
             OnHit = null;
             OnBlock = null;
             OnGameStateChanged = null;
+            OnWaveCleared = null;
         }
     }
 }

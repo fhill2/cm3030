@@ -42,6 +42,22 @@ namespace Game.Core
             MoveToState(Menu);
         }
 
+        private void OnEnable()
+        {
+            EventManager.OnWaveCleared += HandleWaveCleared;
+        }
+
+        private void OnDisable()
+        {
+            EventManager.OnWaveCleared -= HandleWaveCleared;
+        }
+
+        // WaveSpawner reports a clear via the bus; the GSM owns the transition.
+        private void HandleWaveCleared(WaveClearedArgs e)
+        {
+            MoveToState(GameStateId.WaveComplete);
+        }
+
         private void Update()
         {
             if (CurrentState != null) CurrentState.UpdateState();

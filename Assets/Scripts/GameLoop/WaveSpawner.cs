@@ -16,9 +16,6 @@ namespace Game.Core
     public class WaveSpawner : MonoBehaviour
     {
         [Header("References")]
-        // GameStateMachine lives on the same GameManager object, so it is
-        // resolved in Awake rather than wired as a serialized reference.
-        private GameStateMachine stateMachine;
         [SerializeField] private Transform player;
         [SerializeField] private Transform[] spawnPoints;
 
@@ -33,11 +30,6 @@ namespace Game.Core
 
         // Wave number captured from the GameStateChanged payload (GSM owns it).
         private int currentWave;
-
-        private void Awake()
-        {
-            stateMachine = GetComponent<GameStateMachine>();
-        }
 
         private void OnEnable()
         {
@@ -128,7 +120,7 @@ namespace Game.Core
         {
             if (!liveEnemies.Remove(e.Entity)) return;   // not one of ours, ignore
 
-            if (liveEnemies.Count == 0) stateMachine.MoveToState(GameStateId.WaveComplete);
+            if (liveEnemies.Count == 0) EventManager.RaiseWaveCleared(new WaveClearedArgs(currentWave));
         }
 
         // Waves past the end of the array reuse the last one, so the game
