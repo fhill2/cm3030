@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f08d799d6bcfa4372b54b0d75dc4cd65, type: 3}
   m_Name: Shield
   m_EditorClassIdentifier: 
-  positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  positionOffset: {x: 0.05, y: -0.05, z: 0.05}
+  rotationOffset: {x: 90, y: 0, z: 0}
