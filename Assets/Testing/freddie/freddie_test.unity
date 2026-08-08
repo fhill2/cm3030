@@ -5895,6 +5895,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1802266913904256959, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
+      propertyPath: liveTuning
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1802266913904256959, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
+      propertyPath: shieldPrefab
+      value: 
+      objectReference: {fileID: 1895577389145918011, guid: 0a2edd723ab434504af00ec21d4ecaf8, type: 3}
+    - target: {fileID: 1802266913904256959, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
+      propertyPath: weaponPrefab
+      value: 
+      objectReference: {fileID: 1523444829220646909, guid: a29db9773a81744af806479985625ee3, type: 3}
     - target: {fileID: 7074579765929722371, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
       propertyPath: m_LocalPosition.x
       value: 11.42
