@@ -90,9 +90,11 @@ namespace Game.Enemy
             if (dist < 0.01f) return true;
 
             Vector3 dir = delta / dist;
-            if (Physics.Raycast(from, dir, out RaycastHit hit, dist))
+            if (Physics.Raycast(from, dir, out RaycastHit hit, dist, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                 return hit.transform == player.transform
-                    || hit.transform.IsChildOf(player.transform);
+                    || hit.transform.IsChildOf(player.transform)
+                    || hit.transform == FSM.transform
+                    || hit.transform.IsChildOf(FSM.transform);
 
             return true;
         }
