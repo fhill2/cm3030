@@ -17,7 +17,11 @@ namespace Game.Core
     {
         [Header("References")]
         [SerializeField] private Transform player;
-        [SerializeField] private Transform[] spawnPoints;
+        [Tooltip("Parent whose direct children are the spawn points.")]
+        [SerializeField] private Transform spawnPointRoot;
+
+        // Runtime cache of the spawn points, collected from spawnPointRoot in Awake.
+        private Transform[] spawnPoints;
 
         [Header("Waves")]
         [SerializeField] private WaveConfig[] waves;
@@ -30,6 +34,14 @@ namespace Game.Core
 
         // Wave number captured from the GameStateChanged payload (GSM owns it).
         private int currentWave;
+
+        private void Awake()
+        {
+            if (spawnPointRoot == null) return;
+            spawnPoints = new Transform[spawnPointRoot.childCount];
+            for (int i = 0; i < spawnPointRoot.childCount; i++)
+                spawnPoints[i] = spawnPointRoot.GetChild(i);
+        }
 
         private void OnEnable()
         {
