@@ -20,6 +20,8 @@ namespace Game.Combat
         {
             if (animator == null) animator = GetComponentInChildren<Animator>();
         }
+        private const float Pullback = 0.2f; // blade pulled back, not yet dangerous
+
         public bool TryAttack()
         {
             if (equipped == null) equipped = GetComponentInChildren<Weapon>();
@@ -41,10 +43,12 @@ namespace Game.Combat
             EventManager.RaiseHit(new HitArgs(gameObject));
             OnAttackStart?.Invoke();
 
-            // The blade is armed for the full swing duration (speed).
-            // Per-swing dedup in WeaponCollider ensures each target is hit once.
+            // Pullback: blade drawn back, not yet dangerous.
+            yield return new WaitForSeconds(Pullback);
+
+            // Active swing: arm the blade for the remaining duration.
             if (weaponCollider != null) weaponCollider.BeginSwing();
-            yield return new WaitForSeconds(def.Speed);
+            yield return new WaitForSeconds(def.Speed - Pullback);
             if (weaponCollider != null) weaponCollider.EndSwing();
 
             OnAttackEnd?.Invoke();
