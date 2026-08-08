@@ -130,7 +130,7 @@ namespace Game.UI
         void PlayerDamage()
         {
             playerHealth?.TakeDamage(playerHealth.MaxHealth * DamageRatio,
-                                     DamageType.Heavy, gameObject);
+                                     DamageType.Melee, gameObject);
         }
 
         void PlayerDeath() => playerHealth?.Kill();
@@ -144,7 +144,7 @@ namespace Game.UI
         void EnemyDamage()
         {
             enemyHealth?.TakeDamage(enemyHealth.MaxHealth * DamageRatio,
-                                    DamageType.Heavy, gameObject);
+                                    DamageType.Melee, gameObject);
         }
 
         void EnemyDeath() => enemyHealth?.Kill();

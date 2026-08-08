@@ -8,13 +8,11 @@ namespace Game.Combat
 {
     public class Melee : MonoBehaviour
     {
-        private Weapon equipped;                      // the equipped weapon (holds the WeaponDef)
-        private WeaponCollider weaponCollider;        // the blade collider, armed during the active window
+        private Weapon equipped;
+        private WeaponCollider weaponCollider;
         [SerializeField] private Animator animator;
         private float lastAttackTime = float.NegativeInfinity;
 
-        // Local hooks so actors can react to a swing without owning any timing
-        // (e.g. the player slows movement for the duration of the swing).
         public event System.Action OnAttackStart;
         public event System.Action OnAttackEnd;
 
@@ -22,16 +20,13 @@ namespace Game.Combat
         {
             if (animator == null) animator = GetComponentInChildren<Animator>();
         }
-
         public bool TryAttack()
         {
-            // Lazily resolve the equipped weapon + blade collider (children of this actor).
             if (equipped == null) equipped = GetComponentInChildren<Weapon>();
             if (weaponCollider == null) weaponCollider = GetComponentInChildren<WeaponCollider>();
             if (equipped == null || equipped.Def == null) return false;
 
-            float cooldown = equipped.Def.AttackCooldown;
-            if (Time.time - lastAttackTime < cooldown) return false;
+            if (Time.time - lastAttackTime < equipped.Def.Speed) return false;
 
             lastAttackTime = Time.time;
             StartCoroutine(SwingRoutine());
@@ -46,11 +41,10 @@ namespace Game.Combat
             EventManager.RaiseHit(new HitArgs(gameObject));
             OnAttackStart?.Invoke();
 
-            yield return new WaitForSeconds(def.Windup);
-
-            // Active window: arm the blade collider so contact deals damage.
+            // The blade is armed for the full swing duration (speed).
+            // Per-swing dedup in WeaponCollider ensures each target is hit once.
             if (weaponCollider != null) weaponCollider.BeginSwing();
-            yield return new WaitForSeconds(def.ActiveWindow);
+            yield return new WaitForSeconds(def.Speed);
             if (weaponCollider != null) weaponCollider.EndSwing();
 
             OnAttackEnd?.Invoke();

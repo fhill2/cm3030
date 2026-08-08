@@ -8,7 +8,7 @@ using Game.Health;
 public class SwingTester : MonoBehaviour
 {
     [SerializeField] private float damage = 50f;
-    [SerializeField] private DamageType damageType = DamageType.Light;
+    [SerializeField] private DamageType damageType = DamageType.Melee;
     [SerializeField] private float range = 2.5f;
     [SerializeField] private float radius = 1.2f;
     [SerializeField] private float heightOffset = 1f;

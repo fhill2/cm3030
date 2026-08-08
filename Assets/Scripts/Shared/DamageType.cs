@@ -2,8 +2,7 @@ namespace Game.Shared
 {
     public enum DamageType
     {
-        Light,
-        Heavy,
+        Melee,
         Magic
     }
 }

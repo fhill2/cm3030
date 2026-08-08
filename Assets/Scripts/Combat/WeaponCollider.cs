@@ -58,8 +58,7 @@ namespace Game.Combat
 
                 var def = ResolveDef();
                 float dmg = def != null ? def.Damage : 0f;
-                var type = def != null ? def.DamageType : DamageType.Light;
-                damageable.TakeDamage(dmg, type, gameObject);
+                damageable.TakeDamage(dmg, DamageType.Melee, gameObject);
             }
         }
     }
