@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a641c304ccfc5884786ff22255f5c282, type: 3}
   m_Name: Wave03
   m_EditorClassIdentifier: 
-  enemyCount: 15
+  enemyCount: 3
   spawnInterval: 0.5
   healthMultiplier: 1.6
   enemyPrefabs:

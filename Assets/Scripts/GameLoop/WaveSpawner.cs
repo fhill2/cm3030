@@ -29,6 +29,13 @@ namespace Game.Core
         [Header("Spawning")]
         [SerializeField] private float spawnRadius = 2f;   // scatter around the point so they don't stack
 
+        [Header("Patrol Paths")]
+        [Tooltip("Parent of patrol path groups. Each direct child is a path (e.g. Patrol1), and ITS children are the waypoints. Enemies cycle through paths in order.")]
+        [SerializeField] private Transform patrolPathsRoot;
+
+        // Which patrol path to assign next (cycles through patrolPathsRoot's children).
+        private int patrolPathIndex;
+
         // Enemies from the current wave that are still alive.
         private readonly List<GameObject> liveEnemies = new List<GameObject>();
 
@@ -65,6 +72,7 @@ namespace Game.Core
         private IEnumerator SpawnWave()
         {
             liveEnemies.Clear();
+            patrolPathIndex = 0;
 
             WaveConfig config = ConfigForWave(currentWave);
             if (config == null)
@@ -115,6 +123,9 @@ namespace Game.Core
                 }
             }
 
+            // Assign an individual patrol path to this enemy.
+            AssignPatrolPath(enemy);
+
             liveEnemies.Add(enemy);
         }
 
@@ -124,6 +135,28 @@ namespace Game.Core
         {
             Vector2 offset = Random.insideUnitCircle * spawnRadius;
             return point.position + new Vector3(offset.x, 0f, offset.y);
+        }
+
+        // Assigns the next patrol path's waypoints to the enemy's NpcFSM.
+        // Cycles through patrolPathsRoot's children: enemy 1 → Patrol1, enemy 2 → Patrol2, etc.
+        private void AssignPatrolPath(GameObject enemy)
+        {
+            if (patrolPathsRoot == null || patrolPathsRoot.childCount == 0) return;
+
+            var fsmType = System.Type.GetType("Game.Enemy.NpcFSM, Assembly-CSharp");
+            if (fsmType == null) return;
+            var fsm = enemy.GetComponent(fsmType);
+            if (fsm == null) return;
+
+            Transform path = patrolPathsRoot.GetChild(patrolPathIndex % patrolPathsRoot.childCount);
+            patrolPathIndex++;
+
+            var list = fsmType.GetField("patrolTargets")?.GetValue(fsm) as List<Transform>;
+            if (list == null) return;
+
+            list.Clear();
+            foreach (Transform wp in path)
+                list.Add(wp);
         }
 
         private void HandleDeath(DeathArgs e)

@@ -1975,7 +1975,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 024a56c4770ce6229a17333a0fba82a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialState: 2
+  initialState: 0
   patrolTargets: []
   targetIndex: 0
   chaseTriggerDistance: 8
@@ -2021,6 +2021,7 @@ MonoBehaviour:
   weaponSocket: {fileID: 1452910100294011796}
   shieldPrefab: {fileID: 2804232119271132610, guid: c675411b6ca1e4c6a98a0d0cc7e31369, type: 3}
   shieldSocket: {fileID: 1326475576112598787}
+  liveTuning: 0
 --- !u!114 &353516087521190222
 MonoBehaviour:
   m_ObjectHideFlags: 0
