@@ -14,6 +14,9 @@ namespace Game.Core
     {
         [SerializeField] private bool logTransitions = true;
 
+        [Tooltip("Which state the game starts in on load. Defaults to WaveActive so enemies spawn immediately.")]
+        [SerializeField] private GameStateId initialState = GameStateId.WaveActive;
+
         public MenuState Menu { get; private set; }
         public WaveActiveState WaveActive { get; private set; }
         public WaveCompleteState WaveComplete { get; private set; }
@@ -39,7 +42,7 @@ namespace Game.Core
         {
             // Done in Start rather than Awake so anything that subscribed in
             // OnEnable still catches the very first state change.
-            MoveToState(Menu);
+            MoveToState(initialState);
         }
 
         private void OnEnable()
