@@ -1987,7 +1987,7 @@ MonoBehaviour:
   chaseTriggerDistance: 8
   chaseQuitDistance: 12
   attackRange: 2
-  npcPatrolSpeed: 1.5
+  npcPatrolSpeed: 3.5
   npcChaseSpeed: 3.5
   requireLineOfSight: 1
   checkTime: 0.2

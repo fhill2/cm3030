@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Art_Equilibrium
 {
@@ -11,8 +12,6 @@ namespace Art_Equilibrium
         private Quaternion openRot;
         private Vector3 defaultLocalPos;
         private Vector3 targetLocalSlidePos;
-
-        private bool isKeyPressed;
 
         [Header("Door Type")]
         public bool isSlidingDoor = false;                  // Тумблер: обычная или раздвижная
@@ -39,7 +38,6 @@ namespace Art_Equilibrium
             openRot = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + DoorOpenAngle, transform.eulerAngles.z);
             defaultLocalPos = transform.localPosition;
             targetLocalSlidePos = defaultLocalPos + slideOffset;
-            isKeyPressed = false;
 
             audioSource = gameObject.AddComponent<AudioSource>();
         }
@@ -57,45 +55,39 @@ namespace Art_Equilibrium
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * smooth);
             }
 
-            if (Input.GetKeyDown(KeyCode.E) && trig && !isKeyPressed)
+            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && trig)
             {
                 open = !open;
-                isKeyPressed = true;
                 PlayDoorSound();
-            }
-
-            if (Input.GetKeyUp(KeyCode.E))
-            {
-                isKeyPressed = false;
             }
 
             doorMessage = trig ? (open ? closeMessage : openMessage) : "";
         }
 
+        private GUIStyle messageStyle;
+
         private void OnGUI()
         {
-            if (!string.IsNullOrEmpty(doorMessage))
+            if (string.IsNullOrEmpty(doorMessage)) return;
+
+            if (messageStyle == null)
             {
-                GUIStyle style = new GUIStyle(GUI.skin.label)
+                messageStyle = new GUIStyle(GUI.skin.label)
                 {
                     alignment = TextAnchor.MiddleCenter,
                     fontSize = fontSize,
                     normal = { textColor = fontColor }
                 };
-
-                if (messageFont != null)
-                {
-                    style.font = messageFont;
-                }
-
-                float screenWidth = Screen.width;
-                float screenHeight = Screen.height;
-                Vector2 labelSize = style.CalcSize(new GUIContent(doorMessage));
-                float labelX = screenWidth * messagePosition.x - labelSize.x / 2;
-                float labelY = screenHeight * messagePosition.y - labelSize.y / 2;
-
-                GUI.Label(new Rect(labelX, labelY, labelSize.x, labelSize.y), doorMessage, style);
+                if (messageFont != null) messageStyle.font = messageFont;
             }
+
+            float screenWidth = Screen.width;
+            float screenHeight = Screen.height;
+            Vector2 labelSize = messageStyle.CalcSize(new GUIContent(doorMessage));
+            float labelX = screenWidth * messagePosition.x - labelSize.x / 2;
+            float labelY = screenHeight * messagePosition.y - labelSize.y / 2;
+
+            GUI.Label(new Rect(labelX, labelY, labelSize.x, labelSize.y), doorMessage, messageStyle);
         }
 
         private void OnTriggerEnter(Collider coll)
