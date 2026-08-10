@@ -1,5 +1,5 @@
 version=2.2.6
-logType=None
+logType=HighQuality
 generation=GameBase
 subDLevel=SubD0
 isBlender=False
@@ -11,8 +11,8 @@ tempHairBake=false
 bakeCustomShaders=true
 bakeSeparatePrefab=true
 shaderFlags=65666
-animationSetup=false
-animationRetargeted=0
+animationSetup=true
+animationRetargeted=2
 rigOverride=Humanoid
 linkId=
 motionPrefix=
