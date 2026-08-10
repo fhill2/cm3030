@@ -12,9 +12,11 @@
 # Legacy Asset Store tools
 [Aa]ssets/[Aa]sset[Ss]tore[Tt]ools*
 
-# Reallusion CC/iC Unity Tools (auto-setup package)
+# Reallusion CC/iC Unity Tools (auto-setup plugin + runtime export support)
 [Aa]ssets/CCiC-[Uu]nity-[Tt]ools*/
 [Aa]ssets/CCiC-[Uu]nity-[Tt]ools*.meta
+[Aa]ssets/[Rr]eallusion/
+[Aa]ssets/[Rr]eallusion.meta
 
 # IDE / solution files (Unity 6 emits .slnx)
 *.csproj
