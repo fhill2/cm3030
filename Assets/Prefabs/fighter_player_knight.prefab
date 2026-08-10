@@ -2234,6 +2234,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2775870359928196619}
     m_Modifications:
+    - target: {fileID: 389129048009774655, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5099267788331207163, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5580914073867992731, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5614308925362111840, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6035238371086745012, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2277,6 +2293,14 @@ PrefabInstance:
     - target: {fileID: 6380098730810337038, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
       propertyPath: m_Name
       value: knight
+      objectReference: {fileID: 0}
+    - target: {fileID: 6917108159844810043, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7384241672068400274, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 369670678671222734, guid: c5f6d067ece9143f0975ba35c1d2e02d, type: 3}
