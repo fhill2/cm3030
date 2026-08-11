@@ -24,6 +24,10 @@ namespace Game.Movement
         protected Vector3 velocity;
         protected bool wasGrounded = true;
 
+        /// <summary>True once this character's death event has fired. Subclasses
+        /// must check it before reading input.</summary>
+        protected bool isDead;
+
         protected override void Awake()
         {
             base.Awake(); // AnimationMotor caches the animator
@@ -43,11 +47,31 @@ namespace Game.Movement
 
         protected virtual void Update()
         {
+            if (isDead)
+            {
+                SettleDead();
+                return;
+            }
+
             bool grounded = controller.isGrounded;
             ApplyGravity(grounded);
             wasGrounded = grounded;
             MoveActor(Vector3.zero);
             UpdateAnimator(0f, grounded, false);
+        }
+
+        /// <summary>
+        /// Per-frame update for a dead character. Gravity keeps running so a body
+        /// that died mid-air still falls and lands instead of freezing in place,
+        /// but no input is read and no locomotion parameters are pushed — the
+        /// animator is left alone so the death clip plays out uninterrupted.
+        /// </summary>
+        protected void SettleDead()
+        {
+            bool grounded = controller.isGrounded;
+            ApplyGravity(grounded);
+            wasGrounded = grounded;
+            MoveActor(Vector3.zero);
         }
 
         /// <summary>Accumulate downward velocity. Call before MoveActor.</summary>
@@ -67,8 +91,10 @@ namespace Game.Movement
 
         protected virtual void HandleDeath(DeathArgs e)
         {
+            // Flag rather than `enabled = false`: disabling the component would
+            // also stop gravity, leaving anyone who died in mid-air hanging there.
             if (e.Entity == gameObject)
-                enabled = false;
+                isDead = true;
         }
     }
 }

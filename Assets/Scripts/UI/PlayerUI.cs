@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Core;
@@ -6,18 +7,34 @@ using Game.Health;
 namespace Game.UI
 {
     /// <summary>
-    /// Screen-space health bar for the player. Goes on the player root.
-    /// Creates its own overlay canvas and refreshes on OnDamage/OnDeath.
+    /// Screen-space HUD for the player: a health bar top-left, an
+    /// enemies-remaining counter top-right, and the death screen. Goes on the
+    /// player root. Creates its own overlay canvas and refreshes on
+    /// OnDamage/OnDeath.
     /// </summary>
     public class PlayerUI : MonoBehaviour
     {
-        private const float BarWidth  = 400f;
-        private const float BarHeight = 24f;
-        private const float Margin    = 20f;
+        private const float BarWidth     = 400f;
+        private const float BarHeight    = 24f;
+        private const float Margin       = 20f;
+        private const float CounterWidth = 280f;
+
+        [Header("Death Screen")]
+        [Tooltip("Seconds to fade the screen to black once the player dies.")]
+        [SerializeField] private float fadeDuration = 3f;
+        [Tooltip("Seconds for the message to fade up once the screen is fully black.")]
+        [SerializeField] private float messageFadeDuration = 1.2f;
+        [Tooltip("Shown once the screen is fully black.")]
+        [SerializeField] private string deathMessage = "Camelot has Fallen";
+        [SerializeField] private int messageFontSize = 72;
 
         private HealthSystem health;
         private Image healthFill;
         private Text  healthLabel;
+        private Text  enemyLabel;
+        private Image fadeOverlay;
+        private Text  deathText;
+        private Coroutine deathRoutine;
 
         private static Font s_font;
 
@@ -30,18 +47,21 @@ namespace Game.UI
         void Start()
         {
             Refresh();
+            RefreshEnemyCount();
         }
 
         void OnEnable()
         {
             EventManager.OnDamage += HandleDamage;
             EventManager.OnDeath  += HandleDeath;
+            EnemyHealth.OnAliveCountChanged += RefreshEnemyCount;
         }
 
         void OnDisable()
         {
             EventManager.OnDamage -= HandleDamage;
             EventManager.OnDeath  -= HandleDeath;
+            EnemyHealth.OnAliveCountChanged -= RefreshEnemyCount;
         }
 
         void HandleDamage(DamageArgs e)
@@ -51,7 +71,44 @@ namespace Game.UI
 
         void HandleDeath(DeathArgs e)
         {
-            if (e.Entity == gameObject) Refresh();
+            if (e.Entity != gameObject) return;
+
+            Refresh();
+
+            // Guard against a second death event re-running the sequence and
+            // flashing the screen back from black.
+            if (deathRoutine == null) deathRoutine = StartCoroutine(DeathSequence());
+        }
+
+        // Black out over the camera's climb, then bring the message up once the screen has settled
+        IEnumerator DeathSequence()
+        {
+            yield return FadeTo(fadeOverlay, 1f, fadeDuration);
+            yield return FadeTo(deathText, 1f, messageFadeDuration);
+        }
+
+        static IEnumerator FadeTo(Graphic target, float to, float duration)
+        {
+            if (target == null) yield break;
+
+            float from = target.color.a;
+            float span = Mathf.Max(0.01f, duration);
+            float elapsed = 0f;
+
+            while (elapsed < span)
+            {
+                elapsed += Time.deltaTime;
+                SetAlpha(target, Mathf.Lerp(from, to, elapsed / span));
+                yield return null;
+            }
+            SetAlpha(target, to);
+        }
+
+        static void SetAlpha(Graphic target, float alpha)
+        {
+            Color c = target.color;
+            c.a = alpha;
+            target.color = c;
         }
 
         void Refresh()
@@ -64,6 +121,12 @@ namespace Game.UI
             if (healthLabel != null)
                 healthLabel.text =
                     $"PLAYER  {health.CurrentHealth:0} / {health.MaxHealth:0}";
+        }
+
+        void RefreshEnemyCount()
+        {
+            if (enemyLabel != null)
+                enemyLabel.text = $"ENEMIES REMAINING  {EnemyHealth.AliveCount}";
         }
 
         void BuildUI()
@@ -80,13 +143,58 @@ namespace Game.UI
             healthFill = CreateHealthBar(t,
                 new Vector2(0, 1), new Vector2(Margin, -Margin));
             healthLabel = CreateLabelText(t, "PLAYER  --- / ---",
-                new Vector2(0, 1), new Vector2(Margin, -Margin - BarHeight - 4f));
+                new Vector2(0, 1), new Vector2(Margin, -Margin - BarHeight - 4f),
+                BarWidth, TextAnchor.MiddleLeft);
+
+            // Top-right corner. CreateRect pins the pivot to the anchor, so a
+            // (1,1) anchor with a negative offset hangs the box inward from the corner and it stays put at any resolution
+            enemyLabel = CreateLabelText(t, "ENEMIES REMAINING  --",
+                new Vector2(1, 1), new Vector2(-Margin, -Margin),
+                CounterWidth, TextAnchor.MiddleRight);
+
+            // Built last on purpose: within a canvas, later siblings draw top, so this covers the health bar and counter when it fades in
+            BuildDeathScreen(t);
         }
 
-        Text CreateLabelText(Transform parent, string content, Vector2 anchor, Vector2 pos)
+        void BuildDeathScreen(Transform parent)
+        {
+            // Full-screen black sheet, invisible until death.
+            var fadeGo = new GameObject("DeathFade");
+            fadeGo.transform.SetParent(parent, false);
+            var fadeRt = fadeGo.AddComponent<RectTransform>();
+            fadeRt.anchorMin = Vector2.zero;
+            fadeRt.anchorMax = Vector2.one;
+            fadeRt.offsetMin = Vector2.zero;
+            fadeRt.offsetMax = Vector2.zero;
+            fadeOverlay = fadeGo.AddComponent<Image>();
+            fadeOverlay.color = new Color(0f, 0f, 0f, 0f);
+            // It spans the screen from the first frame, so it must never
+            // swallow clicks while it's still transparent.
+            fadeOverlay.raycastTarget = false;
+
+            // Parented to the sheet so it always draws above the black.
+            var textGo = new GameObject("DeathMessage");
+            textGo.transform.SetParent(fadeGo.transform, false);
+            var textRt = textGo.AddComponent<RectTransform>();
+            textRt.anchorMin = Vector2.zero;
+            textRt.anchorMax = Vector2.one;
+            textRt.offsetMin = Vector2.zero;
+            textRt.offsetMax = Vector2.zero;
+            deathText = textGo.AddComponent<Text>();
+            deathText.text = deathMessage;
+            deathText.alignment = TextAnchor.MiddleCenter;
+            deathText.font = GetFont();
+            deathText.fontSize = messageFontSize;
+            // Red, but starting fully transparent
+            deathText.color = new Color(1f, 0f, 0f, 0f);
+            deathText.raycastTarget = false;
+        }
+
+        Text CreateLabelText(Transform parent, string content, Vector2 anchor, Vector2 pos,
+            float width, TextAnchor alignment)
         {
             var bgRt = CreateRect(parent, anchor, anchor, pos,
-                new Vector2(BarWidth, 28));
+                new Vector2(width, 28));
             var bgImg = bgRt.gameObject.AddComponent<Image>();
             bgImg.color = new Color(0.15f, 0.15f, 0.15f, 0.95f);
 
@@ -99,7 +207,7 @@ namespace Game.UI
             textRt.offsetMax = new Vector2(-8, -2);
             var txt = textGo.AddComponent<Text>();
             txt.text = content;
-            txt.alignment = TextAnchor.MiddleLeft;
+            txt.alignment = alignment;
             txt.color = Color.white;
             txt.font = GetFont();
             txt.fontSize = 18;

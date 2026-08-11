@@ -61,6 +61,14 @@ namespace Game.Movement
 
         protected override void Update()
         {
+            if (isDead)
+            {
+                // Dead players don't walk, sprint, jump or block. Gravity still
+                // runs so the body settles rather than hanging where it died.
+                SettleDead();
+                return;
+            }
+
             bool grounded = controller.isGrounded;
 
             Vector2 input = ReadMoveInput();
@@ -148,8 +156,15 @@ namespace Game.Movement
         protected override void HandleDeath(DeathArgs e)
         {
             base.HandleDeath(e);
-            if (e.Entity == gameObject)
-                SetCursorLocked(false);
+            if (e.Entity != gameObject) return;
+
+            SetCursorLocked(false);
+
+            // Clear the guard explicitly. Update stops running from here, so a
+            // player who died holding right-click would otherwise keep the block
+            // animation and an armed shield collider on the corpse forever.
+            if (animator != null) animator.SetBool(AnimParams.Block, false);
+            if (shieldCollider != null) shieldCollider.IsBlocking = false;
         }
     }
 }
