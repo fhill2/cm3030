@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Core;
+using Game.Health;
 
 namespace Game.Movement
 {
@@ -45,9 +47,61 @@ namespace Game.Movement
         [Tooltip("Eye height above the player's origin.")]
         [SerializeField] private float firstPersonHeight = 1.7f;
 
+        [Header("Death View")]
+        [Tooltip("On player death, pull the camera up and back into a bird's-eye view.")]
+        [SerializeField] private bool deathView = true;
+        [Tooltip("Camera pitch at the end of the climb. 90 looks straight down; ~80 keeps a sliver of horizon so the castle still reads.")]
+        [SerializeField] private float deathPitch = 80f;
+        [Tooltip("How far the camera pulls away from the body. Combined with the pitch this sets the height — 200 at 80 degrees puts the camera ~197m up. The scene camera's far clip is 1000, so there is room to go higher still.")]
+        [SerializeField] private float deathDistance = 200f;
+        [Tooltip("Seconds the climb takes. Keep PlayerUI's fadeDuration in step so the screen blacks out as the camera settles.")]
+        [SerializeField] private float deathTransitionTime = 3f;
+
         private float yaw;
         private float pitch = 15f;
         private float turnOffset;
+
+        private bool isDead;
+        private float deathBlend;
+        private Vector3 deathStartPos;
+        private Quaternion deathStartRot;
+
+        void OnEnable()
+        {
+            EventManager.OnDeath += HandleDeath;
+        }
+
+        void OnDisable()
+        {
+            EventManager.OnDeath -= HandleDeath;
+        }
+
+        void HandleDeath(DeathArgs e)
+        {
+            if (!deathView || isDead) return;
+            // Only the followed player's death changes the shot — an enemy dying
+            // must not yank the camera skyward.
+            if (!IsFollowedTarget(e.Entity)) return;
+
+            isDead = true;
+            deathBlend = 0f;
+            deathStartPos = transform.position;
+            deathStartRot = transform.rotation;
+        }
+
+        /// <summary>
+        /// True if <paramref name="entity"/> is the character we're following.
+        /// The player prefab nests several levels, so the transform assigned as
+        /// the follow target is not guaranteed to be the exact GameObject that
+        /// carries the health component. Accepting anything on the same branch
+        /// keeps this working however the prefab is rearranged.
+        /// </summary>
+        bool IsFollowedTarget(GameObject entity)
+        {
+            if (target == null || entity == null) return false;
+            Transform t = entity.transform;
+            return t == target || target.IsChildOf(t) || t.IsChildOf(target);
+        }
 
         void Awake()
         {
@@ -67,6 +121,15 @@ namespace Game.Movement
         void LateUpdate()
         {
             if (target == null) return;
+
+            if (isDead)
+            {
+                // Returning here also stops the mouse-look and, critically, the
+                // rotateTarget block below — otherwise the corpse would keep
+                // spinning to follow the mouse.
+                UpdateDeathView();
+                return;
+            }
 
             if (Mouse.current != null)
             {
@@ -110,6 +173,32 @@ namespace Game.Movement
                 turnOffset = Mathf.Lerp(turnOffset, targetOffset, turnSmooth * Time.deltaTime);
                 target.rotation = Quaternion.Euler(0f, yaw + turnOffset, 0f);
             }
+        }
+
+        /// <summary>
+        /// Ease the camera from wherever it was when the player died up to a
+        /// bird's-eye view of the body.
+        /// </summary>
+        void UpdateDeathView()
+        {
+            deathBlend = Mathf.Clamp01(
+                deathBlend + Time.deltaTime / Mathf.Max(0.01f, deathTransitionTime));
+
+            // SmoothStep so the climb eases out of the gameplay shot and settles,
+            // rather than starting and stopping abruptly.
+            float t = Mathf.SmoothStep(0f, 1f, deathBlend);
+
+            // Same orbit maths as the live camera, just a steeper pitch on a
+            // longer arm. Keeping the yaw means the view rises from behind
+            // wherever the player was facing instead of swinging round first.
+            // Recomputed every frame so the shot stays centred while the body
+            // finishes falling.
+            Vector3 focus = target.position + Vector3.up * targetHeight;
+            Quaternion rot = Quaternion.Euler(deathPitch, yaw, 0f);
+            Vector3 pos = focus + rot * new Vector3(0f, 0f, -deathDistance);
+
+            transform.position = Vector3.Lerp(deathStartPos, pos, t);
+            transform.rotation = Quaternion.Slerp(deathStartRot, rot, t);
         }
     }
 }

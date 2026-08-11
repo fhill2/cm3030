@@ -5315,6 +5315,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4299695487373110085, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
+      propertyPath: fadeDuration
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 4765402332717813115, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
       propertyPath: m_RotationOffsets.Array.data[0].x
       value: 89.97203
@@ -8825,6 +8829,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logTransitions: 1
+  initialState: 1
 --- !u!4 &404486886
 Transform:
   m_ObjectHideFlags: 0
@@ -50825,6 +50830,10 @@ MonoBehaviour:
   turnSmooth: 8
   firstPerson: 0
   firstPersonHeight: 1.7
+  deathView: 1
+  deathPitch: 75
+  deathDistance: 50
+  deathTransitionTime: 1.5
 --- !u!4 &22464847560310531 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1227146858607074725, guid: b67a07d91f406584e8e9640ae1ecc591, type: 3}

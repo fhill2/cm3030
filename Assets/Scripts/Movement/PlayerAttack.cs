@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Shared;
 using Game.Combat;
+using Game.Core;
+using Game.Health;
 
 namespace Game.Movement
 {
@@ -39,6 +41,7 @@ namespace Game.Movement
         private int comboStep;
         private float lastAttackTime = -999f;
         private bool inCombat;
+        private bool isDead;
 
         void Awake()
         {
@@ -50,6 +53,7 @@ namespace Game.Movement
 
         void OnEnable()
         {
+            EventManager.OnDeath += HandleDeath;
             if (melee != null)
             {
                 melee.OnAttackStart += OnSwingStart;
@@ -59,6 +63,7 @@ namespace Game.Movement
 
         void OnDisable()
         {
+            EventManager.OnDeath -= HandleDeath;
             if (melee != null)
             {
                 melee.OnAttackStart -= OnSwingStart;
@@ -66,9 +71,21 @@ namespace Game.Movement
             }
         }
 
+        // Attacking lives on its own component, so PlayerMovement shutting down
+        // on death doesn't stop it. Without this a corpse still swings on click.
+        private void HandleDeath(DeathArgs e)
+        {
+            if (e.Entity != gameObject) return;
+            isDead = true;
+
+            // A swing already in flight finishes on Melee's own timer; just make
+            // sure the movement penalty it applied doesn't outlive it.
+            if (movement != null) movement.speedScale = 1f;
+        }
+
         void Update()
         {
-            if (animator == null) return;
+            if (isDead || animator == null) return;
 
             // Relax the combat stance once the player hasn't attacked for a while.
             if (inCombat && Time.time - lastAttackTime > idleTimeout)
