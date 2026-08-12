@@ -31,6 +31,7 @@ namespace Game.Enemy
 
         protected float patrolSpeed;
         protected float chaseSpeed;
+        protected float circleSpeed;
 
         protected bool requireLineOfSight;
 
@@ -58,6 +59,7 @@ namespace Game.Enemy
 
             patrolSpeed = npc.npcPatrolSpeed;
             chaseSpeed  = npc.npcChaseSpeed;
+            circleSpeed = npc.npcCircleSpeed;
 
             requireLineOfSight = npc.requireLineOfSight;
 

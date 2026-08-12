@@ -7,19 +7,36 @@ namespace Game.Enemy
     public class AttackState : BaseState
     {
         private const float FaceSpeed = 540f; // degrees per second
+        private const float CircleRetargetInterval = 0.2f; // seconds between destination updates
+        private const float CircleAngularSpeed = 0.6f; // radians/sec orbiting the player
 
         private Melee melee;
         private Coroutine driverRoutine;
+
+        // Attack-phase movement: each enemy orbits the player at a fraction of
+        // attackRange instead of standing rooted, so a group of attackers reads
+        // as a dynamic scrum rather than a static ring. Direction and starting
+        // angle are randomised per-enemy so a cluster doesn't move in lockstep.
+        private float circleAngle;
+        private int circleDirection;
+        private float nextCircleRetargetTime;
 
         public override void EnterState(NpcFSM npc)
         {
             base.EnterState(npc);
 
+            bool circling = circleSpeed > 0f;
+
             if (agent != null)
             {
-                agent.isStopped = true;
+                agent.isStopped = !circling; // stand still if circling is disabled (old behavior)
                 agent.updateRotation = false; // we face the player manually
+                agent.speed = circleSpeed;
             }
+
+            circleAngle = Random.Range(0f, Mathf.PI * 2f);
+            circleDirection = Random.value < 0.5f ? 1 : -1;
+            nextCircleRetargetTime = 0f;
 
             melee = FSM.GetComponent<Melee>();
             driverRoutine = npc.StartCoroutine(AttackDriver());
@@ -29,6 +46,7 @@ namespace Game.Enemy
         {
             // Keep facing the player smoothly between swings.
             FacePlayer();
+            UpdateCircling();
         }
 
         public override void ExitState(NpcFSM npc)
@@ -97,6 +115,24 @@ namespace Game.Enemy
                     || hit.transform.IsChildOf(FSM.transform);
 
             return true;
+        }
+
+        /// <summary>
+        /// Moves the destination around the player in a slow orbit, staying
+        /// inside attackRange so the swing loop's WithinAttackRange() check
+        /// keeps passing. No-op when circleSpeed is 0 (agent stays isStopped).
+        /// </summary>
+        private void UpdateCircling()
+        {
+            if (agent == null || player == null || circleSpeed <= 0f) return;
+            if (Time.time < nextCircleRetargetTime) return;
+            nextCircleRetargetTime = Time.time + CircleRetargetInterval;
+
+            circleAngle += circleDirection * CircleAngularSpeed * CircleRetargetInterval;
+
+            float radius = attackRange * 0.75f;
+            Vector3 offset = new Vector3(Mathf.Cos(circleAngle), 0f, Mathf.Sin(circleAngle)) * radius;
+            agent.SetDestination(player.transform.position + offset);
         }
 
         private void FacePlayer()
