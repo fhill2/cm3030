@@ -90,6 +90,7 @@ namespace Game.Enemy
         [HideInInspector] public GameObject player;
         [HideInInspector] public WeaponCollider weaponCollider; // on the enemy's weapon/hand
         [HideInInspector] public ShieldCollider shieldCollider; // on the enemy's shield, if equipped
+        [HideInInspector] public Animator animator; // drives the shared Block bool, same as PlayerMovement
 
         // ── Runtime flags (set by event handlers, read by states) ────
         [HideInInspector] public bool playerAlive = true;
@@ -104,6 +105,7 @@ namespace Game.Enemy
             player = GameObject.FindGameObjectWithTag("Player");
             weaponCollider = GetComponentInChildren<WeaponCollider>();
             shieldCollider = GetComponentInChildren<ShieldCollider>();
+            animator = GetComponentInChildren<Animator>();
 
             BaseState startState;
             switch (initialState)
@@ -139,7 +141,16 @@ namespace Game.Enemy
 
         void HandleDeath(DeathArgs e)
         {
-            if (e.Entity == gameObject)       MoveToState(s_Death);
+            if (e.Entity == gameObject)
+            {
+                // A corpse mid-BlockRoutine would otherwise keep its shield raised
+                // and the Block animator bool stuck true forever — same guard
+                // PlayerMovement applies on death.
+                StopCoroutine(nameof(BlockRoutine));
+                if (shieldCollider != null) shieldCollider.IsBlocking = false;
+                if (animator != null) animator.SetBool(AnimParams.Block, false);
+                MoveToState(s_Death);
+            }
             else if (e.Entity == player)      playerAlive = false;
         }
 
@@ -174,8 +185,10 @@ namespace Game.Enemy
         private IEnumerator BlockRoutine()
         {
             shieldCollider.IsBlocking = true;
+            if (animator != null) animator.SetBool(AnimParams.Block, true);
             yield return new WaitForSeconds(blockHoldDuration);
             shieldCollider.IsBlocking = false;
+            if (animator != null) animator.SetBool(AnimParams.Block, false);
         }
 
         // ── State transitions ────────────────────────────────────────
