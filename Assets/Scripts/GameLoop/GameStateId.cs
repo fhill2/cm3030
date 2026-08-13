@@ -37,4 +37,31 @@ namespace Game.Core
             Wave = wave;
         }
     }
+
+    // Sent whenever the player's gold changes. Change is how much was added
+    // or removed, so the UI can show a "+10" popup as well as the new total.
+    public readonly struct GoldChangedArgs
+    {
+        public readonly int Total;
+        public readonly int Change;
+
+        public GoldChangedArgs(int total, int change)
+        {
+            Total = total;
+            Change = change;
+        }
+    }
+
+    // Counts down while the shop is open, so the UI can show a timer.
+    public readonly struct ShopTimeArgs
+    {
+        public readonly float SecondsLeft;
+        public readonly float TotalSeconds;
+
+        public ShopTimeArgs(float secondsLeft, float totalSeconds)
+        {
+            SecondsLeft = secondsLeft;
+            TotalSeconds = totalSeconds;
+        }
+    }
 }

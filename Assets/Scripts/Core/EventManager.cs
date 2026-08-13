@@ -26,6 +26,9 @@ namespace Game.Core
         public delegate void BlockHandler(BlockArgs e);
         public delegate void GameStateChangedHandler(GameStateChangedArgs e);
         public delegate void WaveClearedHandler(WaveClearedArgs e);
+        public delegate void GoldChangedHandler(GoldChangedArgs e);
+        public delegate void ShopChangedHandler();
+        public delegate void ShopTimeHandler(ShopTimeArgs e);
 
         public static event DamageHandler OnDamage;
         public static event DeathHandler OnDeath;
@@ -33,6 +36,9 @@ namespace Game.Core
         public static event BlockHandler OnBlock;
         public static event GameStateChangedHandler OnGameStateChanged;
         public static event WaveClearedHandler OnWaveCleared;
+        public static event GoldChangedHandler OnGoldChanged;
+        public static event ShopChangedHandler OnShopChanged;
+        public static event ShopTimeHandler OnShopTime;
 
         // ── Raise helpers (the only place events are actually invoked) ───────
         public static void RaiseDamage(DamageArgs e) => OnDamage?.Invoke(e);
@@ -41,6 +47,9 @@ namespace Game.Core
         public static void RaiseBlock(BlockArgs e) => OnBlock?.Invoke(e);
         public static void RaiseGameStateChanged(GameStateChangedArgs e) => OnGameStateChanged?.Invoke(e);
         public static void RaiseWaveCleared(WaveClearedArgs e) => OnWaveCleared?.Invoke(e);
+        public static void RaiseGoldChanged(GoldChangedArgs e) => OnGoldChanged?.Invoke(e);
+        public static void RaiseShopChanged() => OnShopChanged?.Invoke();
+        public static void RaiseShopTime(ShopTimeArgs e) => OnShopTime?.Invoke(e);
 
         // Clears every subscriber. Call on scene load so we don't keep
         // references to objects that no longer exist.
@@ -52,6 +61,9 @@ namespace Game.Core
             OnBlock = null;
             OnGameStateChanged = null;
             OnWaveCleared = null;
+            OnGoldChanged = null;
+            OnShopChanged = null;
+            OnShopTime = null;
         }
     }
 }

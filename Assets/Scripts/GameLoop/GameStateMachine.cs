@@ -17,6 +17,12 @@ namespace Game.Core
         [Tooltip("Which state the game starts in on load. Defaults to WaveActive so enemies spawn immediately.")]
         [SerializeField] private GameStateId initialState = GameStateId.WaveActive;
 
+        [Tooltip("Seconds between a wave being cleared and the shop opening.")]
+        [SerializeField] private float waveCompleteDelay = 3f;
+
+        [Tooltip("Seconds the shop stays open before the next wave starts automatically.")]
+        [SerializeField] private float shopDuration = 30f;
+
         public MenuState Menu { get; private set; }
         public WaveActiveState WaveActive { get; private set; }
         public WaveCompleteState WaveComplete { get; private set; }
@@ -28,6 +34,10 @@ namespace Game.Core
 
         // Which wave the player is on. Reset in Menu, +1 on entering WaveActive.
         public int CurrentWave { get; set; }
+
+        // Read by the states for their timers.
+        public float WaveCompleteDelay => waveCompleteDelay;
+        public float ShopDuration => shopDuration;
 
         private void Awake()
         {

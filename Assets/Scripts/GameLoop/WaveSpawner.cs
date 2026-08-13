@@ -29,6 +29,9 @@ namespace Game.Core
         [Header("Spawning")]
         [SerializeField] private float spawnRadius = 2f;   // scatter around the point so they don't stack
 
+        [Header("Debug")]
+        [SerializeField] private bool logRemaining = true;
+
         [Header("Patrol Paths")]
         [Tooltip("Parent of patrol path groups. Each direct child is a path (e.g. Patrol1), and ITS children are the waypoints. Enemies cycle through paths in order.")]
         [SerializeField] private Transform patrolPathsRoot;
@@ -41,6 +44,14 @@ namespace Game.Core
 
         // Wave number captured from the GameStateChanged payload (GSM owns it).
         private int currentWave;
+
+        // True once the spawn coroutine has finished producing the whole wave.
+        // Without this, killing the first enemy before the second spawns leaves
+        // the list empty and fires a false "wave cleared".
+        private bool spawningFinished;
+
+        // Stops the wave being reported clear more than once.
+        private bool waveAlreadyCleared;
 
         private void Awake()
         {
@@ -73,6 +84,8 @@ namespace Game.Core
         {
             liveEnemies.Clear();
             patrolPathIndex = 0;
+            spawningFinished = false;
+            waveAlreadyCleared = false;
 
             WaveConfig config = ConfigForWave(currentWave);
             if (config == null)
@@ -86,6 +99,12 @@ namespace Game.Core
                 SpawnOne(config);
                 yield return new WaitForSeconds(config.SpawnInterval);
             }
+
+            spawningFinished = true;
+
+            // Covers the case where the player killed everything while we were
+            // still spawning, or where the wave was configured with no enemies.
+            CheckWaveCleared();
         }
 
         private void SpawnOne(WaveConfig config)
@@ -161,9 +180,36 @@ namespace Game.Core
 
         private void HandleDeath(DeathArgs e)
         {
-            if (!liveEnemies.Remove(e.Entity)) return;   // not one of ours, ignore
+            if (e.Entity == null) return;
 
-            if (liveEnemies.Count == 0) EventManager.RaiseWaveCleared(new WaveClearedArgs(currentWave));
+            if (!RemoveFromWave(e.Entity)) return;   // not one of ours, ignore
+
+            if (logRemaining)
+            {
+                Debug.Log($"[WaveSpawner] {liveEnemies.Count} left in wave {currentWave}");
+            }
+
+            CheckWaveCleared();
+        }
+
+        // The health component that reports the death may sit on a child of the
+        // object we spawned, so fall back to matching on the root before giving up.
+        private bool RemoveFromWave(GameObject dead)
+        {
+            if (liveEnemies.Remove(dead)) return true;
+
+            GameObject root = dead.transform.root.gameObject;
+            return liveEnemies.Remove(root);
+        }
+
+        private void CheckWaveCleared()
+        {
+            if (waveAlreadyCleared) return;
+            if (!spawningFinished) return;
+            if (liveEnemies.Count > 0) return;
+
+            waveAlreadyCleared = true;
+            EventManager.RaiseWaveCleared(new WaveClearedArgs(currentWave));
         }
 
         // Waves past the end of the array reuse the last one, so the game

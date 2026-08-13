@@ -19,8 +19,12 @@ namespace Game.Combat
         [Tooltip("Local rotation offset (Euler angles).")]
         [SerializeField] private Vector3 rotationOffset = Vector3.zero;
 
-        public float Damage => damage;
-        public float Speed => speed;
+        // Damage and Speed are settable so shop upgrades can raise them.
+        // Only ever set on a runtime copy made with Instantiate(), never on
+        // the shared asset — see PlayerLoadout.
+        public float Damage { get => damage; set => damage = value; }
+        public float Speed { get => speed; set => speed = value; }
+
         public Vector3 PositionOffset => positionOffset;
         public Vector3 RotationOffset => rotationOffset;
     }
