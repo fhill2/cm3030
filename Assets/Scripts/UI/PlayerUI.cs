@@ -7,10 +7,11 @@ using Game.Health;
 namespace Game.UI
 {
     /// <summary>
-    /// Screen-space HUD for the player: a health bar top-left, an
+    /// Screen-space HUD for the player: a health bar top-left, a stamina bar
+    /// beneath it (see PlayerStamina — placeholder until row 10 lands), an
     /// enemies-remaining counter top-right, and the death screen. Goes on the
-    /// player root. Creates its own overlay canvas and refreshes on
-    /// OnDamage/OnDeath.
+    /// player root. Creates its own overlay canvas; health/enemy count refresh
+    /// on events, stamina refreshes every frame since it changes continuously.
     /// </summary>
     public class PlayerUI : MonoBehaviour
     {
@@ -28,6 +29,9 @@ namespace Game.UI
         [SerializeField] private string deathMessage = "Camelot has Fallen";
         [SerializeField] private int messageFontSize = 72;
 
+        private const float StaminaBarHeight = 16f;
+        private static readonly Color StaminaColor = new Color(0.95f, 0.8f, 0.25f, 1f);
+
         private HealthSystem health;
         private Image healthFill;
         private Text  healthLabel;
@@ -36,11 +40,19 @@ namespace Game.UI
         private Text  deathText;
         private Coroutine deathRoutine;
 
+        // PLACEHOLDER (sheet row 18) — GetComponent returns null until Alessio's
+        // stamina system (row 10) lands or PlayerStamina is added to the player
+        // prefab; the bar just shows its default text until then.
+        private PlayerStamina stamina;
+        private Image staminaFill;
+        private Text  staminaLabel;
+
         private static Font s_font;
 
         void Awake()
         {
             health = GetComponent<HealthSystem>();
+            stamina = GetComponent<PlayerStamina>();
             BuildUI();
         }
 
@@ -48,6 +60,14 @@ namespace Game.UI
         {
             Refresh();
             RefreshEnemyCount();
+            RefreshStamina();
+        }
+
+        // Stamina isn't event-driven like health (it changes continuously
+        // while blocking/regenerating), so it needs a per-frame poll.
+        void Update()
+        {
+            RefreshStamina();
         }
 
         void OnEnable()
@@ -129,6 +149,18 @@ namespace Game.UI
                 enemyLabel.text = $"ENEMIES REMAINING  {EnemyHealth.AliveCount}";
         }
 
+        void RefreshStamina()
+        {
+            if (stamina == null) return;
+            float ratio = stamina.MaxStamina > 0f
+                ? stamina.CurrentStamina / stamina.MaxStamina : 0f;
+            if (staminaFill != null)
+                staminaFill.rectTransform.anchorMax = new Vector2(ratio, 1f);
+            if (staminaLabel != null)
+                staminaLabel.text =
+                    $"STAMINA  {stamina.CurrentStamina:0} / {stamina.MaxStamina:0}";
+        }
+
         void BuildUI()
         {
             var canvasGo = new GameObject("PlayerUICanvas");
@@ -140,10 +172,20 @@ namespace Game.UI
             canvasGo.AddComponent<GraphicRaycaster>();
             Transform t = canvasGo.transform;
 
-            healthFill = CreateHealthBar(t,
-                new Vector2(0, 1), new Vector2(Margin, -Margin));
+            healthFill = CreateBar(t, new Vector2(0, 1), new Vector2(Margin, -Margin),
+                BarWidth, BarHeight, Color.white);
             healthLabel = CreateLabelText(t, "PLAYER  --- / ---",
                 new Vector2(0, 1), new Vector2(Margin, -Margin - BarHeight - 4f),
+                BarWidth, TextAnchor.MiddleLeft);
+
+            // Stamina bar stacks directly under the health label. PLACEHOLDER
+            // (row 18) — stays populated with default text until PlayerStamina
+            // is on the player (see that script for why it's a stand-in).
+            float staminaY = -Margin - BarHeight - 4f - 28f - 6f;
+            staminaFill = CreateBar(t, new Vector2(0, 1), new Vector2(Margin, staminaY),
+                BarWidth, StaminaBarHeight, StaminaColor);
+            staminaLabel = CreateLabelText(t, "STAMINA  --- / ---",
+                new Vector2(0, 1), new Vector2(Margin, staminaY - StaminaBarHeight - 4f),
                 BarWidth, TextAnchor.MiddleLeft);
 
             // Top-right corner. CreateRect pins the pivot to the anchor, so a
@@ -215,13 +257,15 @@ namespace Game.UI
             return txt;
         }
 
-        Image CreateHealthBar(Transform parent, Vector2 anchor, Vector2 pos)
+        // Generic filled bar: a dark background with an inset fill image whose
+        // anchorMax.x drives the percentage. Used for both health and stamina.
+        Image CreateBar(Transform parent, Vector2 anchor, Vector2 pos, float width, float height, Color fillColor)
         {
-            var bgRt = CreateRect(parent, anchor, anchor, pos, new Vector2(BarWidth, BarHeight));
+            var bgRt = CreateRect(parent, anchor, anchor, pos, new Vector2(width, height));
             var bgImg = bgRt.gameObject.AddComponent<Image>();
             bgImg.color = new Color(0.15f, 0.15f, 0.15f, 0.95f);
 
-            var fillGo = new GameObject("HealthBar_Fill");
+            var fillGo = new GameObject("Bar_Fill");
             fillGo.transform.SetParent(bgRt, false);
             var fillRt = fillGo.AddComponent<RectTransform>();
             fillRt.anchorMin = Vector2.zero;
@@ -229,7 +273,7 @@ namespace Game.UI
             fillRt.offsetMin = new Vector2(2, 2);
             fillRt.offsetMax = new Vector2(-2, -2);
             var fillImg = fillGo.AddComponent<Image>();
-            fillImg.color = Color.white;
+            fillImg.color = fillColor;
             return fillImg;
         }
 
