@@ -8,35 +8,48 @@ namespace Game.Enemy
     {
         private const float FaceSpeed = 540f; // degrees per second
         private const float CircleRetargetInterval = 0.2f; // seconds between destination updates
-        private const float CircleAngularSpeed = 0.6f; // radians/sec orbiting the player
+
+        // How long an enemy holds its attack slot before voluntarily backing
+        // off and giving a waiting enemy a turn. Randomised per-engagement so
+        // a group doesn't rotate attackers in lockstep.
+        private const float MinEngagementTime = 3f;
+        private const float MaxEngagementTime = 6f;
 
         private Melee melee;
         private Coroutine driverRoutine;
 
-        // Attack-phase movement: each enemy orbits the player at a fraction of
-        // attackRange instead of standing rooted, so a group of attackers reads
-        // as a dynamic scrum rather than a static ring. Direction and starting
-        // angle are randomised per-enemy so a cluster doesn't move in lockstep.
-        private float circleAngle;
-        private int circleDirection;
+        // Attack-phase movement: an enemy WITHOUT the attack slot orbits the
+        // player at a fraction of attackRange instead of standing rooted. The
+        // actual angle comes from AttackSlotManager's shared ring so waiting
+        // enemies space themselves out evenly around the player instead of
+        // each picking an independent random angle and clumping together.
         private float nextCircleRetargetTime;
+        private bool circlingEnabled;
+
+        // Attack-slot state: only an enemy holding the slot (see
+        // AttackSlotManager) actually presses the attack. Everyone else in
+        // this state circles and waits — the "one attacks while the rest
+        // surround and watch for an opening" read from group fights like The
+        // Witcher 3, instead of every enemy swinging at once.
+        private bool hasSlot;
+        private float slotReleaseTime;
 
         public override void EnterState(NpcFSM npc)
         {
             base.EnterState(npc);
 
-            bool circling = circleSpeed > 0f;
+            circlingEnabled = circleSpeed > 0f;
+            hasSlot = false;
 
             if (agent != null)
             {
-                agent.isStopped = !circling; // stand still if circling is disabled (old behavior)
+                agent.isStopped = !circlingEnabled; // stand still if circling is disabled (old behavior)
                 agent.updateRotation = false; // we face the player manually
                 agent.speed = circleSpeed;
             }
 
-            circleAngle = Random.Range(0f, Mathf.PI * 2f);
-            circleDirection = Random.value < 0.5f ? 1 : -1;
             nextCircleRetargetTime = 0f;
+            AttackSlotManager.JoinRing(npc);
 
             melee = FSM.GetComponent<Melee>();
             driverRoutine = npc.StartCoroutine(AttackDriver());
@@ -46,7 +59,9 @@ namespace Game.Enemy
         {
             // Keep facing the player smoothly between swings.
             FacePlayer();
-            UpdateCircling();
+            UpdateAttackSlot(npc);
+
+            if (!hasSlot) UpdateCircling();
         }
 
         public override void ExitState(NpcFSM npc)
@@ -57,6 +72,13 @@ namespace Game.Enemy
                 driverRoutine = null;
             }
 
+            if (hasSlot)
+            {
+                AttackSlotManager.ReleaseSlot(npc);
+                hasSlot = false;
+            }
+            AttackSlotManager.LeaveRing(npc);
+
             if (agent != null)
             {
                 agent.isStopped = false;
@@ -66,6 +88,8 @@ namespace Game.Enemy
 
         // Polls the Melee component each tick; it gates the rate internally so the
         // enemy swings as soon as the cooldown allows. No timing lives here.
+        // Only actually swings while holding the attack slot — an enemy still
+        // waiting its turn stays in range but never calls TryAttack().
         private IEnumerator AttackDriver()
         {
             while (true)
@@ -78,13 +102,38 @@ namespace Game.Enemy
                     yield break;
                 }
 
-                if (melee != null) melee.TryAttack();
+                if (hasSlot && melee != null) melee.TryAttack();
 
                 yield return null;
             }
         }
 
         // ── Helpers ──────────────────────────────────────────────────
+
+        // Tries to claim the attack slot while waiting, and gives it up again
+        // after a randomised engagement window so someone else gets a turn.
+        // A solo enemy just keeps re-claiming the slot immediately since
+        // nothing else is competing for it, so single-enemy fights still feel
+        // as responsive as before.
+        private void UpdateAttackSlot(NpcFSM npc)
+        {
+            if (!hasSlot)
+            {
+                if (!AttackSlotManager.TryClaimSlot(npc)) return;
+
+                hasSlot = true;
+                slotReleaseTime = Time.time + Random.Range(MinEngagementTime, MaxEngagementTime);
+                if (agent != null) agent.isStopped = true; // plant and fight
+                return;
+            }
+
+            if (Time.time >= slotReleaseTime)
+            {
+                AttackSlotManager.ReleaseSlot(npc);
+                hasSlot = false;
+                if (agent != null) agent.isStopped = !circlingEnabled; // back to waiting/circling
+            }
+        }
 
         private bool WithinAttackRange()
         {
@@ -118,9 +167,11 @@ namespace Game.Enemy
         }
 
         /// <summary>
-        /// Moves the destination around the player in a slow orbit, staying
-        /// inside attackRange so the swing loop's WithinAttackRange() check
-        /// keeps passing. No-op when circleSpeed is 0 (agent stays isStopped).
+        /// Moves the destination to this enemy's evenly-spaced spot on
+        /// AttackSlotManager's shared ring, staying inside attackRange so the
+        /// swing loop's WithinAttackRange() check keeps passing. Only runs
+        /// while waiting for the attack slot — no-op when circleSpeed is 0
+        /// (agent stays isStopped).
         /// </summary>
         private void UpdateCircling()
         {
@@ -128,10 +179,9 @@ namespace Game.Enemy
             if (Time.time < nextCircleRetargetTime) return;
             nextCircleRetargetTime = Time.time + CircleRetargetInterval;
 
-            circleAngle += circleDirection * CircleAngularSpeed * CircleRetargetInterval;
-
+            float angle = AttackSlotManager.GetRingAngle(FSM);
             float radius = attackRange * 0.75f;
-            Vector3 offset = new Vector3(Mathf.Cos(circleAngle), 0f, Mathf.Sin(circleAngle)) * radius;
+            Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
             agent.SetDestination(player.transform.position + offset);
         }
 

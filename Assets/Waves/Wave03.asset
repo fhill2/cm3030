@@ -15,6 +15,7 @@ MonoBehaviour:
   enemyCount: 3
   spawnInterval: 0.5
   healthMultiplier: 1.6
+  blockChance: 0.55
   enemyPrefabs:
   - {fileID: 2759925646633051954, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
   weaponOverride: {fileID: 1523444829220646909, guid: a29db9773a81744af806479985625ee3, type: 3}
