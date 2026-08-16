@@ -46,6 +46,12 @@ namespace Game.Combat
             if (m_resultRegistered) return;
             if (other.transform.root == transform.root) return;
 
+            // Friendly fire guard: skip anything on the same team as whoever
+            // owns this weapon (e.g. an enemy's swing landing on another
+            // enemy). Player and Enemy are tags on each character's root
+            // GameObject, same convention as the self-hit check above.
+            if (other.transform.root.CompareTag(transform.root.tag)) return;
+
             if (other.CompareTag("Shield"))
             {
                 if (other.enabled)

@@ -145,6 +145,11 @@ namespace Game.Core
             // Assign an individual patrol path to this enemy.
             AssignPatrolPath(enemy);
 
+            // Scale difficulty by overriding how often enemies in this wave try
+            // to block. 0 (the WaveConfig default) means "leave the prefab's own
+            // blockChance alone" rather than forcing blocking off entirely.
+            if (config.BlockChance > 0f) ApplyBlockChance(enemy, config.BlockChance);
+
             liveEnemies.Add(enemy);
         }
 
@@ -176,6 +181,18 @@ namespace Game.Core
             list.Clear();
             foreach (Transform wp in path)
                 list.Add(wp);
+        }
+
+        // Same reflection approach as AssignPatrolPath — avoids a hard dependency
+        // from Core -> Enemy across the assembly boundary.
+        private void ApplyBlockChance(GameObject enemy, float blockChance)
+        {
+            var fsmType = System.Type.GetType("Game.Enemy.NpcFSM, Assembly-CSharp");
+            if (fsmType == null) return;
+            var fsm = enemy.GetComponent(fsmType);
+            if (fsm == null) return;
+
+            fsmType.GetField("blockChance")?.SetValue(fsm, blockChance);
         }
 
         private void HandleDeath(DeathArgs e)
