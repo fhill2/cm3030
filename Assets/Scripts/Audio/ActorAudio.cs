@@ -38,6 +38,11 @@ namespace Game.Audio
         void Awake()
         {
             source = GetComponent<AudioSource>();
+            source.spatialBlend = 1f;
+            source.rolloffMode = AudioRolloffMode.Linear;
+            source.minDistance = 1.5f;
+            source.maxDistance = 25f;
+            source.dopplerLevel = 0f;
             LoadClips();
         }
 
