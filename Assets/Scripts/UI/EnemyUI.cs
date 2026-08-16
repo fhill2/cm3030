@@ -35,11 +35,13 @@ namespace Game.UI
         void OnEnable()
         {
             EventManager.OnDamage += HandleDamage;
+            EventManager.OnDeath += HandleDeath;
         }
 
         void OnDisable()
         {
             EventManager.OnDamage -= HandleDamage;
+            EventManager.OnDeath -= HandleDeath;
         }
 
         void LateUpdate()
@@ -51,6 +53,16 @@ namespace Game.UI
         void HandleDamage(DamageArgs e)
         {
             if (e.Target == gameObject) Refresh();
+        }
+
+        void HandleDeath(DeathArgs e)
+        {
+            if (e.Entity != gameObject) return;
+
+            if (canvasTransform != null)
+                canvasTransform.gameObject.SetActive(false);
+
+            enabled = false;
         }
 
         void Refresh()
