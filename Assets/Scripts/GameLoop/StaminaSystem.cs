@@ -9,8 +9,10 @@ namespace Game.Combat
     // them work.
     //
     // Nothing here reaches into the movement or attack code. Those ask this
-    // component for permission and report their cost to it. The UI reads the
-    // value through OnStaminaChanged rather than holding a reference.
+    // component for permission and report their cost to it. Blocked hits are
+    // picked up off the event bus instead, so the combat code doesn't need to
+    // know stamina exists. The UI reads the value through OnStaminaChanged
+    // rather than holding a reference.
     //
     // Goes on the player object.
     public class StaminaSystem : MonoBehaviour
@@ -81,17 +83,35 @@ namespace Game.Combat
         private void OnEnable()
         {
             EventManager.OnDeath += HandleDeath;
+            EventManager.OnBlock += HandleBlock;
         }
 
         private void OnDisable()
         {
             EventManager.OnDeath -= HandleDeath;
+            EventManager.OnBlock -= HandleBlock;
         }
 
         private void HandleDeath(DeathArgs e)
         {
             if (e.Entity != gameObject) return;
             isDead = true;
+        }
+
+        // WeaponCollider raises this whenever a swing is stopped by a shield.
+        // We only care when the shield in question is ours, so absorbing a blow
+        // costs stamina on top of the drain from simply holding the guard up.
+        private void HandleBlock(BlockArgs e)
+        {
+            if (e.Defender != gameObject) return;
+            if (isDead) return;
+
+            // Deliberately not TrySpend: the hit already landed, so it's paid
+            // for whether or not there's enough in the tank. Running dry here
+            // is what breaks the guard.
+            Spend(blockedHitCost);
+
+            if (logChanges) Debug.Log("[Stamina] Blocked a hit");
         }
 
         private void Update()
@@ -140,11 +160,6 @@ namespace Game.Combat
             return TrySpend(jumpCost);
         }
 
-        public bool TrySpendBlockedHit()
-        {
-            return TrySpend(blockedHitCost);
-        }
-
         // ── Continuous costs ─────────────────────────────────────────────────
         // Called every frame while the action is held. Return false once there's
         // nothing left, which is the caller's signal to stop.
@@ -177,7 +192,7 @@ namespace Game.Combat
         }
 
         // Takes stamina and triggers the stun if it empties the pool. Used by
-        // both the all-or-nothing costs and the continuous drains.
+        // the all-or-nothing costs, the continuous drains, and blocked hits.
         private void Spend(float amount)
         {
             if (amount <= 0f) return;
