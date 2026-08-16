@@ -1354,7 +1354,7 @@ PrefabInstance:
     - target: {fileID: 6692166033087513242, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 127a9a7067fe6f2ecbbc9ce09b29577d, type: 2}
+      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
     - target: {fileID: 6692166033087513242, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -1916,7 +1916,7 @@ PrefabInstance:
       addedObject: {fileID: 7047765748153011115}
     - targetCorrespondingSourceObject: {fileID: 104891162817479258, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1132354969515469496}
+      addedObject: {fileID: 8870810811496802015}
     - targetCorrespondingSourceObject: {fileID: 5139812576210410636, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5279397815728093141}
@@ -2264,6 +2264,8 @@ MonoBehaviour:
   messageFadeDuration: 1.2
   deathMessage: Camelot has Fallen
   messageFontSize: 72
+  restartMessage: Press R to start over
+  restartFontSize: 28
 --- !u!114 &7047765748153011115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2277,7 +2279,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actorAudio: {fileID: 0}
---- !u!114 &1132354969515469496
+--- !u!114 &8870810811496802015
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2286,13 +2288,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 3300592954359289009}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61f2e4e6a0fb3f648ad9077dd50c0cff, type: 3}
+  m_Script: {fileID: 11500000, guid: d00dbc53ce3766a4d918b9e2aa41426d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   maxStamina: 100
-  drainPerSecond: 25
-  regenPerSecond: 15
-  regenDelayAfterEmpty: 0.75
+  attackCost: 25
+  jumpCost: 20
+  blockedHitCost: 15
+  blockDrainPerSecond: 20
+  sprintDrainPerSecond: 12
+  regenPerSecond: 18
+  regenDelay: 1
+  stunDuration: 2
+  stunRecoveryFraction: 0.3
+  logChanges: 0
 --- !u!1 &7777402596816652903 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5139812576210410636, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
