@@ -22,6 +22,8 @@ namespace Game.Audio
         private static readonly string FleshPath   = "Grunts/flesh";
         private static readonly string FleshSplatPath = "Grunts/flesh_splat";
         private static readonly string WeaponPath  = "Weapon/swing";
+        private static readonly string DropPath    = "Weapon/drop";
+        private static readonly string UnequipPath = "Weapon/unequip";
         private static readonly string BlockPath   = "Shield/hit";
         // The cuts folder holds individual steps; the parent folder holds the
         // full uncut recordings, which are too long to use as one-shots.
@@ -29,6 +31,7 @@ namespace Game.Audio
         private const float SwingDelay = 0.03f;
         private const float FleshDelay = 0.1f;
         private const float FleshVolume = 0.65f;
+        private const float UnequipDelay = 0.5f;
 
         private static AudioClip[] s_effortClips;
         private static AudioClip[] s_damageClips;
@@ -36,6 +39,8 @@ namespace Game.Audio
         private static AudioClip[] s_fleshClips;
         private static AudioClip[] s_fleshSplatClips;
         private static AudioClip[] s_swingClips;
+        private static AudioClip[] s_dropClips;
+        private static AudioClip[] s_unequipClips;
         private static AudioClip[] s_blockClips;
         private static AudioClip[] s_footstepClips;
 
@@ -61,6 +66,8 @@ namespace Game.Audio
             s_fleshClips  = Resources.LoadAll<AudioClip>(FleshPath);
             s_fleshSplatClips = Resources.LoadAll<AudioClip>(FleshSplatPath);
             s_swingClips  = Resources.LoadAll<AudioClip>(WeaponPath);
+            s_dropClips   = Resources.LoadAll<AudioClip>(DropPath);
+            s_unequipClips = Resources.LoadAll<AudioClip>(UnequipPath);
             s_blockClips  = Resources.LoadAll<AudioClip>(BlockPath);
             s_footstepClips = Resources.LoadAll<AudioClip>(FootstepPath);
         }
@@ -100,8 +107,17 @@ namespace Game.Audio
 
         void HandleDeath(DeathArgs e)
         {
-            if (e.Entity == gameObject)
-                Play(RandomClip(s_deathClips));
+            if (e.Entity != gameObject) return;
+
+            Play(RandomClip(s_deathClips));
+            Play(RandomClip(s_dropClips));
+            StartCoroutine(UnequipRoutine());
+        }
+
+        private IEnumerator UnequipRoutine()
+        {
+            yield return new WaitForSeconds(UnequipDelay);
+            Play(RandomClip(s_unequipClips));
         }
 
         void HandleHit(HitArgs e)
