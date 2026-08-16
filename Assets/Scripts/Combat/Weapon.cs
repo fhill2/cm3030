@@ -6,6 +6,7 @@ namespace Game.Combat
     {
         [SerializeField] private WeaponDef def;
 
-        public WeaponDef Def => def;
+        // Settable so the shop can swap in an upgraded runtime copy of the def.
+        public WeaponDef Def { get => def; set => def = value; }
     }
 }

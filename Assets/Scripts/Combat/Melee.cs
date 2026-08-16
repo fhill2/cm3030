@@ -20,19 +20,37 @@ namespace Game.Combat
         {
             if (animator == null) animator = GetComponentInChildren<Animator>();
         }
+
         private const float Pullback = 0.2f; // blade pulled back, not yet dangerous
+
+        // Whether a swing would actually start right now. Callers check this
+        // before spending stamina, so clicks during the cooldown cost nothing.
+        public bool CanAttack
+        {
+            get
+            {
+                ResolveReferences();
+                if (equipped == null || equipped.Def == null) return false;
+
+                return Time.time - lastAttackTime >= equipped.Def.Speed;
+            }
+        }
 
         public bool TryAttack()
         {
-            if (equipped == null) equipped = GetComponentInChildren<Weapon>();
-            if (weaponCollider == null) weaponCollider = GetComponentInChildren<WeaponCollider>();
-            if (equipped == null || equipped.Def == null) return false;
-
-            if (Time.time - lastAttackTime < equipped.Def.Speed) return false;
+            if (!CanAttack) return false;
 
             lastAttackTime = Time.time;
             StartCoroutine(SwingRoutine());
             return true;
+        }
+
+        // The weapon is instantiated by Equipment in Start, so we can't cache
+        // these in Awake — they're resolved on first use instead.
+        private void ResolveReferences()
+        {
+            if (equipped == null) equipped = GetComponentInChildren<Weapon>();
+            if (weaponCollider == null) weaponCollider = GetComponentInChildren<WeaponCollider>();
         }
 
         private IEnumerator SwingRoutine()

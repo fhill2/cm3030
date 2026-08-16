@@ -38,14 +38,23 @@ namespace Game.Movement
         [Tooltip("ShieldCollider component on the shield. Leave empty to auto-find.")]
         [SerializeField] private ShieldCollider shieldCollider;
 
+        // Stamina gate. Optional — without it everything behaves as before.
+        private StaminaSystem stamina;
+
         /// <summary>True while the player is holding block. Exposed so other
         /// systems (stamina, animation) read one source instead of each
         /// polling the mouse themselves.</summary>
         public bool IsBlocking { get; private set; }
 
+        /// <summary>True while the player is actually sprinting, i.e. holding
+        /// Shift AND able to pay for it.</summary>
+        public bool IsSprintingNow { get; private set; }
+
         protected override void Awake()
         {
             base.Awake();
+
+            stamina = GetComponent<StaminaSystem>();
 
             if (cameraTransform == null && Camera.main != null)
                 cameraTransform = Camera.main.transform;
@@ -76,11 +85,17 @@ namespace Game.Movement
 
             bool grounded = controller.isGrounded;
 
+            // Work out sprint first, since Move() needs to know the speed and
+            // sprinting costs stamina every frame it's held.
+            IsSprintingNow = ResolveSprint();
+
             Vector2 input = ReadMoveInput();
             Vector3 horizontal = Move(input);      // strafe movement (no turning)
             ApplyGravity(grounded);
 
-            bool jumped = grounded && JumpPressed();
+            // Jump costs a chunk up front, so a stunned or exhausted player
+            // stays on the ground.
+            bool jumped = grounded && JumpPressed() && CanAffordJump();
             if (jumped)
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
@@ -102,12 +117,40 @@ namespace Game.Movement
             SetMoveInput(animInput.x, animInput.y);
 
             // Sprint: Shift toggles between walk and run animations.
-            if (animator != null) animator.SetBool(AnimParams.Sprint, IsSprinting());
+            if (animator != null) animator.SetBool(AnimParams.Sprint, IsSprintingNow);
 
             // Block stance: hold right-click to raise the shield.
-            IsBlocking = Mouse.current != null && Mouse.current.rightButton.isPressed;
+            IsBlocking = ResolveBlock();
             if (animator != null) animator.SetBool(AnimParams.Block, IsBlocking);
             if (shieldCollider != null) shieldCollider.IsBlocking = IsBlocking;
+        }
+
+        // Sprinting is held down, so it drains continuously. The drain returns
+        // false the moment stamina runs out, which drops us back to a walk in
+        // the same frame.
+        private bool ResolveSprint()
+        {
+            if (!SprintHeld()) return false;
+            if (!MovingOnFoot()) return false;   // no drain while standing still
+            if (stamina == null) return true;
+
+            return stamina.DrainSprint(Time.deltaTime);
+        }
+
+        // Same idea for the shield: holding it costs stamina every frame, and
+        // the guard drops automatically when there's nothing left.
+        private bool ResolveBlock()
+        {
+            if (Mouse.current == null || !Mouse.current.rightButton.isPressed) return false;
+            if (stamina == null) return true;
+
+            return stamina.DrainBlock(Time.deltaTime);
+        }
+
+        private bool CanAffordJump()
+        {
+            if (stamina == null) return true;
+            return stamina.TrySpendJump();
         }
 
         // Camera-relative strafe movement. Does NOT rotate the character —
@@ -124,7 +167,7 @@ namespace Game.Movement
             Vector3 direction = camForward * input.y + camRight * input.x;
             if (direction.sqrMagnitude > 1f) direction.Normalize();
 
-            float speed = (IsSprinting() ? sprintSpeed : walkSpeed) * speedScale;
+            float speed = (IsSprintingNow ? sprintSpeed : walkSpeed) * speedScale;
             return direction * speed;
         }
 
@@ -142,9 +185,16 @@ namespace Game.Movement
             return input;
         }
 
-        bool IsSprinting()
+        bool SprintHeld()
         {
             return Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+        }
+
+        // Sprinting only counts when there's actual movement input, so standing
+        // on the spot holding Shift doesn't burn the bar.
+        bool MovingOnFoot()
+        {
+            return ReadMoveInput().sqrMagnitude > 0.01f;
         }
 
         bool JumpPressed()
@@ -169,6 +219,7 @@ namespace Game.Movement
             // player who died holding right-click would otherwise keep the block
             // animation and an armed shield collider on the corpse forever.
             IsBlocking = false;
+            IsSprintingNow = false;
             if (animator != null) animator.SetBool(AnimParams.Block, false);
             if (shieldCollider != null) shieldCollider.IsBlocking = false;
         }

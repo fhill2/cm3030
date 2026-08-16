@@ -2,16 +2,17 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Core;
+using Game.Combat;
 using Game.Health;
 
 namespace Game.UI
 {
     /// <summary>
     /// Screen-space HUD for the player: a health bar top-left, a stamina bar
-    /// beneath it (see PlayerStamina — placeholder until row 10 lands), an
-    /// enemies-remaining counter top-right, and the death screen. Goes on the
-    /// player root. Creates its own overlay canvas; health/enemy count refresh
-    /// on events, stamina refreshes every frame since it changes continuously.
+    /// beneath it, an enemies-remaining counter top-right, and the death
+    /// screen with a restart prompt. Goes on the player root. Creates its own
+    /// overlay canvas; health and enemy count refresh on events, stamina
+    /// refreshes every frame since it changes continuously.
     /// </summary>
     public class PlayerUI : MonoBehaviour
     {
@@ -29,8 +30,14 @@ namespace Game.UI
         [SerializeField] private string deathMessage = "Camelot has Fallen";
         [SerializeField] private int messageFontSize = 72;
 
+        [Header("Restart")]
+        [Tooltip("Shown under the death message once restarting is allowed.")]
+        [SerializeField] private string restartMessage = "Press R to start over";
+        [SerializeField] private int restartFontSize = 28;
+
         private const float StaminaBarHeight = 16f;
         private static readonly Color StaminaColor = new Color(0.95f, 0.8f, 0.25f, 1f);
+        private static readonly Color StunnedColor = new Color(0.8f, 0.25f, 0.2f, 1f);
 
         private HealthSystem health;
         private Image healthFill;
@@ -38,36 +45,43 @@ namespace Game.UI
         private Text  enemyLabel;
         private Image fadeOverlay;
         private Text  deathText;
+        private Text  restartText;
         private Coroutine deathRoutine;
 
-        // PLACEHOLDER (sheet row 18) — GetComponent returns null until Alessio's
-        // stamina system (row 10) lands or PlayerStamina is added to the player
-        // prefab; the bar just shows its default text until then.
-        private PlayerStamina stamina;
+        // Alessio's stamina system (sheet row 10), which replaced the
+        // PlayerStamina placeholder. Null-safe: the bar just shows its default
+        // text if the component isn't on the player.
+        private StaminaSystem stamina;
         private Image staminaFill;
         private Text  staminaLabel;
+
+        // Found at runtime so the prompt only appears once restarting is allowed.
+        private RunController runController;
 
         private static Font s_font;
 
         void Awake()
         {
             health = GetComponent<HealthSystem>();
-            stamina = GetComponent<PlayerStamina>();
+            stamina = GetComponent<StaminaSystem>();
             BuildUI();
         }
 
         void Start()
         {
+            runController = FindFirstObjectByType<RunController>();
+
             Refresh();
             RefreshEnemyCount();
             RefreshStamina();
         }
 
         // Stamina isn't event-driven like health (it changes continuously
-        // while blocking/regenerating), so it needs a per-frame poll.
+        // while blocking, sprinting and regenerating), so it needs a per-frame poll.
         void Update()
         {
             RefreshStamina();
+            RefreshRestartPrompt();
         }
 
         void OnEnable()
@@ -152,13 +166,32 @@ namespace Game.UI
         void RefreshStamina()
         {
             if (stamina == null) return;
-            float ratio = stamina.MaxStamina > 0f
-                ? stamina.CurrentStamina / stamina.MaxStamina : 0f;
+
+            float ratio = stamina.Max > 0f ? stamina.Current / stamina.Max : 0f;
+
             if (staminaFill != null)
+            {
                 staminaFill.rectTransform.anchorMax = new Vector2(ratio, 1f);
+                // Turn the bar red while stunned, so it's obvious why nothing
+                // is responding.
+                staminaFill.color = stamina.IsStunned ? StunnedColor : StaminaColor;
+            }
+
             if (staminaLabel != null)
-                staminaLabel.text =
-                    $"STAMINA  {stamina.CurrentStamina:0} / {stamina.MaxStamina:0}";
+            {
+                staminaLabel.text = stamina.IsStunned
+                    ? "STAMINA  EXHAUSTED"
+                    : $"STAMINA  {stamina.Current:0} / {stamina.Max:0}";
+            }
+        }
+
+        // Only shown once the run is over and the restart delay has passed.
+        void RefreshRestartPrompt()
+        {
+            if (restartText == null) return;
+
+            bool show = runController != null && runController.CanRestart;
+            SetAlpha(restartText, show ? 1f : 0f);
         }
 
         void BuildUI()
@@ -178,9 +211,7 @@ namespace Game.UI
                 new Vector2(0, 1), new Vector2(Margin, -Margin - BarHeight - 4f),
                 BarWidth, TextAnchor.MiddleLeft);
 
-            // Stamina bar stacks directly under the health label. PLACEHOLDER
-            // (row 18) — stays populated with default text until PlayerStamina
-            // is on the player (see that script for why it's a stand-in).
+            // Stamina bar stacks directly under the health label.
             float staminaY = -Margin - BarHeight - 4f - 28f - 6f;
             staminaFill = CreateBar(t, new Vector2(0, 1), new Vector2(Margin, staminaY),
                 BarWidth, StaminaBarHeight, StaminaColor);
@@ -230,6 +261,23 @@ namespace Game.UI
             // Red, but starting fully transparent
             deathText.color = new Color(1f, 0f, 0f, 0f);
             deathText.raycastTarget = false;
+
+            // Restart prompt, sitting below the death message. Offset downward
+            // so the two don't overlap in the middle of the screen.
+            var restartGo = new GameObject("RestartPrompt");
+            restartGo.transform.SetParent(fadeGo.transform, false);
+            var restartRt = restartGo.AddComponent<RectTransform>();
+            restartRt.anchorMin = Vector2.zero;
+            restartRt.anchorMax = Vector2.one;
+            restartRt.offsetMin = new Vector2(0f, -180f);
+            restartRt.offsetMax = new Vector2(0f, -180f);
+            restartText = restartGo.AddComponent<Text>();
+            restartText.text = restartMessage;
+            restartText.alignment = TextAnchor.MiddleCenter;
+            restartText.font = GetFont();
+            restartText.fontSize = restartFontSize;
+            restartText.color = new Color(1f, 1f, 1f, 0f);
+            restartText.raycastTarget = false;
         }
 
         Text CreateLabelText(Transform parent, string content, Vector2 anchor, Vector2 pos,

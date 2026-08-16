@@ -38,6 +38,7 @@ namespace Game.Movement
         private CharacterController controller;
         private PlayerMovement movement;
         private Melee melee;
+        private StaminaSystem stamina;
         private int comboStep;
         private float lastAttackTime = -999f;
         private bool inCombat;
@@ -48,6 +49,7 @@ namespace Game.Movement
             controller = GetComponent<CharacterController>();
             movement = GetComponent<PlayerMovement>();
             melee = GetComponent<Melee>();
+            stamina = GetComponent<StaminaSystem>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
         }
 
@@ -101,10 +103,19 @@ namespace Game.Movement
             if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame) return;
             if (requireGrounded && controller != null && !controller.isGrounded) return;
 
-            // Feed the combo step to the animator, then ask Melee to swing. It owns
-            // the rate/timing; we only advance the combo if it actually did.
+            // Ask Melee whether a swing would actually start before paying for
+            // it. Clicking during the weapon's cooldown then costs nothing,
+            // rather than draining stamina on attacks that never happen.
+            if (melee == null || !melee.CanAttack) return;
+
+            // Stamina gate. Spending happens here rather than inside Melee so the
+            // enemy, which shares Melee, isn't affected. If there isn't enough,
+            // or we're stunned, the swing never starts.
+            if (stamina != null && !stamina.TrySpendAttack()) return;
+
+            // Feed the combo step to the animator, then ask Melee to swing.
             animator.SetInteger(AnimParams.ComboStep, comboStep);
-            if (melee != null && melee.TryAttack())
+            if (melee.TryAttack())
             {
                 lastAttackTime = Time.time;
                 comboStep = (comboStep + 1) % Mathf.Max(1, comboLength);
