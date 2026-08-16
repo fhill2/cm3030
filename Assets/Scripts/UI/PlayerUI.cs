@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using Game.Core;
 using Game.Combat;
@@ -35,6 +36,14 @@ namespace Game.UI
         [SerializeField] private string restartMessage = "Press R to start over";
         [SerializeField] private int restartFontSize = 28;
 
+        [Header("Volume")]
+        [Tooltip("Master volume 0-1, applied to AudioListener.volume on startup and adjusted with the -/+ hotkeys.")]
+        [SerializeField, Range(0f, 1f)] private float volume = 0.6f;
+        [Tooltip("How much each -/+ key press changes the volume.")]
+        [SerializeField] private float volumeStep = 0.1f;
+
+        private const string VolumePrefKey = "playerui.volume";
+
         private const float StaminaBarHeight = 16f;
         private static readonly Color StaminaColor = new Color(0.95f, 0.8f, 0.25f, 1f);
         private static readonly Color StunnedColor = new Color(0.8f, 0.25f, 0.2f, 1f);
@@ -58,12 +67,19 @@ namespace Game.UI
         // Found at runtime so the prompt only appears once restarting is allowed.
         private RunController runController;
 
+        private Image volumeFill;
+
         private static Font s_font;
+        private static Sprite s_speaker;
 
         void Awake()
         {
             health = GetComponent<HealthSystem>();
             stamina = GetComponent<StaminaSystem>();
+
+            volume = PlayerPrefs.GetFloat(VolumePrefKey, volume);
+            AudioListener.volume = volume;
+
             BuildUI();
         }
 
@@ -82,6 +98,7 @@ namespace Game.UI
         {
             RefreshStamina();
             RefreshRestartPrompt();
+            PollVolumeHotkeys();
         }
 
         void OnEnable()
@@ -194,6 +211,119 @@ namespace Game.UI
             SetAlpha(restartText, show ? 1f : 0f);
         }
 
+        void PollVolumeHotkeys()
+        {
+            var kb = Keyboard.current;
+            if (kb == null) return;
+
+            if (kb.minusKey.wasPressedThisFrame || kb.numpadMinusKey.wasPressedThisFrame)
+                ApplyVolume(volume - volumeStep);
+
+            if (kb.equalsKey.wasPressedThisFrame || kb.numpadPlusKey.wasPressedThisFrame)
+                ApplyVolume(volume + volumeStep);
+        }
+
+        void ApplyVolume(float value)
+        {
+            volume = Mathf.Clamp01(value);
+            AudioListener.volume = volume;
+
+            if (volumeFill != null)
+                volumeFill.rectTransform.anchorMax = new Vector2(volume, 1f);
+
+            PlayerPrefs.SetFloat(VolumePrefKey, volume);
+            PlayerPrefs.Save();
+        }
+
+        void BuildVolumeControl(Transform parent)
+        {
+            var iconRt = CreateRect(parent, new Vector2(0, 0), new Vector2(0, 0),
+                new Vector2(Margin, Margin), new Vector2(32f, 32f));
+            var icon = iconRt.gameObject.AddComponent<Image>();
+            icon.sprite = GetSpeakerSprite();
+            icon.raycastTarget = false;
+
+            CreateGlyph(parent, "-", new Vector2(Margin + 38f, Margin + 2f));
+            volumeFill = CreateBar(parent, new Vector2(0, 0),
+                new Vector2(Margin + 54f, Margin + 11f), 140f, 10f, Color.white);
+            volumeFill.raycastTarget = false;
+            volumeFill.rectTransform.anchorMax = new Vector2(volume, 1f);
+            CreateGlyph(parent, "+", new Vector2(Margin + 198f, Margin + 2f));
+
+            CreatePlainText(parent, "- / + adjust volume",
+                new Vector2(Margin, Margin + 38f), 214f);
+        }
+
+        Text CreateGlyph(Transform parent, string content, Vector2 pos)
+        {
+            var rt = CreateRect(parent, new Vector2(0, 0), new Vector2(0, 0), pos, new Vector2(16f, 28f));
+            var txt = rt.gameObject.AddComponent<Text>();
+            txt.text = content;
+            txt.alignment = TextAnchor.MiddleCenter;
+            txt.color = Color.white;
+            txt.font = GetFont();
+            txt.fontSize = 22;
+            txt.raycastTarget = false;
+            return txt;
+        }
+
+        Text CreatePlainText(Transform parent, string content, Vector2 pos, float width)
+        {
+            var rt = CreateRect(parent, new Vector2(0, 0), new Vector2(0, 0), pos, new Vector2(width, 16f));
+            var txt = rt.gameObject.AddComponent<Text>();
+            txt.text = content;
+            txt.alignment = TextAnchor.MiddleLeft;
+            txt.color = new Color(1f, 1f, 1f, 0.6f);
+            txt.font = GetFont();
+            txt.fontSize = 12;
+            txt.raycastTarget = false;
+            return txt;
+        }
+
+        static Sprite GetSpeakerSprite()
+        {
+            if (s_speaker != null) return s_speaker;
+
+            const int size = 32;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            var clear = new Color32(0, 0, 0, 0);
+            var white = new Color32(235, 235, 235, 255);
+
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                    tex.SetPixel(x, y, clear);
+
+            for (int y = 12; y <= 19; y++)
+                for (int x = 4; x <= 11; x++)
+                    tex.SetPixel(x, y, white);
+
+            for (int x = 11; x <= 20; x++)
+            {
+                float t = (x - 11) / 9f;
+                int half = Mathf.RoundToInt(4f + t * 6f);
+                for (int y = 16 - half; y <= 15 + half; y++)
+                    tex.SetPixel(x, y, white);
+            }
+
+            for (int wave = 0; wave < 2; wave++)
+            {
+                int r = 5 + wave * 4;
+                for (int x = 22; x < size; x++)
+                {
+                    int dx = x - 21;
+                    if (dx > r) break;
+                    float dy = Mathf.Sqrt(r * r - dx * dx);
+                    tex.SetPixel(x, Mathf.RoundToInt(15.5f - dy), white);
+                    tex.SetPixel(x, Mathf.RoundToInt(15.5f + dy), white);
+                }
+            }
+
+            tex.Apply();
+            s_speaker = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 32f);
+            return s_speaker;
+        }
+
         void BuildUI()
         {
             var canvasGo = new GameObject("PlayerUICanvas");
@@ -224,6 +354,8 @@ namespace Game.UI
             enemyLabel = CreateLabelText(t, "ENEMIES REMAINING  --",
                 new Vector2(1, 1), new Vector2(-Margin, -Margin),
                 CounterWidth, TextAnchor.MiddleRight);
+
+            BuildVolumeControl(t);
 
             // Built last on purpose: within a canvas, later siblings draw top, so this covers the health bar and counter when it fades in
             BuildDeathScreen(t);
