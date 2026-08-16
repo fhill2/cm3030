@@ -19,16 +19,22 @@ namespace Game.Audio
         private static readonly string EffortPath  = "Grunts/effort";
         private static readonly string DamagePath  = "Grunts/damage";
         private static readonly string DeathPath   = "Grunts/death";
+        private static readonly string FleshPath   = "Grunts/flesh";
+        private static readonly string FleshSplatPath = "Grunts/flesh_splat";
         private static readonly string WeaponPath  = "Weapon/swing";
         private static readonly string BlockPath   = "Shield/hit";
         // The cuts folder holds individual steps; the parent folder holds the
         // full uncut recordings, which are too long to use as one-shots.
         private static readonly string FootstepPath = "Footsteps/cuts";
         private const float SwingDelay = 0.03f;
+        private const float FleshDelay = 0.1f;
+        private const float FleshVolume = 0.65f;
 
         private static AudioClip[] s_effortClips;
         private static AudioClip[] s_damageClips;
         private static AudioClip[] s_deathClips;
+        private static AudioClip[] s_fleshClips;
+        private static AudioClip[] s_fleshSplatClips;
         private static AudioClip[] s_swingClips;
         private static AudioClip[] s_blockClips;
         private static AudioClip[] s_footstepClips;
@@ -52,6 +58,8 @@ namespace Game.Audio
             s_effortClips = Resources.LoadAll<AudioClip>(EffortPath);
             s_damageClips = Resources.LoadAll<AudioClip>(DamagePath);
             s_deathClips  = Resources.LoadAll<AudioClip>(DeathPath);
+            s_fleshClips  = Resources.LoadAll<AudioClip>(FleshPath);
+            s_fleshSplatClips = Resources.LoadAll<AudioClip>(FleshSplatPath);
             s_swingClips  = Resources.LoadAll<AudioClip>(WeaponPath);
             s_blockClips  = Resources.LoadAll<AudioClip>(BlockPath);
             s_footstepClips = Resources.LoadAll<AudioClip>(FootstepPath);
@@ -77,8 +85,17 @@ namespace Game.Audio
 
         void HandleDamage(DamageArgs e)
         {
-            if (e.Target == gameObject)
-                Play(RandomClip(s_damageClips));
+            if (e.Target != gameObject) return;
+
+            Play(RandomClip(s_damageClips));
+            StartCoroutine(FleshRoutine());
+        }
+
+        private IEnumerator FleshRoutine()
+        {
+            yield return new WaitForSeconds(FleshDelay);
+            Play(RandomClip(s_fleshClips), FleshVolume);
+            Play(RandomClip(s_fleshSplatClips));
         }
 
         void HandleDeath(DeathArgs e)
@@ -129,10 +146,10 @@ namespace Game.Audio
             return clips[Random.Range(0, clips.Length)];
         }
 
-        private void Play(AudioClip clip)
+        private void Play(AudioClip clip, float volumeScale = 1f)
         {
             if (clip != null && source != null)
-                source.PlayOneShot(clip);
+                source.PlayOneShot(clip, volumeScale);
         }
     }
 }
