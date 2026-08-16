@@ -24,5 +24,6 @@ namespace Game.Shared
         public static readonly int Hit         = Animator.StringToHash("Hit");
         public static readonly int GetHitIndex = Animator.StringToHash("GetHitIndex");
         public static readonly int Die         = Animator.StringToHash("Die");
+        public static readonly int DeathIndex  = Animator.StringToHash("DeathIndex");
     }
 }

@@ -8,6 +8,7 @@ namespace Game.Health
     {
         [SerializeField] protected float maxHealth = 100f;
         [SerializeField] protected float hitImmunityWindow = 0.1f;
+        [SerializeField] private int deathAnimationCount = 9;
 
         protected float currentHealth;
         protected bool alive = true;
@@ -53,7 +54,11 @@ namespace Game.Health
         {
             if (!alive) return;
             alive = false;
-            if (animator != null) animator.SetTrigger(AnimParams.Die);
+            if (animator != null)
+            {
+                animator.SetFloat(AnimParams.DeathIndex, Random.Range(0, deathAnimationCount));
+                animator.SetTrigger(AnimParams.Die);
+            }
             EventManager.RaiseDeath(new DeathArgs(gameObject));
             OnDeath();
         }
