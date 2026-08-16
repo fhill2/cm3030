@@ -38,6 +38,11 @@ namespace Game.Movement
         [Tooltip("ShieldCollider component on the shield. Leave empty to auto-find.")]
         [SerializeField] private ShieldCollider shieldCollider;
 
+        /// <summary>True while the player is holding block. Exposed so other
+        /// systems (stamina, animation) read one source instead of each
+        /// polling the mouse themselves.</summary>
+        public bool IsBlocking { get; private set; }
+
         protected override void Awake()
         {
             base.Awake();
@@ -100,9 +105,9 @@ namespace Game.Movement
             if (animator != null) animator.SetBool(AnimParams.Sprint, IsSprinting());
 
             // Block stance: hold right-click to raise the shield.
-            bool isBlocking = Mouse.current != null && Mouse.current.rightButton.isPressed;
-            if (animator != null) animator.SetBool(AnimParams.Block, isBlocking);
-            if (shieldCollider != null) shieldCollider.IsBlocking = isBlocking;
+            IsBlocking = Mouse.current != null && Mouse.current.rightButton.isPressed;
+            if (animator != null) animator.SetBool(AnimParams.Block, IsBlocking);
+            if (shieldCollider != null) shieldCollider.IsBlocking = IsBlocking;
         }
 
         // Camera-relative strafe movement. Does NOT rotate the character —
@@ -163,6 +168,7 @@ namespace Game.Movement
             // Clear the guard explicitly. Update stops running from here, so a
             // player who died holding right-click would otherwise keep the block
             // animation and an armed shield collider on the corpse forever.
+            IsBlocking = false;
             if (animator != null) animator.SetBool(AnimParams.Block, false);
             if (shieldCollider != null) shieldCollider.IsBlocking = false;
         }

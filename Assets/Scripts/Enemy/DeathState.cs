@@ -15,6 +15,13 @@ namespace Game.Enemy
 
             if (agent != null)
             {
+                // Zero the velocity BEFORE disabling. NavMeshAgent.velocity freezes
+                // at its last value once the component is disabled rather than
+                // resetting to zero, so without this EnemyMotor keeps reading
+                // whatever speed the agent had at the moment of death — which is
+                // why the corpse kept sliding/walking instead of settling into
+                // the death pose.
+                agent.velocity = Vector3.zero;
                 agent.isStopped = true;
                 agent.enabled = false;
             }

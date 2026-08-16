@@ -17,6 +17,7 @@ namespace Game.Enemy
     public class EnemyMotor : AnimationMotor
     {
         private NavMeshAgent agent;
+        private bool agentWasEnabled = true;
 
         protected override void Awake()
         {
@@ -27,6 +28,21 @@ namespace Game.Enemy
         protected void Update()
         {
             if (agent == null) return;
+
+            // DeathState disables the agent on death. Push one final Speed=0
+            // update so the blend tree settles on Idle/Death instead of holding
+            // whatever value it last had, then stop doing per-frame work —
+            // belt-and-suspenders alongside DeathState zeroing agent.velocity.
+            if (!agent.enabled)
+            {
+                if (agentWasEnabled)
+                {
+                    UpdateAnimator(0f, true, false);
+                    agentWasEnabled = false;
+                }
+                return;
+            }
+            agentWasEnabled = true;
 
             // Normalise the agent's actual speed against its configured max speed,
             // so the blend tree gets 0 (idle) .. 1 (full chase).

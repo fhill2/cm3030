@@ -17,6 +17,8 @@ namespace Game.Core
 
         [Header("Difficulty")]
         [SerializeField] private float healthMultiplier = 1f;  // 2 = twice the health on the prefab
+        [Tooltip("Chance (0-1) enemies in this wave try to block the player's swings. Overrides each enemy's default blockChance when set above 0.")]
+        [SerializeField, Range(0f, 1f)] private float blockChance = 0f;
 
         [Header("Enemies")]
         [SerializeField] private GameObject[] enemyPrefabs;    // picked from at random
@@ -30,6 +32,7 @@ namespace Game.Core
         public int EnemyCount => enemyCount;
         public float SpawnInterval => spawnInterval;
         public float HealthMultiplier => healthMultiplier;
+        public float BlockChance => blockChance;
         public GameObject WeaponOverride => weaponOverride;
         public GameObject ShieldOverride => shieldOverride;
 
