@@ -96,4 +96,14 @@ namespace Game.Core
             Stunned = stunned;
         }
     }
+
+    public readonly struct FleeArgs
+    {
+        public readonly GameObject Entity;
+
+        public FleeArgs(GameObject entity)
+        {
+            Entity = entity;
+        }
+    }
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using Game.Core;
 
 namespace Game.Enemy
 {
@@ -17,6 +18,8 @@ namespace Game.Enemy
         public override void EnterState(NpcFSM npc)
         {
             base.EnterState(npc);
+
+            EventManager.RaiseFlee(new FleeArgs(npc.gameObject));
 
             if (agent != null)
             {

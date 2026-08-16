@@ -26,6 +26,9 @@ namespace Game.Audio
         private static readonly string UnequipPath = "Weapon/unequip";
         private static readonly string BlockPath   = "Shield/hit";
         private static readonly string TauntPath   = "Taunt";
+        private static readonly string ShortScreamPath = "Screams/short";
+        private static readonly string DeathScreamPath = "Screams/death";
+        private static readonly string FleeScreamPath  = "Screams/flee";
         // The cuts folder holds individual steps; the parent folder holds the
         // full uncut recordings, which are too long to use as one-shots.
         private static readonly string FootstepPath = "Footsteps/cuts";
@@ -45,6 +48,17 @@ namespace Game.Audio
         private static AudioClip[] s_unequipClips;
         private static AudioClip[] s_blockClips;
         private static AudioClip[] s_tauntClips;
+        private static AudioClip[] s_shortScreamClips;
+        private static AudioClip[] s_deathScreamClips;
+        private static AudioClip[] s_fleeScreamClips;
+
+        [Header("Vocal Chances")]
+        [Tooltip("Chance a hit plays a vocal at all (damage grunt or short scream). On a failed roll only the flesh layers sound.")]
+        [SerializeField, Range(0f, 1f)] private float hitVocalChance = 0.75f;
+        [Tooltip("Chance an enemy death plays a scream. On a failed roll only the weapon drop and unequip sound.")]
+        [SerializeField, Range(0f, 1f)] private float deathVocalChance = 0.75f;
+        [Tooltip("Chance a fleeing enemy screams.")]
+        [SerializeField, Range(0f, 1f)] private float fleeVocalChance = 0.75f;
         private static AudioClip[] s_footstepClips;
 
         private AudioSource source;
@@ -73,6 +87,9 @@ namespace Game.Audio
             s_unequipClips = Resources.LoadAll<AudioClip>(UnequipPath);
             s_blockClips  = Resources.LoadAll<AudioClip>(BlockPath);
             s_tauntClips  = Resources.LoadAll<AudioClip>(TauntPath);
+            s_shortScreamClips = Resources.LoadAll<AudioClip>(ShortScreamPath);
+            s_deathScreamClips = Resources.LoadAll<AudioClip>(DeathScreamPath);
+            s_fleeScreamClips  = Resources.LoadAll<AudioClip>(FleeScreamPath);
             s_footstepClips = Resources.LoadAll<AudioClip>(FootstepPath);
         }
 
@@ -82,6 +99,7 @@ namespace Game.Audio
             EventManager.OnDeath += HandleDeath;
             EventManager.OnHit += HandleHit;
             EventManager.OnBlock += HandleBlock;
+            EventManager.OnFlee += HandleFlee;
         }
 
         void OnDisable()
@@ -90,6 +108,7 @@ namespace Game.Audio
             EventManager.OnDeath -= HandleDeath;
             EventManager.OnHit -= HandleHit;
             EventManager.OnBlock -= HandleBlock;
+            EventManager.OnFlee -= HandleFlee;
         }
 
         // ── Event-driven combat audio ──────────────────────────
@@ -98,7 +117,8 @@ namespace Game.Audio
         {
             if (e.Target != gameObject) return;
 
-            Play(RandomClip(s_damageClips));
+            if (Random.value <= hitVocalChance)
+                Play(RandomVocal(s_damageClips, s_shortScreamClips));
             StartCoroutine(FleshRoutine());
         }
 
@@ -113,7 +133,16 @@ namespace Game.Audio
         {
             if (e.Entity != gameObject) return;
 
-            Play(RandomClip(s_deathClips));
+            if (CompareTag("Enemy"))
+            {
+                if (Random.value <= deathVocalChance)
+                    Play(RandomClip(s_deathScreamClips));
+            }
+            else
+            {
+                Play(RandomClip(s_deathClips));
+            }
+
             Play(RandomClip(s_dropClips));
             StartCoroutine(UnequipRoutine());
         }
@@ -137,6 +166,14 @@ namespace Game.Audio
         {
             if (e.Defender == gameObject)
                 Play(RandomClip(s_blockClips));
+        }
+
+        void HandleFlee(FleeArgs e)
+        {
+            if (e.Entity != gameObject) return;
+            if (Random.value > fleeVocalChance) return;
+
+            Play(RandomClip(s_fleeScreamClips));
         }
 
         // ── Direct-call API ────────────────────────────────────
@@ -166,6 +203,17 @@ namespace Game.Audio
         {
             if (clips == null || clips.Length == 0) return null;
             return clips[Random.Range(0, clips.Length)];
+        }
+
+        private static AudioClip RandomVocal(AudioClip[] grunts, AudioClip[] screams)
+        {
+            int gruntCount = grunts?.Length ?? 0;
+            int screamCount = screams?.Length ?? 0;
+            int total = gruntCount + screamCount;
+            if (total == 0) return null;
+
+            int roll = Random.Range(0, total);
+            return roll < gruntCount ? grunts[roll] : screams[roll - gruntCount];
         }
 
         private void Play(AudioClip clip, float volumeScale = 1f)
