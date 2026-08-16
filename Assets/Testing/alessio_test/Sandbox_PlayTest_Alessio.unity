@@ -5374,7 +5374,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7594797940390500537, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
+      insertIndex: 3
+      addedObject: {fileID: 1291718181}
+    - targetCorrespondingSourceObject: {fileID: 7594797940390500537, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
+      insertIndex: 12
+      addedObject: {fileID: 1291718182}
   m_SourcePrefab: {fileID: 100100000, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
 --- !u!4 &272104663 stripped
 Transform:
@@ -13242,7 +13248,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8100731435412985057, guid: 5f2ed0c7b14959a4d9bb948a85dd680f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -17
+      value: -17.1
       objectReference: {fileID: 0}
     - target: {fileID: 8100731435412985057, guid: 5f2ed0c7b14959a4d9bb948a85dd680f, type: 3}
       propertyPath: m_LocalPosition.y
@@ -30098,6 +30104,50 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &1291718168 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7594797940390500537, guid: cb47c9c911fad8e61b4ade468e5828df, type: 3}
+  m_PrefabInstance: {fileID: 272104662}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1291718181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291718168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d00dbc53ce3766a4d918b9e2aa41426d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxStamina: 100
+  attackCost: 25
+  blockDrainPerSecond: 20
+  blockedHitCost: 15
+  regenPerSecond: 18
+  regenDelay: 1
+  stunDuration: 2
+  stunRecoveryFraction: 0.3
+  logChanges: 1
+--- !u!114 &1291718182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291718168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ec23048e5fe4f24791965f3eb1679e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  comboLength: 4
+  comboResetTime: 0
+  requireGrounded: 1
+  idleTimeout: 5
+  swingSlowFactor: 0.5
 --- !u!1001 &1292490865
 PrefabInstance:
   m_ObjectHideFlags: 0

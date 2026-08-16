@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Game.Core
 {
     // The five states the game loop can be in.
@@ -62,6 +64,36 @@ namespace Game.Core
         {
             SecondsLeft = secondsLeft;
             TotalSeconds = totalSeconds;
+        }
+    }
+
+    // Sent whenever an entity's stamina changes. Entity is included so a bar
+    // can ignore anyone but its own owner.
+    public readonly struct StaminaChangedArgs
+    {
+        public readonly GameObject Entity;
+        public readonly float Current;
+        public readonly float Max;
+
+        public StaminaChangedArgs(GameObject entity, float current, float max)
+        {
+            Entity = entity;
+            Current = current;
+            Max = max;
+        }
+    }
+
+    // Sent when an entity is stunned by running out of stamina, and again
+    // when the stun lifts.
+    public readonly struct StunArgs
+    {
+        public readonly GameObject Entity;
+        public readonly bool Stunned;
+
+        public StunArgs(GameObject entity, bool stunned)
+        {
+            Entity = entity;
+            Stunned = stunned;
         }
     }
 }
