@@ -18,6 +18,7 @@ namespace Game.Shared
         public static readonly int Block       = Animator.StringToHash("Block");
         public static readonly int Sprint      = Animator.StringToHash("Sprint");
         public static readonly int Parry       = Animator.StringToHash("Parry");
+        public static readonly int Buff        = Animator.StringToHash("Buff");
 
         // ── Health ─────────────────────────────────
         public static readonly int Hit         = Animator.StringToHash("Hit");

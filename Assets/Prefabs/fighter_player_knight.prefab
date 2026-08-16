@@ -1914,6 +1914,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 104891162817479258, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6142337205089172893}
+    - targetCorrespondingSourceObject: {fileID: 104891162817479258, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7351948260371259046}
     - targetCorrespondingSourceObject: {fileID: 5139812576210410636, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5279397815728093141}
@@ -1945,6 +1948,19 @@ MonoBehaviour:
   minDescent: 0.03
   minInterval: 0.12
   playJumpAndLand: 1
+--- !u!114 &7351948260371259046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3300592954359289009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfc53b1ad73844e1aa4e0900274c0325, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cooldown: 20
 --- !u!143 &841830101173988333
 CharacterController:
   m_ObjectHideFlags: 0

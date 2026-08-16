@@ -31,6 +31,7 @@ namespace Game.Core
         public delegate void ShopTimeHandler(ShopTimeArgs e);
         public delegate void StaminaChangedHandler(StaminaChangedArgs e);
         public delegate void StunHandler(StunArgs e);
+        public delegate void TauntHandler();
 
         public static event DamageHandler OnDamage;
         public static event DeathHandler OnDeath;
@@ -43,6 +44,7 @@ namespace Game.Core
         public static event ShopTimeHandler OnShopTime;
         public static event StaminaChangedHandler OnStaminaChanged;
         public static event StunHandler OnStun;
+        public static event TauntHandler OnTaunt;
 
         // ── Raise helpers (the only place events are actually invoked) ───────
         public static void RaiseDamage(DamageArgs e) => OnDamage?.Invoke(e);
@@ -56,6 +58,7 @@ namespace Game.Core
         public static void RaiseShopTime(ShopTimeArgs e) => OnShopTime?.Invoke(e);
         public static void RaiseStaminaChanged(StaminaChangedArgs e) => OnStaminaChanged?.Invoke(e);
         public static void RaiseStun(StunArgs e) => OnStun?.Invoke(e);
+        public static void RaiseTaunt() => OnTaunt?.Invoke();
 
         // Clears every subscriber. Call on scene load so we don't keep
         // references to objects that no longer exist.
@@ -72,6 +75,7 @@ namespace Game.Core
             OnShopTime = null;
             OnStaminaChanged = null;
             OnStun = null;
+            OnTaunt = null;
         }
     }
 }

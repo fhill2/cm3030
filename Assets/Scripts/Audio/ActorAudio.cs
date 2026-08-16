@@ -25,12 +25,14 @@ namespace Game.Audio
         private static readonly string DropPath    = "Weapon/drop";
         private static readonly string UnequipPath = "Weapon/unequip";
         private static readonly string BlockPath   = "Shield/hit";
+        private static readonly string TauntPath   = "Taunt";
         // The cuts folder holds individual steps; the parent folder holds the
         // full uncut recordings, which are too long to use as one-shots.
         private static readonly string FootstepPath = "Footsteps/cuts";
         private const float SwingDelay = 0.03f;
         private const float FleshDelay = 0.1f;
         private const float FleshVolume = 0.65f;
+        private const float TauntVolume = 1.5f;
         private const float UnequipDelay = 0.5f;
 
         private static AudioClip[] s_effortClips;
@@ -42,6 +44,7 @@ namespace Game.Audio
         private static AudioClip[] s_dropClips;
         private static AudioClip[] s_unequipClips;
         private static AudioClip[] s_blockClips;
+        private static AudioClip[] s_tauntClips;
         private static AudioClip[] s_footstepClips;
 
         private AudioSource source;
@@ -69,6 +72,7 @@ namespace Game.Audio
             s_dropClips   = Resources.LoadAll<AudioClip>(DropPath);
             s_unequipClips = Resources.LoadAll<AudioClip>(UnequipPath);
             s_blockClips  = Resources.LoadAll<AudioClip>(BlockPath);
+            s_tauntClips  = Resources.LoadAll<AudioClip>(TauntPath);
             s_footstepClips = Resources.LoadAll<AudioClip>(FootstepPath);
         }
 
@@ -149,6 +153,8 @@ namespace Game.Audio
         public void PlayJump() => Play(RandomClip(s_effortClips));
 
         public void PlayLand() => Play(RandomClip(s_footstepClips));
+
+        public void PlayTaunt() => Play(RandomClip(s_tauntClips), TauntVolume);
 
         private IEnumerator SwingRoutine()
         {

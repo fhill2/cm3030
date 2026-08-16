@@ -33,6 +33,7 @@ namespace Game.Enemy
         public PatrolState s_Patrol = new PatrolState();
         public ChaseState  s_Chase  = new ChaseState();
         public AttackState s_Attack = new AttackState();
+        public FleeState   s_Flee   = new FleeState();
         public DeathState  s_Death  = new DeathState();
 
         [Tooltip("State the enemy enters on spawn. Defaults to Patrol.")]
@@ -128,6 +129,7 @@ namespace Game.Enemy
             EventManager.OnDeath  += HandleDeath;
             EventManager.OnDamage += HandleDamage;
             EventManager.OnHit    += HandleHit;
+            EventManager.OnTaunt  += HandleTaunt;
         }
 
         void OnDisable()
@@ -135,6 +137,7 @@ namespace Game.Enemy
             EventManager.OnDeath  -= HandleDeath;
             EventManager.OnDamage -= HandleDamage;
             EventManager.OnHit    -= HandleHit;
+            EventManager.OnTaunt  -= HandleTaunt;
         }
 
         // ── EventManager handlers ────────────────────────────────────
@@ -189,6 +192,14 @@ namespace Game.Enemy
             yield return new WaitForSeconds(blockHoldDuration);
             shieldCollider.IsBlocking = false;
             if (animator != null) animator.SetBool(AnimParams.Block, false);
+        }
+
+        void HandleTaunt()
+        {
+            if (!playerAlive) return;
+            if (CurrentState != s_Chase && CurrentState != s_Attack) return;
+
+            MoveToState(s_Flee);
         }
 
         // ── State transitions ────────────────────────────────────────
