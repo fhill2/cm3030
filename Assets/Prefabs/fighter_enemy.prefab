@@ -1333,7 +1333,7 @@ PrefabInstance:
     - target: {fileID: 6692166033087513242, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 127a9a7067fe6f2ecbbc9ce09b29577d, type: 2}
+      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
     - target: {fileID: 6692166033087513242, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -2040,13 +2040,18 @@ MonoBehaviour:
   attackRange: 2
   npcPatrolSpeed: 3.5
   npcChaseSpeed: 3.5
+  npcCircleSpeed: 2
   requireLineOfSight: 1
+  blockChance: 0.3
+  blockHoldDuration: 0.6
   checkTime: 0.2
   waitTime: 1.5
   distanceToTarget: 0.5
   agent: {fileID: 0}
   player: {fileID: 0}
   weaponCollider: {fileID: 0}
+  shieldCollider: {fileID: 0}
+  animator: {fileID: 0}
   playerAlive: 1
   wasHit: 0
 --- !u!114 &8401440842161968239
