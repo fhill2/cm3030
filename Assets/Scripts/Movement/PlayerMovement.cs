@@ -107,13 +107,21 @@ namespace Game.Movement
             UpdateAnimator(speed01, grounded, jumped);
 
             // Feed the directional locomotion blend.
-            // Forward/backward takes priority — W+S+A/D plays forward/backward only (no strafe blend).
-            // Pure A/D (no W/S) plays strafe animations.
+            // Sprinting: forward/backward wins — W+A/D plays forward/backward while the
+            // camera turns the character slightly (FollowCamera diagonalTurnAngle).
+            // Walking: strafe wins — W+A/D plays RunLeft/RunRight only.
             Vector2 animInput;
-            if (Mathf.Abs(input.y) > 0.1f)
-                animInput = new Vector2(0f, input.y);
-            else
+            if (IsSprintingNow)
+            {
+                if (Mathf.Abs(input.y) > 0.1f)
+                    animInput = new Vector2(0f, input.y);
+                else
+                    animInput = new Vector2(input.x, 0f);
+            }
+            else if (Mathf.Abs(input.x) > 0.1f)
                 animInput = new Vector2(input.x, 0f);
+            else
+                animInput = new Vector2(0f, input.y);
             SetMoveInput(animInput.x, animInput.y);
 
             // Sprint: Shift toggles between walk and run animations.
