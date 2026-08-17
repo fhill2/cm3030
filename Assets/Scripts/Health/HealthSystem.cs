@@ -15,6 +15,7 @@ namespace Game.Health
         protected Animator animator;
         protected float lastHitTime = float.NegativeInfinity;
         private int getHitIndex;
+        private int deathLayer = -1;
 
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
@@ -24,6 +25,12 @@ namespace Game.Health
         {
             currentHealth = maxHealth;
             animator = GetComponentInChildren<Animator>();
+
+            if (animator != null)
+            {
+                deathLayer = animator.GetLayerIndex("Death");
+                if (deathLayer >= 0) animator.SetLayerWeight(deathLayer, 0f);
+            }
         }
 
         public virtual void TakeDamage(float amount, DamageType type, GameObject source)
@@ -57,7 +64,8 @@ namespace Game.Health
             if (animator != null)
             {
                 animator.SetFloat(AnimParams.DeathIndex, Random.Range(0, deathAnimationCount));
-                animator.SetTrigger(AnimParams.Die);
+                animator.SetBool(AnimParams.Dead, true);
+                if (deathLayer >= 0) animator.SetLayerWeight(deathLayer, 1f);
             }
             EventManager.RaiseDeath(new DeathArgs(gameObject));
             OnDeath();
