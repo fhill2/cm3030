@@ -1,26 +1,3 @@
-Questions:
-Do we want to simplify the block detection? right click to block will block a percentage of blows.
-Should we use CC5 for both player & enemy and not use?
-
-___
-Module requirements:
-WaveSpawner -> spawn + count deaths.
-
-___
-
-TODO:
-
-make the enemy AI attack phase more intelligent:
-
-- enemy tries to block player (and success chance can be customized)
-- enemy moves around player
-- change enemy swing time separate to player
-- add flesh hit
-- fix broken enemy materials
-
-remove speed slow down on swing
-revisit the collider detection.
-
 ___
 Animation Clip Settings:
 Locomotion Clips (Walk, Run, Idle)
