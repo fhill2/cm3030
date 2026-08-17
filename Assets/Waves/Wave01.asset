@@ -15,8 +15,8 @@ MonoBehaviour:
   sets:
   - prefab: {fileID: 2759925646633051954, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
     count: 3
-    healthMultiplier: 1.0
+    healthMultiplier: 0.1
     blockChance: 0.15
     equipmentLevelMin: 1
-    equipmentLevelMax: 0
+    equipmentLevelMax: 1
   spawnInterval: 0.5

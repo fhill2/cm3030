@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0740d4442ed4c499d01e4e745a657e, type: 3}
   m_Name: MC_Hammer_02
   m_EditorClassIdentifier: 
-  damage: 13
-  speed: 1.85
+  damage: 7
+  speed: 1
   level: 2
   cost: 100
   positionOffset: {x: 0.03, y: 0.09, z: 0.2}

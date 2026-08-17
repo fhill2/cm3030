@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0740d4442ed4c499d01e4e745a657e, type: 3}
   m_Name: MC_Mace_01
   m_EditorClassIdentifier: 
-  damage: 8
+  damage: 14
   speed: 1.5
-  level: 1
+  level: 2
   cost: 50
   positionOffset: {x: 0.03, y: 0.2, z: 0.2}
   rotationOffset: {x: 120, y: 0, z: 60}

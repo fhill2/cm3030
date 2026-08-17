@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f08d799d6bcfa4372b54b0d75dc4cd65, type: 3}
   m_Name: MC_Shields_04
   m_EditorClassIdentifier: 
-  level: 4
+  level: 2
   cost: 200
   positionOffset: {x: 0.1, y: 0.1, z: 0}
   rotationOffset: {x: 0, y: 25, z: 10}
