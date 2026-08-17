@@ -34,6 +34,9 @@ namespace Game.Combat
         public GameObject WeaponPrefab { get => weaponPrefab; set => weaponPrefab = value; }
         public GameObject ShieldPrefab { get => shieldPrefab; set => shieldPrefab = value; }
 
+        public GameObject WeaponInstance => weaponInstance;
+        public GameObject ShieldInstance => shieldInstance;
+
         void Start()
         {
             if (weaponPrefab != null && weaponSocket != null)
