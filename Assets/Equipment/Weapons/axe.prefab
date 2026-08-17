@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4595703829979929994}
   - component: {fileID: 1639588915320040348}
   - component: {fileID: 9030519648927067307}
+  - component: {fileID: 7752714833812695926}
   m_Layer: 0
   m_Name: axe
   m_TagString: Untagged
@@ -143,3 +144,18 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: efca1f47541ad33469bcb16cb59bacf2, type: 3}
   m_PrefabInstance: {fileID: 7332212287930908904}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7752714833812695926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1523444829220646909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54bbacb856cf4f76b3720b809252428c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gravity: -20
+  selfRighting: 1
+  rightingSpeed: 2
