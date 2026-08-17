@@ -45,11 +45,6 @@ namespace Game.Core
         [Tooltip("Parent of patrol path groups. Each direct child is a path (e.g. Patrol1), and ITS children are the waypoints. Enemies cycle through paths in order.")]
         [SerializeField] private Transform patrolPathsRoot;
 
-        // Equipment pools, discovered from Resources so new prefabs join
-        // automatically. Null entries (a def-less prefab) are skipped.
-        private GameObject[] weaponPool;
-        private GameObject[] shieldPool;
-
         // Which patrol path to assign next (cycles through patrolPathsRoot's children).
         private int patrolPathIndex;
 
@@ -75,9 +70,6 @@ namespace Game.Core
                 for (int i = 0; i < spawnPointRoot.childCount; i++)
                     spawnPoints[i] = spawnPointRoot.GetChild(i);
             }
-
-            weaponPool = Resources.LoadAll<GameObject>("Equipment/Weapons");
-            shieldPool = Resources.LoadAll<GameObject>("Equipment/Shields");
         }
 
         private void OnEnable()
@@ -190,16 +182,13 @@ namespace Game.Core
             EnemyHealth health = enemy.GetComponent<EnemyHealth>();
             if (health != null) health.ApplyHealthMultiplier(set.HealthMultiplier);
 
-            // Equip from the level-filtered pools. Must happen before
-            // Equipment.Start() (which runs next frame), so the pick takes
-            // effect. No eligible equipment leaves the prefab's defaults.
             var equipment = enemy.GetComponent<Equipment>();
             if (equipment != null)
             {
-                GameObject weapon = PickByLevel(weaponPool, set, p => p.GetComponent<Weapon>()?.Def?.Level);
+                GameObject weapon = EquipmentCatalog.PickWeapon(set.EquipmentLevelMin, set.EquipmentLevelMax);
                 if (weapon != null) equipment.WeaponPrefab = weapon;
 
-                GameObject shield = PickByLevel(shieldPool, set, p => p.GetComponent<Shield>()?.Def?.Level);
+                GameObject shield = EquipmentCatalog.PickShield(set.EquipmentLevelMin, set.EquipmentLevelMax);
                 if (shield != null) equipment.ShieldPrefab = shield;
             }
 
@@ -212,30 +201,6 @@ namespace Game.Core
             if (set.BlockChance > 0f) ApplyBlockChance(enemy, set.BlockChance);
 
             liveEnemies.Add(enemy);
-        }
-
-        // Uniform random pick among pool prefabs whose def level falls inside
-        // the set's range (max 0 = uncapped). Returns null when nothing matches.
-        private static GameObject PickByLevel(GameObject[] pool, EnemySet set,
-            System.Func<GameObject, int?> levelOf)
-        {
-            if (pool == null || pool.Length == 0) return null;
-
-            var eligible = new List<GameObject>();
-            foreach (GameObject candidate in pool)
-            {
-                if (candidate == null) continue;
-
-                int? level = levelOf(candidate);
-                if (level == null) continue;
-
-                if (level.Value < set.EquipmentLevelMin) continue;
-                if (set.EquipmentLevelMax > 0 && level.Value > set.EquipmentLevelMax) continue;
-
-                eligible.Add(candidate);
-            }
-
-            return eligible.Count > 0 ? eligible[Random.Range(0, eligible.Count)] : null;
         }
 
         // Random point inside a circle around the spawn point, so several

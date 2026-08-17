@@ -15,6 +15,9 @@ namespace Game.Combat
         [Tooltip("Power tier. EnemySets pick equipment by level range.")]
         [SerializeField] private int level = 1;
 
+        [Tooltip("Shop price in gold.")]
+        [SerializeField] private int cost = 50;
+
         [Header("Grip Offset")]
         [Tooltip("Local position offset from the hand bone.")]
         [SerializeField] private Vector3 positionOffset = Vector3.zero;
@@ -28,6 +31,7 @@ namespace Game.Combat
         public float Damage { get => damage; set => damage = value; }
         public float Speed { get => speed; set => speed = value; }
         public int Level => level;
+        public int Cost => cost;
 
         public Vector3 PositionOffset => positionOffset;
         public Vector3 RotationOffset => rotationOffset;

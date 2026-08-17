@@ -37,6 +37,26 @@ namespace Game.Combat
         public GameObject WeaponInstance => weaponInstance;
         public GameObject ShieldInstance => shieldInstance;
 
+        public void EquipWeapon(GameObject prefab)
+        {
+            if (prefab == null || weaponSocket == null) return;
+
+            if (weaponInstance != null) Destroy(weaponInstance);
+            weaponPrefab = prefab;
+            weaponInstance = Instantiate(prefab, weaponSocket);
+            ApplyWeaponOffset();
+        }
+
+        public void EquipShield(GameObject prefab)
+        {
+            if (prefab == null || shieldSocket == null) return;
+
+            if (shieldInstance != null) Destroy(shieldInstance);
+            shieldPrefab = prefab;
+            shieldInstance = Instantiate(prefab, shieldSocket);
+            ApplyShieldOffset();
+        }
+
         void Start()
         {
             if (weaponPrefab != null && weaponSocket != null)

@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Shield
   m_EditorClassIdentifier: 
   level: 2
+  cost: 100
   positionOffset: {x: 0.15, y: -0.05, z: 0.05}
   rotationOffset: {x: 90, y: 0, z: 0}

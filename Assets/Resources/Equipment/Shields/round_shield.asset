@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: round_shield
   m_EditorClassIdentifier: 
   level: 1
+  cost: 50
   positionOffset: {x: 0.1, y: 0.1, z: 0}
   rotationOffset: {x: 0, y: 25, z: 10}

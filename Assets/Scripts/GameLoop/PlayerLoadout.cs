@@ -22,6 +22,8 @@ namespace Game.Core
         [Tooltip("Swing duration can never drop below this, however many speed upgrades are bought.")]
         [SerializeField] private float minimumSwingDuration = 0.4f;
 
+        public Equipment PlayerEquipment => player != null ? player.GetComponent<Equipment>() : null;
+
         // The runtime copy we're allowed to modify. Null until the first upgrade.
         private WeaponDef weaponCopy;
 

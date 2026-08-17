@@ -1337,7 +1337,7 @@ PrefabInstance:
     - target: {fileID: 6692166033087513242, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 127a9a7067fe6f2ecbbc9ce09b29577d, type: 2}
+      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
     - target: {fileID: 6692166033087513242, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -1911,23 +1911,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 104891162817479258, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
   m_PrefabInstance: {fileID: 418477825627137919}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5938204761293856212
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 340618435387090213}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fa7b1a79b12b409c9ab4446bbcec6fc, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  animator: {fileID: 0}
-  actorAudio: {fileID: 0}
-  minDescent: 0.03
-  minInterval: 0.12
-  playJumpAndLand: 0
 --- !u!82 &645856740997633851
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2037,6 +2020,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d36a1c9f599927c229df19db7ce8ee34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitVocalChance: 0.75
+  deathVocalChance: 0.75
+  fleeVocalChance: 0.75
 --- !u!114 &4658039074363075756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2051,7 +2037,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   hitImmunityWindow: 0.1
-  destroyDelay: 2
+  deathAnimationCount: 9
 --- !u!114 &9156169543439122334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2072,13 +2058,19 @@ MonoBehaviour:
   attackRange: 2
   npcPatrolSpeed: 3.5
   npcChaseSpeed: 3.5
+  npcCircleSpeed: 2
   requireLineOfSight: 1
+  blockChance: 0.3
+  blockHoldDuration: 0.6
+  tauntReactionDelay: 1
   checkTime: 0.2
   waitTime: 1.5
   distanceToTarget: 0.5
   agent: {fileID: 0}
   player: {fileID: 0}
   weaponCollider: {fileID: 0}
+  shieldCollider: {fileID: 0}
+  animator: {fileID: 0}
   playerAlive: 1
   wasHit: 0
 --- !u!114 &6259940047127607733
@@ -2160,6 +2152,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fd57209d9f6740eeab5e84c8b5d88c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &5938204761293856212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340618435387090213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fa7b1a79b12b409c9ab4446bbcec6fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  actorAudio: {fileID: 0}
+  minDescent: 0.03
+  minInterval: 0.12
+  playJumpAndLand: 0
+--- !u!114 &7395261481325794633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340618435387090213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0445d3679b734e009165da9382c1d750, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6981728159280459862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340618435387090213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92984b55efe44ee5bd0b389c121a564a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splashPrefabs:
+  - {fileID: 8007369982305464528, guid: 4ae5d2ab9b8c5444498df728275352c8, type: 3}
+  - {fileID: 8007369982305464528, guid: 85efed574c74bb24181b819f88da97b5, type: 3}
+  - {fileID: 6550804457596160986, guid: c2ff9a62d0009a64a81cc1a4bba59fd5, type: 3}
+  - {fileID: 4055846304957825616, guid: 700b4d22453a6ef438be63e4c5c37167, type: 3}
+  - {fileID: 4055846304957825616, guid: e855d12d7bfdb464b94ef1f1d20cf814, type: 3}
 --- !u!4 &1148925901220757407 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 738437886497528032, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
@@ -2262,40 +2301,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3936860204041351180, guid: 727979e97b12b441eac9132f4bf0bed1, type: 3}
   m_PrefabInstance: {fileID: 5579417035364394663}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7395261481325794633
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 340618435387090213}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0445d3679b734e009165da9382c1d750, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &6981728159280459862
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 340618435387090213}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92984b55efe44ee5bd0b389c121a564a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  splashPrefabs:
-  - {fileID: 8007369982305464528, guid: 4ae5d2ab9b8c5444498df728275352c8, type: 3}
-  - {fileID: 8007369982305464528, guid: 85efed574c74bb24181b819f88da97b5, type: 3}
-  - {fileID: 6550804457596160986, guid: c2ff9a62d0009a64a81cc1a4bba59fd5, type: 3}
-  - {fileID: 4055846304957825616, guid: 700b4d22453a6ef438be63e4c5c37167, type: 3}
-  - {fileID: 4055846304957825616, guid: e855d12d7bfdb464b94ef1f1d20cf814, type: 3}
-  deathSplashPrefab: {fileID: 2834077435049808890, guid: 6ec93a81790f8b0479992e9d8f328aad, type: 3}
-  decalPrefabs:
-  - {fileID: 2461062505677081030, guid: 92b05d809d88a334dad0fee227c13708, type: 3}
-  - {fileID: 8707850840964112949, guid: b1fde64c2a4cb1f4e98ccc1e0ac392f1, type: 3}
-  - {fileID: 8904036615139785200, guid: d1891c25adf84284abd4e2a61bacc365, type: 3}
-  - {fileID: 6456721277854630355, guid: b454b56a85bd2524b96c3ed4479015f6, type: 3}
-  drainDecalPrefab: {fileID: 7756093145173483167, guid: 190e5f4cc4138da40ae1d14fa3a7d42b, type: 3}

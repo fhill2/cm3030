@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Combat;
 
 namespace Game.Core
 {
@@ -111,6 +112,24 @@ namespace Game.Core
                     Debug.Log($"[Shop] {item.Effect} is not implemented yet.");
                     break;
             }
+        }
+
+        public bool TryBuyEquipment(EquipmentEntry entry)
+        {
+            if (wallet == null || !wallet.TrySpend(entry.Cost)) return false;
+
+            Equipment equipment = loadout != null ? loadout.PlayerEquipment : null;
+            if (equipment == null)
+            {
+                wallet.Add(entry.Cost);
+                return false;
+            }
+
+            if (entry.Kind == EquipmentKind.Shield) equipment.EquipShield(entry.Prefab);
+            else equipment.EquipWeapon(entry.Prefab);
+
+            Debug.Log($"[Shop] Equipped {entry.Name} for {entry.Cost}g");
+            return true;
         }
 
         // Called by the Done button. Ends the shop early and starts the wave.
