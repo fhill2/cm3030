@@ -8700,20 +8700,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2093847561
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 404486881}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 867f7813c41d4a5dbf99db8b0b7c432e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clipPath: Ambient/The Stronghold
-  volume: 0.5
 --- !u!114 &404486882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45445,6 +45431,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: fighter_player_knight
       objectReference: {fileID: 0}
+    - target: {fileID: 8099147468432970865, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -49315,6 +49305,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5179114937165454693, guid: c7c24c8dde6eadc46abfbd653f4c25d0, type: 3}
   m_PrefabInstance: {fileID: 2092369016}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2093847561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404486881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 867f7813c41d4a5dbf99db8b0b7c432e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clipPath: Ambient/The Stronghold
+  volume: 0.5
 --- !u!1001 &2099440310
 PrefabInstance:
   m_ObjectHideFlags: 0
