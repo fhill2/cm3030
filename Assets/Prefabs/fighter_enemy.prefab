@@ -2207,3 +2207,10 @@ MonoBehaviour:
   - {fileID: 6550804457596160986, guid: c2ff9a62d0009a64a81cc1a4bba59fd5, type: 3}
   - {fileID: 4055846304957825616, guid: 700b4d22453a6ef438be63e4c5c37167, type: 3}
   - {fileID: 4055846304957825616, guid: e855d12d7bfdb464b94ef1f1d20cf814, type: 3}
+  deathSplashPrefab: {fileID: 2834077435049808890, guid: 6ec93a81790f8b0479992e9d8f328aad, type: 3}
+  decalPrefabs:
+  - {fileID: 2461062505677081030, guid: 92b05d809d88a334dad0fee227c13708, type: 3}
+  - {fileID: 8707850840964112949, guid: b1fde64c2a4cb1f4e98ccc1e0ac392f1, type: 3}
+  - {fileID: 8904036615139785200, guid: d1891c25adf84284abd4e2a61bacc365, type: 3}
+  - {fileID: 6456721277854630355, guid: b454b56a85bd2524b96c3ed4479015f6, type: 3}
+  drainDecalPrefab: {fileID: 7756093145173483167, guid: 190e5f4cc4138da40ae1d14fa3a7d42b, type: 3}
