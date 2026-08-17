@@ -10,7 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f08d799d6bcfa4372b54b0d75dc4cd65, type: 3}
-  m_Name: round_shield
+  m_Name: Shield
   m_EditorClassIdentifier: 
-  positionOffset: {x: 0.1, y: 0.1, z: 0}
-  rotationOffset: {x: 0, y: 25, z: 10}
+  level: 2
+  positionOffset: {x: 0.15, y: -0.05, z: 0.05}
+  rotationOffset: {x: 90, y: 0, z: 0}
