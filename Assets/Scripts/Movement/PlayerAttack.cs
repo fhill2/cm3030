@@ -31,12 +31,7 @@ namespace Game.Movement
         [Tooltip("Seconds after the last swing before the stance relaxes back to Idle_Ready.")]
         [SerializeField] private float idleTimeout = 5f;
 
-        [Header("Movement")]
-        [Tooltip("Movement-speed multiplier while a swing is in progress (1 = normal).")]
-        [SerializeField] private float swingSlowFactor = 0.5f;
-
         private CharacterController controller;
-        private PlayerMovement movement;
         private Melee melee;
         private StaminaSystem stamina;
         private int comboStep;
@@ -47,7 +42,6 @@ namespace Game.Movement
         void Awake()
         {
             controller = GetComponent<CharacterController>();
-            movement = GetComponent<PlayerMovement>();
             melee = GetComponent<Melee>();
             stamina = GetComponent<StaminaSystem>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
@@ -56,33 +50,17 @@ namespace Game.Movement
         void OnEnable()
         {
             EventManager.OnDeath += HandleDeath;
-            if (melee != null)
-            {
-                melee.OnAttackStart += OnSwingStart;
-                melee.OnAttackEnd += OnSwingEnd;
-            }
         }
 
         void OnDisable()
         {
             EventManager.OnDeath -= HandleDeath;
-            if (melee != null)
-            {
-                melee.OnAttackStart -= OnSwingStart;
-                melee.OnAttackEnd -= OnSwingEnd;
-            }
         }
 
-        // Attacking lives on its own component, so PlayerMovement shutting down
-        // on death doesn't stop it. Without this a corpse still swings on click.
         private void HandleDeath(DeathArgs e)
         {
             if (e.Entity != gameObject) return;
             isDead = true;
-
-            // A swing already in flight finishes on Melee's own timer; just make
-            // sure the movement penalty it applied doesn't outlive it.
-            if (movement != null) movement.speedScale = 1f;
         }
 
         void Update()
@@ -127,18 +105,6 @@ namespace Game.Movement
                     animator.SetBool(AnimParams.InCombat, true);
                 }
             }
-        }
-
-        // Melee fires these at the start/end of the swing so the player slows down
-        // for its duration without any timing logic living here.
-        private void OnSwingStart()
-        {
-            if (movement != null) movement.speedScale = swingSlowFactor;
-        }
-
-        private void OnSwingEnd()
-        {
-            if (movement != null) movement.speedScale = 1f;
         }
     }
 }
