@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Game.Core;
 using Game.Health;
+using Game.Shared;
 
 namespace Game.Audio
 {
@@ -119,7 +120,9 @@ namespace Game.Audio
 
             if (Random.value <= hitVocalChance)
                 Play(RandomVocal(s_damageClips, s_shortScreamClips));
-            StartCoroutine(FleshRoutine());
+
+            if (e.Type == DamageType.Melee)
+                StartCoroutine(FleshRoutine());
         }
 
         private IEnumerator FleshRoutine()
