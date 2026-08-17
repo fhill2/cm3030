@@ -77,6 +77,10 @@ namespace Game.Enemy
         [Tooltip("How long the shield stays raised after a successful block roll.")]
         public float blockHoldDuration = 0.6f;
 
+        [Header("Taunt")]
+        [Tooltip("Seconds after hearing a taunt before the enemy breaks and flees.")]
+        public float tauntReactionDelay = 1f;
+
         // ── Timing ───────────────────────────────────────────────────
         [Header("Timers")]
         [Tooltip("Seconds between patrol/chase status checks.")]
@@ -150,6 +154,7 @@ namespace Game.Enemy
                 // and the Block animator bool stuck true forever — same guard
                 // PlayerMovement applies on death.
                 StopCoroutine(nameof(BlockRoutine));
+                StopCoroutine(nameof(TauntReactionRoutine));
                 if (shieldCollider != null) shieldCollider.IsBlocking = false;
                 if (animator != null) animator.SetBool(AnimParams.Block, false);
                 MoveToState(s_Death);
@@ -198,6 +203,17 @@ namespace Game.Enemy
         {
             if (!playerAlive) return;
             if (CurrentState != s_Chase && CurrentState != s_Attack) return;
+
+            StopCoroutine(nameof(TauntReactionRoutine));
+            StartCoroutine(nameof(TauntReactionRoutine));
+        }
+
+        private IEnumerator TauntReactionRoutine()
+        {
+            yield return new WaitForSeconds(tauntReactionDelay);
+
+            if (!playerAlive) yield break;
+            if (CurrentState != s_Chase && CurrentState != s_Attack) yield break;
 
             MoveToState(s_Flee);
         }
