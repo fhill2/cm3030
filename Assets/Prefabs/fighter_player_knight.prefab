@@ -2234,11 +2234,9 @@ MonoBehaviour:
   maxStamina: 100
   attackCost: 25
   jumpCost: 20
-  blockedHitCost: 15
-  blockDrainPerSecond: 20
   sprintDrainPerSecond: 12
   regenPerSecond: 18
-  regenDelay: 1
+  regenDelayAfterSwing: 1
   stunDuration: 2
   stunRecoveryFraction: 0.3
   logChanges: 0

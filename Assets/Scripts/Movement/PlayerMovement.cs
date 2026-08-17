@@ -137,14 +137,11 @@ namespace Game.Movement
             return stamina.DrainSprint(Time.deltaTime);
         }
 
-        // Same idea for the shield: holding it costs stamina every frame, and
-        // the guard drops automatically when there's nothing left.
+        // The shield is free to hold — blocking never touches stamina.
         private bool ResolveBlock()
         {
-            if (Mouse.current == null || !Mouse.current.rightButton.isPressed) return false;
-            if (stamina == null) return true;
-
-            return stamina.DrainBlock(Time.deltaTime);
+            if (Mouse.current == null) return false;
+            return Mouse.current.rightButton.isPressed;
         }
 
         private bool CanAffordJump()

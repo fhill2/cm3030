@@ -4,15 +4,16 @@ using Game.Health;
 
 namespace Game.Combat
 {
-    // Player stamina. Attacking, sprinting, jumping and blocking all cost
-    // stamina, and running out stuns you for a fixed window where none of
-    // them work.
+    // Player stamina. Attacking, sprinting and jumping cost stamina, and
+    // running out stuns you for a fixed window where none of them work.
+    // Blocking is free and never touches stamina.
+    //
+    // Regeneration runs continuously; the only pause is a short wait after
+    // each swing.
     //
     // Nothing here reaches into the movement or attack code. Those ask this
-    // component for permission and report their cost to it. Blocked hits are
-    // picked up off the event bus instead, so the combat code doesn't need to
-    // know stamina exists. The UI reads the value through OnStaminaChanged
-    // rather than holding a reference.
+    // component for permission and report their cost to it. The UI reads the
+    // value through OnStaminaChanged rather than holding a reference.
     //
     // Goes on the player object.
     public class StaminaSystem : MonoBehaviour
@@ -27,22 +28,16 @@ namespace Game.Combat
         [Tooltip("Stamina spent per jump.")]
         [SerializeField] private float jumpCost = 20f;
 
-        [Tooltip("Stamina spent when a hit lands on your shield, on top of the block drain.")]
-        [SerializeField] private float blockedHitCost = 15f;
-
         [Header("Continuous Costs")]
-        [Tooltip("Stamina drained per second while the shield is up.")]
-        [SerializeField] private float blockDrainPerSecond = 20f;
-
         [Tooltip("Stamina drained per second while sprinting.")]
         [SerializeField] private float sprintDrainPerSecond = 12f;
 
         [Header("Regeneration")]
-        [Tooltip("Stamina recovered per second once regeneration starts.")]
+        [Tooltip("Stamina recovered per second.")]
         [SerializeField] private float regenPerSecond = 18f;
 
-        [Tooltip("Seconds of not spending stamina before it starts coming back.")]
-        [SerializeField] private float regenDelay = 1f;
+        [Tooltip("Seconds after a swing before regeneration resumes. Everything else regenerates immediately.")]
+        [SerializeField] private float regenDelayAfterSwing = 1f;
 
         [Header("Stun")]
         [Tooltip("Seconds of being unable to act after running out.")]
@@ -56,7 +51,8 @@ namespace Game.Combat
         [SerializeField] private bool logChanges;
 
         private float current;
-        private float lastSpendTime = float.NegativeInfinity;
+        private float regenPausedUntil = float.NegativeInfinity;
+        private int suppressRegenFrame = -1;
         private float stunEndsAt;
         private bool stunned;
         private bool isDead;
@@ -83,35 +79,17 @@ namespace Game.Combat
         private void OnEnable()
         {
             EventManager.OnDeath += HandleDeath;
-            EventManager.OnBlock += HandleBlock;
         }
 
         private void OnDisable()
         {
             EventManager.OnDeath -= HandleDeath;
-            EventManager.OnBlock -= HandleBlock;
         }
 
         private void HandleDeath(DeathArgs e)
         {
             if (e.Entity != gameObject) return;
             isDead = true;
-        }
-
-        // WeaponCollider raises this whenever a swing is stopped by a shield.
-        // We only care when the shield in question is ours, so absorbing a blow
-        // costs stamina on top of the drain from simply holding the guard up.
-        private void HandleBlock(BlockArgs e)
-        {
-            if (e.Defender != gameObject) return;
-            if (isDead) return;
-
-            // Deliberately not TrySpend: the hit already landed, so it's paid
-            // for whether or not there's enough in the tank. Running dry here
-            // is what breaks the guard.
-            Spend(blockedHitCost);
-
-            if (logChanges) Debug.Log("[Stamina] Blocked a hit");
         }
 
         private void Update()
@@ -141,7 +119,8 @@ namespace Game.Combat
         private void TickRegen()
         {
             if (current >= maxStamina) return;
-            if (Time.time - lastSpendTime < regenDelay) return;
+            if (Time.time < regenPausedUntil) return;
+            if (Time.frameCount - suppressRegenFrame < 2) return;
 
             current = Mathf.Min(maxStamina, current + regenPerSecond * Time.deltaTime);
             Announce();
@@ -152,7 +131,10 @@ namespace Game.Combat
 
         public bool TrySpendAttack()
         {
-            return TrySpend(attackCost);
+            if (!TrySpend(attackCost)) return false;
+
+            regenPausedUntil = Time.time + regenDelayAfterSwing;
+            return true;
         }
 
         public bool TrySpendJump()
@@ -164,11 +146,6 @@ namespace Game.Combat
         // Called every frame while the action is held. Return false once there's
         // nothing left, which is the caller's signal to stop.
 
-        public bool DrainBlock(float deltaTime)
-        {
-            return Drain(blockDrainPerSecond * deltaTime);
-        }
-
         public bool DrainSprint(float deltaTime)
         {
             return Drain(sprintDrainPerSecond * deltaTime);
@@ -178,6 +155,7 @@ namespace Game.Combat
         {
             if (!CanAct) return false;
 
+            suppressRegenFrame = Time.frameCount;
             Spend(amount);
             return !stunned;
         }
@@ -191,14 +169,12 @@ namespace Game.Combat
             return true;
         }
 
-        // Takes stamina and triggers the stun if it empties the pool. Used by
-        // the all-or-nothing costs, the continuous drains, and blocked hits.
+        // Takes stamina and triggers the stun if it empties the pool.
         private void Spend(float amount)
         {
             if (amount <= 0f) return;
 
             current = Mathf.Max(0f, current - amount);
-            lastSpendTime = Time.time;
 
             Announce();
 
@@ -221,7 +197,8 @@ namespace Game.Combat
             current = maxStamina;
             stunned = false;
             isDead = false;
-            lastSpendTime = float.NegativeInfinity;
+            regenPausedUntil = float.NegativeInfinity;
+            suppressRegenFrame = -1;
 
             Announce();
             EventManager.RaiseStun(new StunArgs(gameObject, false));
