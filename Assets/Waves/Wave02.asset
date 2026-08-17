@@ -12,11 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a641c304ccfc5884786ff22255f5c282, type: 3}
   m_Name: Wave02
   m_EditorClassIdentifier: 
-  enemyCount: 3
+  sets:
+  - prefab: {fileID: 2759925646633051954, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
+    count: 3
+    healthMultiplier: 1.2
+    blockChance: 0.35
+    equipmentLevelMin: 1
+    equipmentLevelMax: 0
+  - prefab: {fileID: 340618435387090213, guid: f137d454ab91a4e3c8009be614c99e8a, type: 3}
+    count: 2
+    healthMultiplier: 1
+    blockChance: 0
+    equipmentLevelMin: 1
+    equipmentLevelMax: 1
   spawnInterval: 0.5
-  healthMultiplier: 1.2
-  blockChance: 0.35
-  enemyPrefabs:
-  - {fileID: 2759925646633051954, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
-  weaponOverride: {fileID: 1523444829220646909, guid: a29db9773a81744af806479985625ee3, type: 3}
-  shieldOverride: {fileID: 1895577389145918011, guid: 0a2edd723ab434504af00ec21d4ecaf8, type: 3}

@@ -1,7 +1,40 @@
+using System;
 using UnityEngine;
 
 namespace Game.Core
 {
+    // One entry in a wave's horde: a prefab, how many of it spawn, and how
+    // tough it is. Waves mix sets to intersperse elites with grunts — the
+    // spawner weaves them together.
+    [Serializable]
+    public class EnemySet
+    {
+        [Tooltip("Enemy prefab this set spawns.")]
+        [SerializeField] private GameObject prefab;
+
+        [Tooltip("How many enemies from this set the wave contains.")]
+        [SerializeField] private int count = 3;
+
+        [Tooltip("Health multiplier applied on top of the prefab's health.")]
+        [SerializeField] private float healthMultiplier = 1f;
+
+        [Tooltip("Chance (0-1) these enemies try to block the player's swings. 0 keeps the prefab's own blockChance.")]
+        [SerializeField, Range(0f, 1f)] private float blockChance = 0f;
+
+        [Tooltip("Lowest equipment level these enemies can be equipped with.")]
+        [SerializeField] private int equipmentLevelMin = 1;
+
+        [Tooltip("Highest equipment level these enemies can be equipped with. 0 = no cap.")]
+        [SerializeField] private int equipmentLevelMax = 1;
+
+        public GameObject Prefab => prefab;
+        public int Count => count;
+        public float HealthMultiplier => healthMultiplier;
+        public float BlockChance => blockChance;
+        public int EquipmentLevelMin => equipmentLevelMin;
+        public int EquipmentLevelMax => equipmentLevelMax;
+    }
+
     // One asset per wave. Right-click in the Project window to make them:
     // Create > Fall of Camelot > Wave Config
     //
@@ -12,35 +45,13 @@ namespace Game.Core
     public class WaveConfig : ScriptableObject
     {
         [Header("Horde")]
-        [SerializeField] private int enemyCount = 5;
-        [SerializeField] private float spawnInterval = 0.5f;   // gap between each spawn
+        [Tooltip("Enemy sets making up this wave. The spawner interleaves them: three from the first set, then one from each following set, repeating.")]
+        [SerializeField] private EnemySet[] sets;
 
-        [Header("Difficulty")]
-        [SerializeField] private float healthMultiplier = 1f;  // 2 = twice the health on the prefab
-        [Tooltip("Chance (0-1) enemies in this wave try to block the player's swings. Overrides each enemy's default blockChance when set above 0.")]
-        [SerializeField, Range(0f, 1f)] private float blockChance = 0f;
+        [Tooltip("Seconds between each individual spawn.")]
+        [SerializeField] private float spawnInterval = 0.5f;
 
-        [Header("Enemies")]
-        [SerializeField] private GameObject[] enemyPrefabs;    // picked from at random
-
-        [Header("Equipment Override (optional)")]
-        [Tooltip("Weapon prefab to equip on all enemies in this wave. Leave empty to use the enemy's default.")]
-        [SerializeField] private GameObject weaponOverride;
-        [Tooltip("Shield prefab to equip on all enemies in this wave. Leave empty to use the enemy's default.")]
-        [SerializeField] private GameObject shieldOverride;
-
-        public int EnemyCount => enemyCount;
+        public EnemySet[] Sets => sets;
         public float SpawnInterval => spawnInterval;
-        public float HealthMultiplier => healthMultiplier;
-        public float BlockChance => blockChance;
-        public GameObject WeaponOverride => weaponOverride;
-        public GameObject ShieldOverride => shieldOverride;
-
-        // Random pick, so a wave can mix enemy types once Munya has more than one.
-        public GameObject RandomEnemyPrefab()
-        {
-            if (enemyPrefabs == null || enemyPrefabs.Length == 0) return null;
-            return enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-        }
     }
 }

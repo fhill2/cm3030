@@ -9,6 +9,15 @@ namespace Game.Core
     // Spawns a wave, tracks how many are left, tells the state machine
     // when the wave is cleared.
     //
+    // A wave is one or more EnemySets. Sets are interleaved when spawning:
+    // three from the first set (the grunts), then one from each following
+    // set (the elites), repeating — so tough enemies are interspersed
+    // through the wave instead of arriving in one clump.
+    //
+    // Equipment is picked per enemy from every weapon/shield prefab under
+    // Resources/Equipment, filtered by the set's level range. Enemies with
+    // no eligible equipment keep their prefab's defaults.
+    //
     // Counting is done by listening to OnDeath rather than searching the
     // scene every frame. We keep a list of what we spawned so we only count
     // deaths that belong to this wave.
@@ -36,6 +45,11 @@ namespace Game.Core
         [Tooltip("Parent of patrol path groups. Each direct child is a path (e.g. Patrol1), and ITS children are the waypoints. Enemies cycle through paths in order.")]
         [SerializeField] private Transform patrolPathsRoot;
 
+        // Equipment pools, discovered from Resources so new prefabs join
+        // automatically. Null entries (a def-less prefab) are skipped.
+        private GameObject[] weaponPool;
+        private GameObject[] shieldPool;
+
         // Which patrol path to assign next (cycles through patrolPathsRoot's children).
         private int patrolPathIndex;
 
@@ -55,10 +69,15 @@ namespace Game.Core
 
         private void Awake()
         {
-            if (spawnPointRoot == null) return;
-            spawnPoints = new Transform[spawnPointRoot.childCount];
-            for (int i = 0; i < spawnPointRoot.childCount; i++)
-                spawnPoints[i] = spawnPointRoot.GetChild(i);
+            if (spawnPointRoot != null)
+            {
+                spawnPoints = new Transform[spawnPointRoot.childCount];
+                for (int i = 0; i < spawnPointRoot.childCount; i++)
+                    spawnPoints[i] = spawnPointRoot.GetChild(i);
+            }
+
+            weaponPool = Resources.LoadAll<GameObject>("Equipment/Weapons");
+            shieldPool = Resources.LoadAll<GameObject>("Equipment/Shields");
         }
 
         private void OnEnable()
@@ -94,9 +113,9 @@ namespace Game.Core
                 yield break;
             }
 
-            for (int i = 0; i < config.EnemyCount; i++)
+            foreach (EnemySet set in BuildSpawnQueue(config))
             {
-                SpawnOne(config);
+                SpawnOne(set);
                 yield return new WaitForSeconds(config.SpawnInterval);
             }
 
@@ -107,12 +126,54 @@ namespace Game.Core
             CheckWaveCleared();
         }
 
-        private void SpawnOne(WaveConfig config)
+        // Expands the wave's sets into one entry per enemy, interleaved:
+        // three from the first set, then one from each following set,
+        // repeating until every set's count is spent. Keeps at least one
+        // elite per three grunts without any randomness.
+        private static List<EnemySet> BuildSpawnQueue(WaveConfig config)
         {
-            GameObject prefab = config.RandomEnemyPrefab();
+            var queue = new List<EnemySet>();
+            var sets = config.Sets;
+            if (sets == null) return queue;
+
+            var remaining = new int[sets.Length];
+            for (int i = 0; i < sets.Length; i++) remaining[i] = sets[i].Count;
+
+            bool anyLeft = true;
+            while (anyLeft)
+            {
+                anyLeft = false;
+
+                for (int i = 0; i < 3 && remaining[0] > 0; i++)
+                {
+                    remaining[0]--;
+                    queue.Add(sets[0]);
+                }
+
+                for (int s = 1; s < sets.Length; s++)
+                {
+                    if (remaining[s] > 0)
+                    {
+                        remaining[s]--;
+                        queue.Add(sets[s]);
+                    }
+                }
+
+                for (int i = 0; i < remaining.Length; i++)
+                {
+                    if (remaining[i] > 0) { anyLeft = true; break; }
+                }
+            }
+
+            return queue;
+        }
+
+        private void SpawnOne(EnemySet set)
+        {
+            GameObject prefab = set.Prefab;
             if (prefab == null)
             {
-                Debug.LogWarning("[WaveSpawner] Wave config has no enemy prefabs.");
+                Debug.LogWarning("[WaveSpawner] Enemy set has no prefab.");
                 return;
             }
 
@@ -127,30 +188,54 @@ namespace Game.Core
 
             // Scale difficulty by bumping health above whatever the prefab has.
             EnemyHealth health = enemy.GetComponent<EnemyHealth>();
-            if (health != null) health.ApplyHealthMultiplier(config.HealthMultiplier);
+            if (health != null) health.ApplyHealthMultiplier(set.HealthMultiplier);
 
-            // Override equipment from the wave config — gives each wave control
-            // over what weapon/shield the spawned enemies wield. Must happen before
-            // Equipment.Start() (which runs next frame), so the override takes effect.
-            if (config.WeaponOverride != null || config.ShieldOverride != null)
+            // Equip from the level-filtered pools. Must happen before
+            // Equipment.Start() (which runs next frame), so the pick takes
+            // effect. No eligible equipment leaves the prefab's defaults.
+            var equipment = enemy.GetComponent<Equipment>();
+            if (equipment != null)
             {
-                var equipment = enemy.GetComponent<Equipment>();
-                if (equipment != null)
-                {
-                    if (config.WeaponOverride != null) equipment.WeaponPrefab = config.WeaponOverride;
-                    if (config.ShieldOverride != null) equipment.ShieldPrefab = config.ShieldOverride;
-                }
+                GameObject weapon = PickByLevel(weaponPool, set, p => p.GetComponent<Weapon>()?.Def?.Level);
+                if (weapon != null) equipment.WeaponPrefab = weapon;
+
+                GameObject shield = PickByLevel(shieldPool, set, p => p.GetComponent<Shield>()?.Def?.Level);
+                if (shield != null) equipment.ShieldPrefab = shield;
             }
 
             // Assign an individual patrol path to this enemy.
             AssignPatrolPath(enemy);
 
-            // Scale difficulty by overriding how often enemies in this wave try
-            // to block. 0 (the WaveConfig default) means "leave the prefab's own
+            // Scale difficulty by overriding how often these enemies try
+            // to block. 0 (the set default) means "leave the prefab's own
             // blockChance alone" rather than forcing blocking off entirely.
-            if (config.BlockChance > 0f) ApplyBlockChance(enemy, config.BlockChance);
+            if (set.BlockChance > 0f) ApplyBlockChance(enemy, set.BlockChance);
 
             liveEnemies.Add(enemy);
+        }
+
+        // Uniform random pick among pool prefabs whose def level falls inside
+        // the set's range (max 0 = uncapped). Returns null when nothing matches.
+        private static GameObject PickByLevel(GameObject[] pool, EnemySet set,
+            System.Func<GameObject, int?> levelOf)
+        {
+            if (pool == null || pool.Length == 0) return null;
+
+            var eligible = new List<GameObject>();
+            foreach (GameObject candidate in pool)
+            {
+                if (candidate == null) continue;
+
+                int? level = levelOf(candidate);
+                if (level == null) continue;
+
+                if (level.Value < set.EquipmentLevelMin) continue;
+                if (set.EquipmentLevelMax > 0 && level.Value > set.EquipmentLevelMax) continue;
+
+                eligible.Add(candidate);
+            }
+
+            return eligible.Count > 0 ? eligible[Random.Range(0, eligible.Count)] : null;
         }
 
         // Random point inside a circle around the spawn point, so several
