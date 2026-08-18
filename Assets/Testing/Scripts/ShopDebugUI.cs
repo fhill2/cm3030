@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Combat;
@@ -22,7 +21,6 @@ namespace Game.Core
         [SerializeField] private int panelWidth = 420;
         [SerializeField] private int rowHeight = 60;
 
-        private const int EquipmentPageWidth = 780;
         private const int CellWidth = 350;
         private const int CellHeight = 160;
         private const int CellGap = 10;
@@ -30,8 +28,10 @@ namespace Game.Core
 
         private float secondsLeft;
         private bool equipmentPage;
+        private Vector2 scrollPosition;
         private Equipment playerEquipment;
-        private readonly PreviewRenderer previews = new PreviewRenderer();
+        private readonly Dictionary<GameObject, Texture2D> thumbnails = new Dictionary<GameObject, Texture2D>();
+        private bool warnedMissingThumbnail;
 
         private void OnEnable()
         {
@@ -174,40 +174,63 @@ namespace Game.Core
             IReadOnlyList<EquipmentEntry> entries = EquipmentCatalog.Entries;
             if (entries.Count == 0) return;
 
-            int columns = Mathf.Max(1, (EquipmentPageWidth - 30 - CellGap) / (CellWidth + CellGap));
+            int pageWidth = Screen.width - 40;
+            int pageHeight = Screen.height - 20;
+
+            int columns = Mathf.Max(1, (pageWidth - 30 - CellGap) / (CellWidth + CellGap));
             int rows = Mathf.CeilToInt(entries.Count / (float)columns);
-            int height = 120 + rows * (CellHeight + CellGap);
+            int contentHeight = 120 + rows * (CellHeight + CellGap);
 
-            int x = (Screen.width - EquipmentPageWidth) / 2;
-            int y = (Screen.height - height) / 2;
+            int x = 20;
+            int y = 10;
 
-            GUI.Box(new Rect(x, y, EquipmentPageWidth, height), "");
+            GUI.Box(new Rect(x, y, pageWidth, pageHeight), "");
 
             GUIStyle title = new GUIStyle(GUI.skin.label);
             title.fontSize = 24;
             title.alignment = TextAnchor.MiddleCenter;
 
-            GUI.Label(new Rect(x, y + 12, EquipmentPageWidth, 32), "EQUIPMENT", title);
+            GUI.Label(new Rect(x, y + 12, pageWidth, 32), "EQUIPMENT", title);
 
             GUIStyle timer = new GUIStyle(GUI.skin.label);
             timer.fontSize = 16;
             timer.alignment = TextAnchor.MiddleCenter;
 
-            GUI.Label(new Rect(x, y + 46, EquipmentPageWidth - 110, 24),
+            GUI.Label(new Rect(x, y + 46, pageWidth - 110, 24),
                 $"{Mathf.CeilToInt(secondsLeft)}s left    ·    {wallet.Gold} gold", timer);
 
-            if (GUI.Button(new Rect(x + EquipmentPageWidth - 105, y + 42, 90, 28), "BACK"))
+            if (GUI.Button(new Rect(x + pageWidth - 105, y + 42, 90, 28), "BACK"))
             {
                 equipmentPage = false;
             }
 
             int rowY = y + 84;
+            int gridHeight = pageHeight - 94;
 
-            for (int i = 0; i < entries.Count; i++)
+            if (contentHeight > gridHeight)
             {
-                int cx = x + 15 + (i % columns) * (CellWidth + CellGap);
-                int cy = rowY + (i / columns) * (CellHeight + CellGap);
-                DrawEquipmentCell(entries[i], cx, cy);
+                scrollPosition = GUI.BeginScrollView(
+                    new Rect(x + 5, rowY, pageWidth - 10, gridHeight),
+                    scrollPosition,
+                    new Rect(0, 0, pageWidth - 30, contentHeight - 94));
+
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    int cx = 10 + (i % columns) * (CellWidth + CellGap);
+                    int cy = (i / columns) * (CellHeight + CellGap);
+                    DrawEquipmentCell(entries[i], cx, cy);
+                }
+
+                GUI.EndScrollView();
+            }
+            else
+            {
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    int cx = x + 15 + (i % columns) * (CellWidth + CellGap);
+                    int cy = rowY + (i / columns) * (CellHeight + CellGap);
+                    DrawEquipmentCell(entries[i], cx, cy);
+                }
             }
         }
 
@@ -215,11 +238,9 @@ namespace Game.Core
         {
             GUI.Box(new Rect(x, y, CellWidth, CellHeight), "");
 
-            RenderTexture preview = previews.Get(entry.Prefab, this);
-            if (preview != null)
-            {
-                DrawFlipped(new Rect(x + 12, y + (CellHeight - PreviewSize) / 2, PreviewSize, PreviewSize), preview);
-            }
+            Texture2D preview = GetThumbnail(entry);
+            Texture draw = preview != null ? preview : Placeholder();
+            GUI.DrawTexture(new Rect(x + 12, y + (CellHeight - PreviewSize) / 2, PreviewSize, PreviewSize), draw);
 
             int textX = x + PreviewSize + 24;
             int textW = CellWidth - PreviewSize - 36;
@@ -265,87 +286,37 @@ namespace Game.Core
             return playerEquipment;
         }
 
-        private static void DrawFlipped(Rect rect, Texture texture)
+        private Texture2D GetThumbnail(EquipmentEntry entry)
         {
-            Matrix4x4 previous = GUI.matrix;
-            GUIUtility.ScaleAroundPivot(new Vector2(1f, -1f),
-                new Vector2(rect.x + rect.width / 2f, rect.y + rect.height / 2f));
-            GUI.DrawTexture(rect, texture);
-            GUI.matrix = previous;
+            if (thumbnails.TryGetValue(entry.Prefab, out Texture2D cached)) return cached;
+
+            string folder = entry.Kind == EquipmentKind.Shield ? "Equipment/Shields" : "Equipment/Weapons";
+            Texture2D tex = Resources.Load<Texture2D>(folder + "/" + entry.Prefab.name);
+
+            if (tex == null && !warnedMissingThumbnail)
+            {
+                warnedMissingThumbnail = true;
+                Debug.LogWarning("[ShopDebugUI] Missing thumbnail for '" + entry.Prefab.name +
+                    "' — run Tools > Equipment > Generate Thumbnails.");
+            }
+
+            thumbnails[entry.Prefab] = tex;
+            return tex;
         }
 
-        private class PreviewRenderer
+        private static Texture2D s_placeholder;
+
+        private static Texture2D Placeholder()
         {
-            private const float RigY = -500f;
-
-            private readonly Dictionary<GameObject, RenderTexture> cache =
-                new Dictionary<GameObject, RenderTexture>();
-
-            public RenderTexture Get(GameObject prefab, MonoBehaviour host)
+            if (s_placeholder == null)
             {
-                if (cache.TryGetValue(prefab, out RenderTexture cached)) return cached;
-
-                var rig = new GameObject("ShopPreviewRig");
-                rig.transform.position = new Vector3(0f, RigY, 0f);
-                rig.hideFlags = HideFlags.HideAndDontSave;
-
-                GameObject instance = Object.Instantiate(prefab, rig.transform);
-                instance.transform.localPosition = Vector3.zero;
-                instance.transform.localRotation = Quaternion.identity;
-
-                var renderers = instance.GetComponentsInChildren<Renderer>();
-                if (renderers.Length == 0)
-                {
-                    Object.Destroy(rig);
-                    return null;
-                }
-
-                Bounds bounds = renderers[0].bounds;
-                for (int i = 1; i < renderers.Length; i++)
-                    bounds.Encapsulate(renderers[i].bounds);
-
-                var camGo = new GameObject("PreviewCam");
-                camGo.transform.SetParent(rig.transform);
-                camGo.transform.position = new Vector3(bounds.center.x, bounds.center.y, bounds.max.z + 1f);
-                camGo.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
-
-                var cam = camGo.AddComponent<Camera>();
-                cam.orthographic = true;
-                cam.orthographicSize = Mathf.Max(bounds.extents.x, bounds.extents.y, 0.3f) * 1.25f;
-                cam.nearClipPlane = 0.01f;
-                cam.farClipPlane = 5f;
-                cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = new Color(0.13f, 0.13f, 0.13f, 1f);
-                cam.enabled = true;
-
-                var lightGo = new GameObject("PreviewLight");
-                lightGo.transform.SetParent(rig.transform);
-                lightGo.transform.rotation = Quaternion.Euler(40f, 200f, 0f);
-                var light = lightGo.AddComponent<Light>();
-                light.type = LightType.Directional;
-                light.intensity = 1.2f;
-
-                var rt = new RenderTexture(256, 256, 24);
-                cam.targetTexture = rt;
-
-                cache[prefab] = rt;
-
-                if (host != null && host.isActiveAndEnabled)
-                    host.StartCoroutine(DestroyAfterFrames(rig, cam, 6));
-                else
-                    Object.Destroy(rig);
-
-                return rt;
+                s_placeholder = new Texture2D(2, 2);
+                for (int y = 0; y < 2; y++)
+                    for (int x = 0; x < 2; x++)
+                        s_placeholder.SetPixel(x, y, new Color(0.22f, 0.22f, 0.22f, 1f));
+                s_placeholder.Apply();
             }
-
-            private static IEnumerator DestroyAfterFrames(GameObject rig, Camera cam, int frames)
-            {
-                for (int i = 0; i < frames; i++) yield return null;
-
-                cam.enabled = false;
-                cam.targetTexture = null;
-                Object.Destroy(rig);
-            }
+            return s_placeholder;
         }
     }
 }

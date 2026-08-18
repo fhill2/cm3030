@@ -12,16 +12,12 @@ namespace Game.Combat
         [Tooltip("Shop price in gold.")]
         [SerializeField] private int cost = 50;
 
-        [Header("Grip Offset")]
-        [Tooltip("Local position offset from the hand bone.")]
-        [SerializeField] private Vector3 positionOffset = Vector3.zero;
-
-        [Tooltip("Local rotation offset (Euler angles).")]
+        [Header("Grip Fine-Tune")]
+        [Tooltip("Added to the base shield grip rotation (Euler degrees) for this shield.")]
         [SerializeField] private Vector3 rotationOffset = Vector3.zero;
 
         public int Level => level;
         public int Cost => cost;
-        public Vector3 PositionOffset => positionOffset;
         public Vector3 RotationOffset => rotationOffset;
     }
 }

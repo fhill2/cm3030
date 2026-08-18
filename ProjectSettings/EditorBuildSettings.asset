@@ -8,7 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Testing/freddie/freddie_playtest.unity
     guid: 521341268bddf442895f21c959e4a504
-  - enabled: 1
+  - enabled: 0
     path: Assets/Testing/alessio_test/Sandbox_PlayTest_Alessio.unity
     guid: 53354d56d0c67c9418c196e0aac7e6b4
   m_configObjects:

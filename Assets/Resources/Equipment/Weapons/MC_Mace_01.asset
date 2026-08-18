@@ -15,6 +15,5 @@ MonoBehaviour:
   damage: 14
   speed: 1.5
   level: 2
+  rotationOffset: {x: 0, y: -20, z: -40}
   cost: 50
-  positionOffset: {x: 0.03, y: 0.2, z: 0.2}
-  rotationOffset: {x: 120, y: 0, z: 60}

@@ -28,8 +28,71 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7800000000000000204}
   m_Father: {fileID: 1326475576112598787}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7800000000000000201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7800000000000000202}
+  m_Layer: 0
+  m_Name: WeaponHandAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7800000000000000202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7800000000000000201}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.0316, y: 0.0613, z: 0.0138}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 804652131284908881}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7800000000000000203
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7800000000000000204}
+  m_Layer: 0
+  m_Name: ShieldHandAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7800000000000000204
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7800000000000000203}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7861668629936102095}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8557686150905481303
 GameObject:
@@ -59,7 +122,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7800000000000000202}
   m_Father: {fileID: 1452910100294011796}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2826461989610317160
@@ -192,11 +256,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 738437886497528032, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.0000067
+      value: -4.0000134
       objectReference: {fileID: 0}
     - target: {fileID: 738437886497528032, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.040788412
+      value: 0.12405372
       objectReference: {fileID: 0}
     - target: {fileID: 738437886497528032, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2053,6 +2117,7 @@ MonoBehaviour:
   requireLineOfSight: 1
   blockChance: 0.3
   blockHoldDuration: 0.6
+  tauntReactionDelay: 1
   checkTime: 0.2
   waitTime: 1.5
   distanceToTarget: 0.5
@@ -2092,7 +2157,9 @@ MonoBehaviour:
   weaponSocket: {fileID: 804652131284908881}
   shieldPrefab: {fileID: 1895577389145918011, guid: 0a2edd723ab434504af00ec21d4ecaf8, type: 3}
   shieldSocket: {fileID: 7861668629936102095}
-  liveTuning: 0
+  liveTuning: 1
+  weaponHandAnchor: {fileID: 7800000000000000202}
+  shieldHandAnchor: {fileID: 7800000000000000204}
 --- !u!114 &353516087521190222
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2159,24 +2226,6 @@ MonoBehaviour:
   minDescent: 0.03
   minInterval: 0.12
   playJumpAndLand: 0
---- !u!1 &6948443421304863204 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5139812576210410636, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
-  m_PrefabInstance: {fileID: 2826461989610317160}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &215883223346941239
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6948443421304863204}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6989912b72acd0d7f900172fe786395f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  color: {r: 0.2, g: 1, b: 0.2, a: 1}
 --- !u!114 &6284159370214683542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2207,10 +2256,21 @@ MonoBehaviour:
   - {fileID: 6550804457596160986, guid: c2ff9a62d0009a64a81cc1a4bba59fd5, type: 3}
   - {fileID: 4055846304957825616, guid: 700b4d22453a6ef438be63e4c5c37167, type: 3}
   - {fileID: 4055846304957825616, guid: e855d12d7bfdb464b94ef1f1d20cf814, type: 3}
-  deathSplashPrefab: {fileID: 2834077435049808890, guid: 6ec93a81790f8b0479992e9d8f328aad, type: 3}
-  decalPrefabs:
-  - {fileID: 2461062505677081030, guid: 92b05d809d88a334dad0fee227c13708, type: 3}
-  - {fileID: 8707850840964112949, guid: b1fde64c2a4cb1f4e98ccc1e0ac392f1, type: 3}
-  - {fileID: 8904036615139785200, guid: d1891c25adf84284abd4e2a61bacc365, type: 3}
-  - {fileID: 6456721277854630355, guid: b454b56a85bd2524b96c3ed4479015f6, type: 3}
-  drainDecalPrefab: {fileID: 7756093145173483167, guid: 190e5f4cc4138da40ae1d14fa3a7d42b, type: 3}
+--- !u!1 &6948443421304863204 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5139812576210410636, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
+  m_PrefabInstance: {fileID: 2826461989610317160}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &215883223346941239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6948443421304863204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6989912b72acd0d7f900172fe786395f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: {r: 0.2, g: 1, b: 0.2, a: 1}

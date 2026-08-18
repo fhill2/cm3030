@@ -4,9 +4,9 @@ namespace Game.Combat
 {
     /// <summary>
     /// Sockets equipment prefabs (weapon, shield) onto the actor's hand bones
-    /// at startup. Offsets are read from the WeaponDef / ShieldDef .asset files
-    /// so each weapon/shield carries its own grip position.
-    /// Enable Live Tuning during Play to adjust offsets in real-time.
+    /// at startup. All equipment prefabs are canonically oriented (weapons:
+    /// blade on +Y; shields: face normal on +Z), so a single grip per kind
+    /// positions them correctly in the hand.
     /// </summary>
     public class Equipment : MonoBehaviour
     {
@@ -23,8 +23,18 @@ namespace Game.Combat
         [SerializeField] private Transform shieldSocket;
 
         [Header("Tuning")]
-        [Tooltip("Re-read offsets from the .asset every frame for live tuning during Play. Uncheck for production.")]
+        [Tooltip("Re-apply grips every frame during Play so def fine-tune offsets can be adjusted live.")]
         [SerializeField] private bool liveTuning;
+
+        [Header("Hand Anchors")]
+        [Tooltip("Child transform under the weapon socket marking where the weapon's anchor lands. Move it in the prefab to tune per character.")]
+        [SerializeField] private Transform weaponHandAnchor;
+
+        [Tooltip("Child transform under the shield socket marking where the shield's anchor lands. Move it in the prefab to tune per character.")]
+        [SerializeField] private Transform shieldHandAnchor;
+
+        private static readonly Vector3 WeaponGripRotation = new Vector3(0f, 90f, 280f);
+        private static readonly Vector3 ShieldGripRotation = new Vector3(350f, 115.00001f, 90f);
 
         private GameObject weaponInstance;
         private GameObject shieldInstance;
@@ -81,22 +91,38 @@ namespace Game.Combat
 
         private void ApplyWeaponOffset()
         {
-            var weapon = weaponInstance.GetComponent<Weapon>();
-            if (weapon != null && weapon.Def != null)
+            Vector3 anchor = Vector3.zero;
+            Vector3 tweakRot = Vector3.zero;
+
+            Weapon weapon = weaponInstance.GetComponent<Weapon>();
+            if (weapon != null)
             {
-                weaponInstance.transform.localPosition = weapon.Def.PositionOffset;
-                weaponInstance.transform.localRotation = Quaternion.Euler(weapon.Def.RotationOffset);
+                if (weapon.Anchor != null) anchor = weapon.Anchor.localPosition;
+                if (weapon.Def != null) tweakRot = weapon.Def.RotationOffset;
             }
+
+            Quaternion rot = Quaternion.Euler(WeaponGripRotation + tweakRot);
+            weaponInstance.transform.localRotation = rot;
+            Vector3 weaponHand = weaponHandAnchor != null ? weaponHandAnchor.localPosition : Vector3.zero;
+            weaponInstance.transform.localPosition = weaponHand - (rot * anchor);
         }
 
         private void ApplyShieldOffset()
         {
-            var shield = shieldInstance.GetComponent<Shield>();
-            if (shield != null && shield.Def != null)
+            Vector3 anchor = Vector3.zero;
+            Vector3 tweakRot = Vector3.zero;
+
+            Shield shield = shieldInstance.GetComponent<Shield>();
+            if (shield != null)
             {
-                shieldInstance.transform.localPosition = shield.Def.PositionOffset;
-                shieldInstance.transform.localRotation = Quaternion.Euler(shield.Def.RotationOffset);
+                if (shield.Anchor != null) anchor = shield.Anchor.localPosition;
+                if (shield.Def != null) tweakRot = shield.Def.RotationOffset;
             }
+
+            Quaternion rot = Quaternion.Euler(ShieldGripRotation + tweakRot);
+            shieldInstance.transform.localRotation = rot;
+            Vector3 shieldHand = shieldHandAnchor != null ? shieldHandAnchor.localPosition : Vector3.zero;
+            shieldInstance.transform.localPosition = shieldHand - (rot * anchor);
         }
     }
 }

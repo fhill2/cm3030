@@ -5432,6 +5432,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: fighter_player_knight
       objectReference: {fileID: 0}
+    - target: {fileID: 7800000000000000102, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.0786
+      objectReference: {fileID: 0}
+    - target: {fileID: 7800000000000000102, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.076
+      objectReference: {fileID: 0}
+    - target: {fileID: 7800000000000000102, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.041
+      objectReference: {fileID: 0}
     - target: {fileID: 8099147468432970865, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_Controller
       value: 

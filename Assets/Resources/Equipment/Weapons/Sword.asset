@@ -16,5 +16,4 @@ MonoBehaviour:
   speed: 1.5
   level: 1
   cost: 50
-  positionOffset: {x: 0.035, y: 0.12, z: 0.3}
-  rotationOffset: {x: 80, y: 0, z: 180}
+  rotationOffset: {x: 0, y: -20, z: -40}
