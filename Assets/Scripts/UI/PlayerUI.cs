@@ -11,7 +11,7 @@ namespace Game.UI
     /// <summary>
     /// Screen-space HUD for the player: a health bar top-left with a stamina bar
     /// beneath it, a run-status column top-right (gold, wave, enemies
-    /// remaining), and the death screen with a restart prompt. Goes on the
+    /// remaining) and the death screen with a restart prompt. Goes on the
     /// player root. Creates its own overlay canvas; health, gold, wave and enemy
     /// count all refresh on events, stamina refreshes every frame since it
     /// changes continuously.
@@ -216,9 +216,7 @@ namespace Game.UI
         {
             SetWave(e.Wave);
 
-            // The HUD has nothing to say on the start screen, and it would sit
-            // on top of the title. Hidden in Menu only — GameOver has to keep it
-            // alive so the death fade and message can play.
+            // Hidden in Menu only
             if (hudRoot != null) hudRoot.SetActive(e.Current != GameStateId.Menu);
         }
 

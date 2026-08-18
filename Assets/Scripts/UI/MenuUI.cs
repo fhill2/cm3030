@@ -25,7 +25,26 @@ namespace Game.UI
         [SerializeField] private string playText  = "PLAY";
         [SerializeField] private string hintText  = "or press SPACE";
 
+        [Header("Logo")]
+        [Tooltip("Shown in place of the title text. Leave empty to load Resources/UI/start_screen automatically.")]
+        [SerializeField] private Sprite logo;
+        [Tooltip("Logo height in reference pixels (the canvas reference is 1920x1080). Width follows the image's own aspect ratio.")]
+        [SerializeField] private float logoHeight = 280f;
+
+        // Loaded by name
+        private const string LogoResourcePath = "UI/start_screen";
+
+        // Layout of the centred block: header, gap, button, gap, hint. Sizes are
+        // in reference pixels (the canvas reference is 1920x1080)
+        private const float TitleHeight   = 160f;   // header height when falling back to text
+        private const float ButtonWidth   = 280f;
+        private const float ButtonHeight  = 64f;
+        private const float HintHeight    = 40f;
+        private const float HeaderGap     = 48f;    // header -> button
+        private const float ButtonGap     = 16f;    // button -> hint
+
         [Header("Style")]
+        [Tooltip("Only used if no logo sprite can be found.")]
         [SerializeField] private int titleFontSize = 96;
         [Tooltip("Darkens the scenic shot so the title stays readable. 0 = no dimming.")]
         [SerializeField, Range(0f, 1f)] private float backdropDim = 0.35f;
@@ -41,9 +60,7 @@ namespace Game.UI
 
         void OnEnable()
         {
-            // Here rather than in Start: GameStateMachine raises its
-            // opening state change from its own Start and a Start-time
-            // subscription can miss it entirely.
+            // Here rather than in Start
             EventManager.OnGameStateChanged += HandleGameStateChanged;
         }
 
@@ -56,8 +73,7 @@ namespace Game.UI
         {
             if (!IsShowing()) return;
 
-            // Keyboard fallback so the menu still works if the pointer setup
-            // ever breaks — a dead Play button would otherwise be unstartable.
+            // Keyboard fallback so the menu still works if the pointer setup ever breaks
             var kb = Keyboard.current;
             if (kb == null) return;
             if (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)
@@ -102,40 +118,105 @@ namespace Game.UI
             Stretch(panelRt);
             var backdrop = panel.AddComponent<Image>();
             backdrop.color = new Color(0f, 0f, 0f, backdropDim);
-            // The scenic shot is the point of this screen, so the backdrop only
-            // dims it. It still needs to swallow clicks aimed past the button.
+
             backdrop.raycastTarget = true;
 
-            CreateTitle(panel.transform);
-            CreatePlayButton(panel.transform);
-            CreateHint(panel.transform);
+            // Resolve the logo before laying out: the block's height, and so
+            // where everything sits, depends on whether there is one.
+            if (logo == null) logo = LoadLogo();
+            float headerHeight = logo != null ? logoHeight : TitleHeight;
+
+            float blockHeight = headerHeight + HeaderGap + ButtonHeight + ButtonGap + HintHeight;
+            float top = blockHeight * 0.5f;
+
+            // Header hangs from the top of the block; the other two are centred
+            // on their own rows beneath it.
+            float buttonY = top - headerHeight - HeaderGap - ButtonHeight * 0.5f;
+            float hintY   = buttonY - ButtonHeight * 0.5f - ButtonGap - HintHeight * 0.5f;
+
+            CreateTitle(panel.transform, top);
+            CreatePlayButton(panel.transform, buttonY);
+            CreateHint(panel.transform, hintY);
 
             // Hidden until the state bus confirms we are actually in Menu, so
             // scenes that boot straight into a wave never flash the title.
             panel.SetActive(false);
         }
 
-        void CreateTitle(Transform parent)
+        void CreateTitle(Transform parent, float topY)
+        {
+            if (logo != null)
+            {
+                CreateLogo(parent, topY);
+                return;
+            }
+
+            // Text fallback, so a failed load leaves something readable instead
+            // of a blank screen
+            Debug.LogWarning($"[MenuUI] No sprite found at Resources/{LogoResourcePath}. " +
+                             "Set the texture's Texture Type to 'Sprite (2D and UI)'. Using text title.");
+            CreateTitleText(parent, topY);
+        }
+
+        /// <summary>
+        /// Loads the logo whichever way the texture is imported. A texture set
+        /// to Sprite Mode "Single" answers Load&lt;Sprite&gt;; one set to
+        /// "Multiple" keeps the Texture2D as the main asset and hangs the
+        /// sprites off it as sub-assets, where only LoadAll finds them.
+        /// </summary>
+        static Sprite LoadLogo()
+        {
+            var single = Resources.Load<Sprite>(LogoResourcePath);
+            if (single != null) return single;
+
+            var sliced = Resources.LoadAll<Sprite>(LogoResourcePath);
+            return sliced != null && sliced.Length > 0 ? sliced[0] : null;
+        }
+
+        void CreateLogo(Transform parent, float topY)
+        {
+            var go = new GameObject("Logo");
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            // Top-edge pivot: the caller positions the top of the block, and the
+            // logo hangs down from it by whatever logoHeight is.
+            rt.pivot     = new Vector2(0.5f, 1f);
+
+            // Size from the sprite's own aspect so the artwork is never squashed,
+            // whatever dimensions the file happens to be.
+            float aspect = logo.rect.height > 0f ? logo.rect.width / logo.rect.height : 1f;
+            rt.sizeDelta = new Vector2(logoHeight * aspect, logoHeight);
+            rt.anchoredPosition = new Vector2(0f, topY);
+
+            var img = go.AddComponent<Image>();
+            img.sprite = logo;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+        }
+
+        void CreateTitleText(Transform parent, float topY)
         {
             var go = new GameObject("Title");
             go.transform.SetParent(parent, false);
             var rt = go.AddComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot     = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(1200f, 160f);
-            rt.anchoredPosition = new Vector2(0f, 140f);
+            rt.pivot     = new Vector2(0.5f, 1f);
+            rt.sizeDelta = new Vector2(1200f, TitleHeight);
+            rt.anchoredPosition = new Vector2(0f, topY);
 
             var txt = go.AddComponent<Text>();
             txt.text = titleText;
             txt.font = GetFont();
             txt.fontSize = titleFontSize;
             txt.alignment = TextAnchor.MiddleCenter;
-            txt.color = Color.red;
+            txt.color = Color.white;
             txt.raycastTarget = false;
         }
 
-        void CreatePlayButton(Transform parent)
+        void CreatePlayButton(Transform parent, float centreY)
         {
             var go = new GameObject("PlayButton");
             go.transform.SetParent(parent, false);
@@ -143,8 +224,8 @@ namespace Game.UI
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot     = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(280f, 64f);
-            rt.anchoredPosition = new Vector2(0f, -20f);
+            rt.sizeDelta = new Vector2(ButtonWidth, ButtonHeight);
+            rt.anchoredPosition = new Vector2(0f, centreY);
 
             var img = go.AddComponent<Image>();
             img.color = new Color(0.12f, 0.12f, 0.14f, 0.95f);
@@ -172,7 +253,7 @@ namespace Game.UI
             label.raycastTarget = false;
         }
 
-        void CreateHint(Transform parent)
+        void CreateHint(Transform parent, float centreY)
         {
             var go = new GameObject("Hint");
             go.transform.SetParent(parent, false);
@@ -180,8 +261,8 @@ namespace Game.UI
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot     = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(600f, 40f);
-            rt.anchoredPosition = new Vector2(0f, -80f);
+            rt.sizeDelta = new Vector2(600f, HintHeight);
+            rt.anchoredPosition = new Vector2(0f, centreY);
 
             var txt = go.AddComponent<Text>();
             txt.text = hintText;
