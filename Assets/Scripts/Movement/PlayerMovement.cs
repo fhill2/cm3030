@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Core;
 using Game.Health;
 using Game.Shared;
 using Game.Combat;
@@ -50,6 +51,12 @@ namespace Game.Movement
         /// Shift AND able to pay for it.</summary>
         public bool IsSprintingNow { get; private set; }
 
+        /// <summary>
+        /// False while the game loop is in a state the player shouldn't be
+        /// driving the character — the start menu, the shop, etc
+        /// </summary>
+        public bool ControlEnabled { get; private set; } = true;
+
         protected override void Awake()
         {
             base.Awake();
@@ -73,13 +80,52 @@ namespace Game.Movement
                 shieldCollider = GetComponentInChildren<ShieldCollider>();
         }
 
+        // base.OnEnable must be called: CharacterMotor subscribes OnDeath there,
+        // and losing it would stop the player dying at all.
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            EventManager.OnGameStateChanged += HandleGameStateChanged;
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            EventManager.OnGameStateChanged -= HandleGameStateChanged;
+        }
+
+        private void HandleGameStateChanged(GameStateChangedArgs e)
+        {
+            ControlEnabled = AllowsControl(e.Current);
+
+            // One owner for the cursor. Locked only while the player is actually
+            // driving the character; free in the menu, the shop and after death
+            // so menus and buttons can be clicked.
+            SetCursorLocked(ControlEnabled);
+        }
+
+        // Movement stays live through WaveComplete — that's the brief lull
+        // between waves, and freezing the player there feels like a hitch.
+        private static bool AllowsControl(GameStateId state)
+        {
+            return state == GameStateId.WaveActive || state == GameStateId.WaveComplete;
+        }
+
         protected override void Update()
         {
+            if (!ControlEnabled)
+            {
+                // Menu, shop or game over: no input, but gravity keeps running
+                // so the character rests on the ground instead of hovering.
+                SettleUncontrolled();
+                return;
+            }
+
             if (isDead)
             {
                 // Dead players don't walk, sprint, jump or block. Gravity still
                 // runs so the body settles rather than hanging where it died.
-                SettleDead();
+                SettleUncontrolled();
                 return;
             }
 

@@ -35,12 +35,13 @@ namespace Game.Movement
             if (actorAudio == null) actorAudio = GetComponent<ActorAudio>();
         }
 
-        void OnEnable()
+        // Virtual so subclasses can add their own subscriptions. 
+        protected virtual void OnEnable()
         {
             EventManager.OnDeath += HandleDeath;
         }
 
-        void OnDisable()
+        protected virtual void OnDisable()
         {
             EventManager.OnDeath -= HandleDeath;
         }
@@ -49,7 +50,7 @@ namespace Game.Movement
         {
             if (isDead)
             {
-                SettleDead();
+                SettleUncontrolled();
                 return;
             }
 
@@ -61,12 +62,13 @@ namespace Game.Movement
         }
 
         /// <summary>
-        /// Per-frame update for a dead character. Gravity keeps running so a body
-        /// that died mid-air still falls and lands instead of freezing in place,
-        /// but no input is read and no locomotion parameters are pushed — the
-        /// animator is left alone so the death clip plays out uninterrupted.
+        /// Per-frame update for a character nobody is driving — dead, or the game
+        /// loop is in a menu/shop state. Gravity keeps running so a body that died
+        /// mid-air still falls and lands instead of freezing in place, but no
+        /// input is read and no locomotion parameters are pushed, leaving the
+        /// animator free to play the death clip out uninterrupted.
         /// </summary>
-        protected void SettleDead()
+        protected void SettleUncontrolled()
         {
             bool grounded = controller.isGrounded;
             ApplyGravity(grounded);

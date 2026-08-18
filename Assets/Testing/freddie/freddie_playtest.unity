@@ -8697,6 +8697,8 @@ GameObject:
   - component: {fileID: 7550478612390158262}
   - component: {fileID: 7550478612390158263}
   - component: {fileID: 7550478612390158264}
+  - component: {fileID: 7550478612390158266}
+  - component: {fileID: 7550478612390158265}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -8764,7 +8766,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logTransitions: 1
-  initialState: 1
+  initialState: 0
   waveCompleteDelay: 3
   shopDuration: 30
 --- !u!4 &404486886
@@ -36355,6 +36357,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8283090950742410044, guid: 987e6b3030355534daf7b14a38605e0f, type: 3}
   m_PrefabInstance: {fileID: 1574533397}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1575021978
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1575021979}
+  m_Layer: 0
+  m_Name: MenuCameraAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1575021979
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575021978}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.058024637, y: 0.83389324, z: -0.08943046, w: 0.5415324}
+  m_LocalPosition: {x: -35.720478, y: 7.4890633, z: 33.452885}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 38.611, z: 0}
 --- !u!1 &1576222784 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2615307246505007040, guid: b4caeecbb73b6254b93c9719a5b808f0, type: 3}
@@ -45438,7 +45471,7 @@ PrefabInstance:
     - target: {fileID: 8099147468432970865, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
+      objectReference: {fileID: 9100000, guid: 127a9a7067fe6f2ecbbc9ce09b29577d, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -50872,6 +50905,8 @@ MonoBehaviour:
   deathPitch: 75
   deathDistance: 50
   deathTransitionTime: 1.5
+  menuCameraAnchor: {fileID: 1575021979}
+  introDuration: 2.5
 --- !u!4 &22464847560310531 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1227146858607074725, guid: b67a07d91f406584e8e9640ae1ecc591, type: 3}
@@ -62467,6 +62502,36 @@ MonoBehaviour:
   stateMachine: {fileID: 404486885}
   panelWidth: 420
   rowHeight: 60
+--- !u!114 &7550478612390158265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404486881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e2358f44f2f559438f36c38538197f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateMachine: {fileID: 0}
+  titleText: THE FALL OF CAMELOT
+  playText: PLAY
+  hintText: or press SPACE
+  titleFontSize: 96
+  backdropDim: 0.35
+--- !u!114 &7550478612390158266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404486881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a22efeab14ed3634a98d6f3b223d544f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &7566531922115100534
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -64714,3 +64779,4 @@ SceneRoots:
   - {fileID: 404486886}
   - {fileID: 168517097}
   - {fileID: 1923322885}
+  - {fileID: 1575021979}

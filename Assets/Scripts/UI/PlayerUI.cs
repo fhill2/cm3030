@@ -9,11 +9,12 @@ using Game.Health;
 namespace Game.UI
 {
     /// <summary>
-    /// Screen-space HUD for the player: a health bar top-left, a stamina bar
-    /// beneath it, an enemies-remaining counter top-right, and the death
-    /// screen with a restart prompt. Goes on the player root. Creates its own
-    /// overlay canvas; health and enemy count refresh on events, stamina
-    /// refreshes every frame since it changes continuously.
+    /// Screen-space HUD for the player: a health bar top-left with a stamina bar
+    /// beneath it, a run-status column top-right (gold, wave, enemies
+    /// remaining), and the death screen with a restart prompt. Goes on the
+    /// player root. Creates its own overlay canvas; health, gold, wave and enemy
+    /// count all refresh on events, stamina refreshes every frame since it
+    /// changes continuously.
     /// </summary>
     public class PlayerUI : MonoBehaviour
     {
@@ -21,6 +22,12 @@ namespace Game.UI
         private const float BarHeight    = 24f;
         private const float Margin       = 20f;
         private const float CounterWidth = 280f;
+
+        // One row of the top-right run-status column 
+        // CreateLabelText builds 28px-tall boxes, so a row is that plus a gap
+        private const float LabelHeight = 28f;
+        private const float RowGap      = 4f;
+        private const float RowStep     = LabelHeight + RowGap;
 
         [Header("Death Screen")]
         [Tooltip("Seconds to fade the screen to black once the player dies.")]
@@ -52,6 +59,8 @@ namespace Game.UI
         private Image healthFill;
         private Text  healthLabel;
         private Text  enemyLabel;
+        private Text  goldLabel;
+        private Text  waveLabel;
         private Image fadeOverlay;
         private Text  deathText;
         private Text  restartText;
@@ -64,10 +73,19 @@ namespace Game.UI
         private Image staminaFill;
         private Text  staminaLabel;
 
-        // Found at runtime so the prompt only appears once restarting is allowed.
+      
         private RunController runController;
 
+        // Both live on the GameManager, not the player, so they're resolved in
+        // Start. Only used to seed the opening values — after that gold and wave
+        // arrive on the event bus.
+        private PlayerWallet wallet;
+        private GameStateMachine stateMachine;
+
         private Image volumeFill;
+
+        // The whole HUD canvas, so it can be hidden wholesale on the start screen.
+        private GameObject hudRoot;
 
         private static Font s_font;
         private static Sprite s_speaker;
@@ -86,10 +104,15 @@ namespace Game.UI
         void Start()
         {
             runController = FindFirstObjectByType<RunController>();
+            wallet        = FindFirstObjectByType<PlayerWallet>();
+            stateMachine  = FindFirstObjectByType<GameStateMachine>();
 
             Refresh();
             RefreshEnemyCount();
             RefreshStamina();
+
+            SetGold(wallet != null ? wallet.Gold : 0);
+            SetWave(stateMachine != null ? stateMachine.CurrentWave : 0);
         }
 
         // Stamina isn't event-driven like health (it changes continuously
@@ -105,6 +128,8 @@ namespace Game.UI
         {
             EventManager.OnDamage += HandleDamage;
             EventManager.OnDeath  += HandleDeath;
+            EventManager.OnGoldChanged += HandleGoldChanged;
+            EventManager.OnGameStateChanged += HandleGameStateChanged;
             EnemyHealth.OnAliveCountChanged += RefreshEnemyCount;
         }
 
@@ -112,6 +137,8 @@ namespace Game.UI
         {
             EventManager.OnDamage -= HandleDamage;
             EventManager.OnDeath  -= HandleDeath;
+            EventManager.OnGoldChanged -= HandleGoldChanged;
+            EventManager.OnGameStateChanged -= HandleGameStateChanged;
             EnemyHealth.OnAliveCountChanged -= RefreshEnemyCount;
         }
 
@@ -131,7 +158,7 @@ namespace Game.UI
             if (deathRoutine == null) deathRoutine = StartCoroutine(DeathSequence());
         }
 
-        // Black out over the camera's climb, then bring the message up once the screen has settled
+        // Black out over the camera's climb then bring the message up once the screen has settled
         IEnumerator DeathSequence()
         {
             yield return FadeTo(fadeOverlay, 1f, fadeDuration);
@@ -178,6 +205,31 @@ namespace Game.UI
         {
             if (enemyLabel != null)
                 enemyLabel.text = $"ENEMIES REMAINING  {EnemyHealth.AliveCount}";
+        }
+
+        void HandleGoldChanged(GoldChangedArgs e) => SetGold(e.Total);
+
+        // Wave only advances on entering WaveActive, but the payload carries the
+        // number on every transition, so reading it here keeps the label right
+        // through the shop and wave-complete states too.
+        void HandleGameStateChanged(GameStateChangedArgs e)
+        {
+            SetWave(e.Wave);
+
+            // The HUD has nothing to say on the start screen, and it would sit
+            // on top of the title. Hidden in Menu only — GameOver has to keep it
+            // alive so the death fade and message can play.
+            if (hudRoot != null) hudRoot.SetActive(e.Current != GameStateId.Menu);
+        }
+
+        void SetGold(int total)
+        {
+            if (goldLabel != null) goldLabel.text = $"GOLD  {total}";
+        }
+
+        void SetWave(int wave)
+        {
+            if (waveLabel != null) waveLabel.text = $"WAVE  {wave}";
         }
 
         void RefreshStamina()
@@ -327,6 +379,7 @@ namespace Game.UI
         void BuildUI()
         {
             var canvasGo = new GameObject("PlayerUICanvas");
+            hudRoot = canvasGo;
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = canvasGo.AddComponent<CanvasScaler>();
@@ -341,7 +394,7 @@ namespace Game.UI
                 new Vector2(0, 1), new Vector2(Margin, -Margin - BarHeight - 4f),
                 BarWidth, TextAnchor.MiddleLeft);
 
-            // Stamina bar stacks directly under the health label.
+            // Stamina bar stacks directly under the health label
             float staminaY = -Margin - BarHeight - 4f - 28f - 6f;
             staminaFill = CreateBar(t, new Vector2(0, 1), new Vector2(Margin, staminaY),
                 BarWidth, StaminaBarHeight, StaminaColor);
@@ -349,10 +402,19 @@ namespace Game.UI
                 new Vector2(0, 1), new Vector2(Margin, staminaY - StaminaBarHeight - 4f),
                 BarWidth, TextAnchor.MiddleLeft);
 
-            // Top-right corner. CreateRect pins the pivot to the anchor, so a
-            // (1,1) anchor with a negative offset hangs the box inward from the corner and it stays put at any resolution
+            // Run status stacks down the top-right corner: gold, wave, enemies.
+            // CreateRect pins the pivot to the anchor, so a (1,1) anchor with a
+            // negative offset hangs each row inward from the corner and the
+            // whole column holds its place at any resolution
+            Vector2 topRight = new Vector2(1, 1);
+            goldLabel = CreateLabelText(t, "GOLD  --",
+                topRight, new Vector2(-Margin, -Margin),
+                CounterWidth, TextAnchor.MiddleRight);
+            waveLabel = CreateLabelText(t, "WAVE  --",
+                topRight, new Vector2(-Margin, -Margin - RowStep),
+                CounterWidth, TextAnchor.MiddleRight);
             enemyLabel = CreateLabelText(t, "ENEMIES REMAINING  --",
-                new Vector2(1, 1), new Vector2(-Margin, -Margin),
+                topRight, new Vector2(-Margin, -Margin - RowStep * 2f),
                 CounterWidth, TextAnchor.MiddleRight);
 
             BuildVolumeControl(t);
@@ -373,8 +435,6 @@ namespace Game.UI
             fadeRt.offsetMax = Vector2.zero;
             fadeOverlay = fadeGo.AddComponent<Image>();
             fadeOverlay.color = new Color(0f, 0f, 0f, 0f);
-            // It spans the screen from the first frame, so it must never
-            // swallow clicks while it's still transparent.
             fadeOverlay.raycastTarget = false;
 
             // Parented to the sheet so it always draws above the black.
