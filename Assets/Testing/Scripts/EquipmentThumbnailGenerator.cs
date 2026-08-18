@@ -102,7 +102,7 @@ namespace Game.Core
                 cam.nearClipPlane = 0.01f;
                 cam.farClipPlane = 5f;
                 cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = new Color(0.13f, 0.13f, 0.13f, 1f);
+                cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
                 cam.enabled = false;
                 cam.GetUniversalAdditionalCameraData();
 
@@ -138,6 +138,7 @@ namespace Game.Core
                 full.Apply();
                 RenderTexture.active = prevActive;
                 FlipVertical(full);
+                if (entry.Kind == EquipmentKind.Shield) FlipVertical(full);
 
                 Texture2D output = Downsample(full, OutputSize);
                 byte[] png = output.EncodeToPNG();
