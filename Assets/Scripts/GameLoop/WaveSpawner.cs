@@ -56,6 +56,10 @@ namespace Game.Core
         // Enemies from the current wave that are still alive.
         private readonly List<GameObject> liveEnemies = new List<GameObject>();
 
+        // Read-only view for anything that just needs to know who's alive
+        // right now (e.g. the minimap, to place enemy dots).
+        public IReadOnlyList<GameObject> LiveEnemies => liveEnemies;
+
         // Wave number captured from the GameStateChanged payload (GSM owns it).
         private int currentWave;
 
