@@ -40,6 +40,18 @@ namespace Game.Core
         }
     }
 
+    // Sent when a tome drops into the player's hands, so the UI can announce
+    // that a new spell is available in the market.
+    public readonly struct TomeFoundArgs
+    {
+        public readonly SpellDef Spell;
+
+        public TomeFoundArgs(SpellDef spell)
+        {
+            Spell = spell;
+        }
+    }
+
     // Sent whenever the player's gold changes. Change is how much was added
     // or removed, so the UI can show a "+10" popup as well as the new total.
     public readonly struct GoldChangedArgs
