@@ -5,10 +5,11 @@ using Game.Health;
 
 namespace Game.Movement
 {
-    // Third-person orbit camera. Mouse looks around the player, and the player
-    // yaws to match the view so aim follows the camera.
-    // Goes on the Main Camera. Runs in LateUpdate so it follows movement
-    // frame-accurately.
+    /// <summary>
+    /// Simple third-person orbit camera. The mouse looks around the player
+    /// (yaw + pitch), and the player is rotated to face the view heading so the
+    /// aim follows the camera. Replaces the Cinemachine FreeLook setup.
+    /// </summary>
     public class FollowCamera : MonoBehaviour
     {
         [Header("Target")]
@@ -50,31 +51,78 @@ namespace Game.Movement
         [Tooltip("Keep PlayerUI's fadeDuration in step with this.")]
         [SerializeField] private float deathTransitionTime = 3f;
 
+        [Header("Start Screen")]
+        [Tooltip("Transform framing the opening shot. Position and rotate it in the Scene view; the camera copies its pose while the game sits in the Menu state. Leave empty to skip the start-screen shot entirely.")]
+        [SerializeField] private Transform menuCameraAnchor;
+        [Tooltip("Seconds the zoom from the opening shot down to the player takes.")]
+        [SerializeField] private float introDuration = 2.5f;
+
+        private enum CameraMode { Menu, Intro, Gameplay, Death }
+
+        // Defaults to Gameplay
+        private CameraMode mode = CameraMode.Gameplay;
+
         private float yaw;
         private float pitch = 15f;
         private float turnOffset;
 
-        private bool isDead;
         private float deathBlend;
         private Vector3 deathStartPos;
         private Quaternion deathStartRot;
 
+        private float introBlend;
+        private Vector3 introStartPos;
+        private Quaternion introStartRot;
+
         void OnEnable()
         {
             EventManager.OnDeath += HandleDeath;
+            EventManager.OnGameStateChanged += HandleGameStateChanged;
         }
 
         void OnDisable()
         {
             EventManager.OnDeath -= HandleDeath;
+            EventManager.OnGameStateChanged -= HandleGameStateChanged;
+        }
+
+        void HandleGameStateChanged(GameStateChangedArgs e)
+        {
+            // Death outranks everything
+            if (mode == CameraMode.Death) return;
+            if (menuCameraAnchor == null) return;
+
+            if (e.Current == GameStateId.Menu)
+            {
+                mode = CameraMode.Menu;
+            }
+            else if (mode == CameraMode.Menu)
+            {
+                // Leaving the menu for the first time — fly down to the player
+                StartIntro();
+            }
+        }
+
+        void StartIntro()
+        {
+            introBlend = 0f;
+            introStartPos = transform.position;
+            introStartRot = transform.rotation;
+
+            // Seed the orbit angles to the pose the blend lands on
+            if (target != null) yaw = target.eulerAngles.y;
+
+            mode = CameraMode.Intro;
         }
 
         void HandleDeath(DeathArgs e)
         {
-            if (!deathView || isDead) return;
+            if (!deathView || mode == CameraMode.Death) return;
+            // Only the followed player's death changes the shot — an enemy dying
+            // must not yank the camera skyward.
             if (!IsFollowedTarget(e.Entity)) return;
 
-            isDead = true;
+            mode = CameraMode.Death;
             deathBlend = 0f;
             deathStartPos = transform.position;
             deathStartRot = transform.rotation;
@@ -107,12 +155,21 @@ namespace Game.Movement
         {
             if (target == null) return;
 
-            if (isDead)
+            // Each non-gameplay mode returns early. That also suppresses the
+            // mouse-look above and, critically, the rotateTarget block below —
+            // otherwise the character would keep spinning to follow the mouse
+            // while sitting on the start screen or lying dead.
+            switch (mode)
             {
-                // Returning here also skips rotateTarget below, otherwise the
-                // corpse keeps spinning with the mouse.
-                UpdateDeathView();
-                return;
+                case CameraMode.Menu:
+                    UpdateMenuView();
+                    return;
+                case CameraMode.Intro:
+                    UpdateIntroBlend();
+                    return;
+                case CameraMode.Death:
+                    UpdateDeathView();
+                    return;
             }
 
             bool locked = PlayerInputLock.InputLocked;
@@ -125,20 +182,9 @@ namespace Game.Movement
                 pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
             }
 
-            if (firstPerson)
-            {
-                transform.position = target.position + Vector3.up * firstPersonHeight;
-                transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
-            }
-            else
-            {
-                Vector3 focus = target.position + Vector3.up * targetHeight;
-                Quaternion rot = Quaternion.Euler(pitch, yaw, 0f);
-                Vector3 back = rot * Vector3.back;
-
-                transform.position = focus + back * ArmLength(focus, back);
-                transform.rotation = rot;
-            }
+            GameplayPose(out Vector3 pos, out Quaternion rot);
+            transform.position = pos;
+            transform.rotation = rot;
 
             if (rotateTarget && !locked)
             {
@@ -158,24 +204,62 @@ namespace Game.Movement
             }
         }
 
-        // Shortens the arm when a wall is in the way, so indoors the camera
-        // stays in the room instead of ending up behind the geometry. A sphere
-        // rather than a ray, so it catches doorframes and corners the camera
-        // would otherwise slip past.
-        float ArmLength(Vector3 focus, Vector3 direction)
+        /// <summary>
+        /// The pose the camera would hold this frame during normal play. Shared
+        /// by the gameplay path and the intro blend so the fly-in lands exactly
+        /// where gameplay picks up
+        /// </summary>
+        void GameplayPose(out Vector3 position, out Quaternion rotation)
         {
-            if (!collideWithGeometry) return distance;
+            rotation = Quaternion.Euler(pitch, yaw, 0f);
 
-            if (Physics.SphereCast(focus, collisionRadius, direction,
-                    out RaycastHit hit, distance,
-                    collisionMask, QueryTriggerInteraction.Ignore))
+            if (firstPerson)
             {
-                return Mathf.Max(minDistance, hit.distance);
+                position = target.position + Vector3.up * firstPersonHeight;
             }
-
-            return distance;
+            else
+            {
+                // Position the camera on a sphere around the focus point.
+                Vector3 focus = target.position + Vector3.up * targetHeight;
+                position = focus + rotation * new Vector3(0f, 0f, -distance);
+            }
         }
 
+        /// <summary>Hold the framed opening shot while the start screen is up.</summary>
+        void UpdateMenuView()
+        {
+            if (menuCameraAnchor == null) return;
+            transform.position = menuCameraAnchor.position;
+            transform.rotation = menuCameraAnchor.rotation;
+        }
+
+        /// <summary>
+        /// Fly from the opening shot down to the player
+        /// </summary>
+        void UpdateIntroBlend()
+        {
+            introBlend = Mathf.Clamp01(
+                introBlend + Time.deltaTime / Mathf.Max(0.01f, introDuration));
+
+            float t = Mathf.SmoothStep(0f, 1f, introBlend);
+
+            // Recomputed every frame so the shot still lands correctly if the
+            // player settles onto the ground during the fly-in.
+            GameplayPose(out Vector3 pos, out Quaternion rot);
+
+            transform.position = Vector3.Lerp(introStartPos, pos, t);
+            transform.rotation = Quaternion.Slerp(introStartRot, rot, t);
+
+            // Hand over only once the blend has fully landed. Because the target
+            // pose is derived from the same yaw/pitch gameplay will use, there is
+            // nothing left to snap.
+            if (introBlend >= 1f) mode = CameraMode.Gameplay;
+        }
+
+        /// <summary>
+        /// Ease the camera from wherever it was when the player died up to a
+        /// bird's-eye view of the body.
+        /// </summary>
         void UpdateDeathView()
         {
             deathBlend = Mathf.Clamp01(
@@ -183,9 +267,7 @@ namespace Game.Movement
 
             float t = Mathf.SmoothStep(0f, 1f, deathBlend);
 
-            // Recomputed each frame so the shot stays centred while the body
-            // finishes falling. No collision here, the climb goes up through
-            // the roof rather than jamming against it.
+            // Same orbit maths as the live camera, just a steeper pitch
             Vector3 focus = target.position + Vector3.up * targetHeight;
             Quaternion rot = Quaternion.Euler(deathPitch, yaw, 0f);
             Vector3 pos = focus + rot * new Vector3(0f, 0f, -deathDistance);

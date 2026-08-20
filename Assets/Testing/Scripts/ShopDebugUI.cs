@@ -68,7 +68,10 @@ namespace Game.Core
         {
             if (stateMachine == null || wallet == null) return;
 
-            DrawStatusBar();
+            // Gold and wave moved to PlayerUI as real canvas elements. They are
+            // not drawn here any more: IMGUI renders above every
+            // ScreenSpaceOverlay canvas, so this box always covered the HUD
+            // rather than sitting alongside it.
 
             if (stateMachine.CurrentState == null) return;
             if (stateMachine.CurrentState.Id != GameStateId.Shop)
@@ -79,18 +82,6 @@ namespace Game.Core
 
             if (equipmentPage) DrawEquipmentPage();
             else DrawShopPanel();
-        }
-
-        // Gold and wave, top right, always visible.
-        private void DrawStatusBar()
-        {
-            GUIStyle style = new GUIStyle(GUI.skin.box);
-            style.fontSize = 18;
-            style.alignment = TextAnchor.MiddleLeft;
-            style.padding = new RectOffset(12, 12, 8, 8);
-
-            string text = $"Gold: {wallet.Gold}    Wave: {stateMachine.CurrentWave}    [{stateMachine.CurrentState?.Id}]";
-            GUI.Box(new Rect(Screen.width - 380, 10, 370, 40), text, style);
         }
 
         private void DrawShopPanel()
