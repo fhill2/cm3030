@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Core;
 using Game.Health;
 using Game.Shared;
 using Game.Combat;
@@ -80,6 +81,26 @@ namespace Game.Movement
                 // Dead players don't walk, sprint, jump or block. Gravity still
                 // runs so the body settles rather than hanging where it died.
                 SettleDead();
+                return;
+            }
+
+                        // Shop and menu states freeze the knight. Gravity still runs below
+            // so he settles on the ground rather than hanging mid-step.
+            if (PlayerInputLock.InputLocked)
+            {
+                IsSprintingNow = false;
+                IsBlocking = false;
+                if (animator != null)
+                {
+                    animator.SetBool(AnimParams.Sprint, false);
+                    animator.SetBool(AnimParams.Block, false);
+                }
+                if (shieldCollider != null) shieldCollider.IsBlocking = false;
+
+                SetMoveInput(0f, 0f);
+                ApplyGravity(controller.isGrounded);
+                MoveActor(Vector3.zero);
+                UpdateAnimator(0f, controller.isGrounded, false);
                 return;
             }
 

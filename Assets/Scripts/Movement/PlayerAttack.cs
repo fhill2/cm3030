@@ -66,6 +66,7 @@ namespace Game.Movement
         void Update()
         {
             if (isDead || animator == null) return;
+            if (PlayerInputLock.InputLocked) return;
 
             // Relax the combat stance once the player hasn't attacked for a while.
             if (inCombat && Time.time - lastAttackTime > idleTimeout)
