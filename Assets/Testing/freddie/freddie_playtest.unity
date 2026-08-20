@@ -45435,10 +45435,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: fighter_player_knight
       objectReference: {fileID: 0}
-    - target: {fileID: 8099147468432970865, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
