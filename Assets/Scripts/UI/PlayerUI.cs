@@ -24,7 +24,6 @@ namespace Game.UI
         private const float CounterWidth = 280f;
 
         // One row of the top-right run-status column 
-        // CreateLabelText builds 28px-tall boxes, so a row is that plus a gap
         private const float LabelHeight = 28f;
         private const float RowGap      = 4f;
         private const float RowStep     = LabelHeight + RowGap;
@@ -76,15 +75,13 @@ namespace Game.UI
       
         private RunController runController;
 
-        // Both live on the GameManager, not the player, so they're resolved in
-        // Start. Only used to seed the opening values — after that gold and wave
-        // arrive on the event bus.
+        // Both live on the GameManager, not the player, so they're resolved in Start. Only used to seed the opening values — after that gold and wave arrive on the event bus
         private PlayerWallet wallet;
         private GameStateMachine stateMachine;
 
         private Image volumeFill;
 
-        // The whole HUD canvas, so it can be hidden wholesale on the start screen.
+        // The whole HUD canvas, so it can be hidden wholesale on the start screen
         private GameObject hudRoot;
 
         private static Font s_font;
@@ -115,8 +112,6 @@ namespace Game.UI
             SetWave(stateMachine != null ? stateMachine.CurrentWave : 0);
         }
 
-        // Stamina isn't event-driven like health (it changes continuously
-        // while blocking, sprinting and regenerating), so it needs a per-frame poll.
         void Update()
         {
             RefreshStamina();
@@ -209,9 +204,7 @@ namespace Game.UI
 
         void HandleGoldChanged(GoldChangedArgs e) => SetGold(e.Total);
 
-        // Wave only advances on entering WaveActive, but the payload carries the
-        // number on every transition, so reading it here keeps the label right
-        // through the shop and wave-complete states too.
+        // Wave only advances on entering WaveActive
         void HandleGameStateChanged(GameStateChangedArgs e)
         {
             SetWave(e.Wave);
@@ -400,9 +393,7 @@ namespace Game.UI
                 new Vector2(0, 1), new Vector2(Margin, staminaY - StaminaBarHeight - 4f),
                 BarWidth, TextAnchor.MiddleLeft);
 
-            // Run status stacks down the top-right corner: gold, wave, enemies.
-            // CreateRect pins the pivot to the anchor, so a (1,1) anchor with a
-            // negative offset hangs each row inward from the corner and the
+            // Run status stacks down the top-right corner: gold, wave, enemies
             // whole column holds its place at any resolution
             Vector2 topRight = new Vector2(1, 1);
             goldLabel = CreateLabelText(t, "GOLD  --",

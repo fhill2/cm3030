@@ -53,7 +53,7 @@ namespace Game.Movement
 
         /// <summary>
         /// False while the game loop is in a state the player shouldn't be
-        /// driving the character — the start menu, the shop, etc
+        /// driving the character — the start menu, the shop
         /// </summary>
         public bool ControlEnabled { get; private set; } = true;
 
@@ -100,7 +100,6 @@ namespace Game.Movement
 
             // One owner for the cursor. Locked only while the player is actually
             // driving the character; free in the menu, the shop and after death
-            // so menus and buttons can be clicked.
             SetCursorLocked(ControlEnabled);
         }
 

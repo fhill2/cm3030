@@ -9,8 +9,7 @@ namespace Game.UI
 {
     /// <summary>
     /// Start screen. Shows a title and a Play button while the game loop sits in and moves it to WaveActive when the
-    /// player commits. Goes on the GameManager, alongside GameStateMachine.
-    ///
+    /// player commits.    
     /// The camera side of the effect lives, it holds a framed anchor pose
     /// while in Menu, then flies down to the player once the state changes
     /// </summary>
@@ -34,8 +33,7 @@ namespace Game.UI
         // Loaded by name
         private const string LogoResourcePath = "UI/start_screen";
 
-        // Layout of the centred block: header, gap, button, gap, hint. Sizes are
-        // in reference pixels (the canvas reference is 1920x1080)
+        // Layout of the centred block: header, gap, button, gap
         private const float TitleHeight   = 160f;   // header height when falling back to text
         private const float ButtonWidth   = 280f;
         private const float ButtonHeight  = 64f;
@@ -105,7 +103,7 @@ namespace Game.UI
             var canvasGo = new GameObject("MenuUICanvas");
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            // Above PlayerUI's canvas, which sits at the default 0.
+            // Above PlayerUI's canvas, which sits at the default 0
             canvas.sortingOrder = 100;
             var scaler = canvasGo.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -122,15 +120,14 @@ namespace Game.UI
             backdrop.raycastTarget = true;
 
             // Resolve the logo before laying out: the block's height, and so
-            // where everything sits, depends on whether there is one.
+            // where everything sits, depends on whether there is on
             if (logo == null) logo = LoadLogo();
             float headerHeight = logo != null ? logoHeight : TitleHeight;
 
             float blockHeight = headerHeight + HeaderGap + ButtonHeight + ButtonGap + HintHeight;
             float top = blockHeight * 0.5f;
 
-            // Header hangs from the top of the block; the other two are centred
-            // on their own rows beneath it.
+            // Header hangs from the top of the block
             float buttonY = top - headerHeight - HeaderGap - ButtonHeight * 0.5f;
             float hintY   = buttonY - ButtonHeight * 0.5f - ButtonGap - HintHeight * 0.5f;
 
@@ -138,8 +135,7 @@ namespace Game.UI
             CreatePlayButton(panel.transform, buttonY);
             CreateHint(panel.transform, hintY);
 
-            // Hidden until the state bus confirms we are actually in Menu, so
-            // scenes that boot straight into a wave never flash the title.
+            // Hidden until the state bus confirms we are actually in Menu
             panel.SetActive(false);
         }
 
@@ -151,18 +147,14 @@ namespace Game.UI
                 return;
             }
 
-            // Text fallback, so a failed load leaves something readable instead
-            // of a blank screen
+            // Text fallback, so a failed load leaves something readable instead of a blank screen
             Debug.LogWarning($"[MenuUI] No sprite found at Resources/{LogoResourcePath}. " +
                              "Set the texture's Texture Type to 'Sprite (2D and UI)'. Using text title.");
             CreateTitleText(parent, topY);
         }
 
         /// <summary>
-        /// Loads the logo whichever way the texture is imported. A texture set
-        /// to Sprite Mode "Single" answers Load&lt;Sprite&gt;; one set to
-        /// "Multiple" keeps the Texture2D as the main asset and hangs the
-        /// sprites off it as sub-assets, where only LoadAll finds them.
+        /// Loads the logo whichever way the texture is imported
         /// </summary>
         static Sprite LoadLogo()
         {
@@ -180,12 +172,8 @@ namespace Game.UI
             var rt = go.AddComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
-            // Top-edge pivot: the caller positions the top of the block, and the
-            // logo hangs down from it by whatever logoHeight is.
             rt.pivot     = new Vector2(0.5f, 1f);
 
-            // Size from the sprite's own aspect so the artwork is never squashed,
-            // whatever dimensions the file happens to be.
             float aspect = logo.rect.height > 0f ? logo.rect.width / logo.rect.height : 1f;
             rt.sizeDelta = new Vector2(logoHeight * aspect, logoHeight);
             rt.anchoredPosition = new Vector2(0f, topY);
@@ -249,7 +237,6 @@ namespace Game.UI
             label.fontSize = 30;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;
-            // Must not intercept the click on its way to the Button above it.
             label.raycastTarget = false;
         }
 

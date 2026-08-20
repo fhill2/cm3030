@@ -60,13 +60,9 @@ namespace Game.Movement
         [Tooltip("Seconds the zoom from the opening shot down to the player takes.")]
         [SerializeField] private float introDuration = 2.5f;
 
-        /// <summary>What the camera is doing right now. Deliberately not
-        /// serialised: it is runtime state, and a serialised copy would persist
-        /// stale across recompiles and ignore the value set here.</summary>
         private enum CameraMode { Menu, Intro, Gameplay, Death }
 
-        // Defaults to Gameplay so scenes with no menu anchor and no state
-        // machine behave exactly as they did before this was added.
+        // Defaults to Gameplay
         private CameraMode mode = CameraMode.Gameplay;
 
         private float yaw;
@@ -95,8 +91,7 @@ namespace Game.Movement
 
         void HandleGameStateChanged(GameStateChangedArgs e)
         {
-            // Death outranks everything: once the run is over the camera stays
-            // on the body rather than being pulled back by a state change.
+            // Death outranks everything
             if (mode == CameraMode.Death) return;
             if (menuCameraAnchor == null) return;
 
@@ -106,7 +101,7 @@ namespace Game.Movement
             }
             else if (mode == CameraMode.Menu)
             {
-                // Leaving the menu for the first time — fly down to the player.
+                // Leaving the menu for the first time — fly down to the player
                 StartIntro();
             }
         }
@@ -117,9 +112,7 @@ namespace Game.Movement
             introStartPos = transform.position;
             introStartRot = transform.rotation;
 
-            // Seed the orbit angles to the pose the blend lands on, so control
-            // handover at the end is seamless. Without this the camera snaps on
-            // the first gameplay frame to whatever yaw it happened to hold.
+            // Seed the orbit angles to the pose the blend lands on
             if (target != null) yaw = target.eulerAngles.y;
 
             mode = CameraMode.Intro;
@@ -223,7 +216,7 @@ namespace Game.Movement
         /// <summary>
         /// The pose the camera would hold this frame during normal play. Shared
         /// by the gameplay path and the intro blend so the fly-in lands exactly
-        /// where gameplay picks up and the two can never drift apart.
+        /// where gameplay picks up
         /// </summary>
         void GameplayPose(out Vector3 position, out Quaternion rotation)
         {
@@ -250,9 +243,7 @@ namespace Game.Movement
         }
 
         /// <summary>
-        /// Fly from the opening shot down to the player. The mirror image of
-        /// <see cref="UpdateDeathView"/>: blend toward the live gameplay pose
-        /// rather than away from it.
+        /// Fly from the opening shot down to the player
         /// </summary>
         void UpdateIntroBlend()
         {
@@ -287,11 +278,7 @@ namespace Game.Movement
             // rather than starting and stopping abruptly.
             float t = Mathf.SmoothStep(0f, 1f, deathBlend);
 
-            // Same orbit maths as the live camera, just a steeper pitch on a
-            // longer arm. Keeping the yaw means the view rises from behind
-            // wherever the player was facing instead of swinging round first.
-            // Recomputed every frame so the shot stays centred while the body
-            // finishes falling.
+            // Same orbit maths as the live camera, just a steeper pitch
             Vector3 focus = target.position + Vector3.up * targetHeight;
             Quaternion rot = Quaternion.Euler(deathPitch, yaw, 0f);
             Vector3 pos = focus + rot * new Vector3(0f, 0f, -deathDistance);
