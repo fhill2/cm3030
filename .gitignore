@@ -47,3 +47,7 @@ Thumbs.db
 .vscode/
 .idea/
 .vs/
+
+# WebGL build output and profiler session exports
+/fall_of_camelot/
+profiler-*.csv

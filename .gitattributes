@@ -33,3 +33,5 @@
 # Intentionally omitted from LFS:
 #   .unity .prefab .controller .overrideController .anim
 #   .asset .mat .physicMaterial .preset
+Assets/GeneratedAssets/Decimated/*.asset filter=lfs diff=lfs merge=lfs -text
+Assets/GeneratedAssets/LODs/*.asset filter=lfs diff=lfs merge=lfs -text
