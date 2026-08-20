@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f69b45443b10084c885f0d131fd5d50, type: 3}
+  m_Name: FrostBolt
+  m_EditorClassIdentifier: 
+  displayName: Frost Bolt
+  school: 1
+  level: 1
+  damage: 30
+  staminaCost: 30
+  cooldown: 2.5
+  projectilePrefab: {fileID: 5616977154778203818, guid: 950f7f692ead8db4695f2fdb6e47c1fc, type: 3}
+  projectileSpeed: 30
+  projectileLifetime: 4
+  dropWeight: 6

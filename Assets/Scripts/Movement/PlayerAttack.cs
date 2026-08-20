@@ -69,6 +69,7 @@ namespace Game.Movement
         void Update()
         {
             if (isDead || animator == null) return;
+            if (PlayerInputLock.InputLocked) return;
 
             // PlayerMovement owns the "is the player driving the character"
             // decision, so menu/shop states disable attacking

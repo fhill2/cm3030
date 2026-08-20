@@ -13,45 +13,42 @@ namespace Game.Movement
     public class FollowCamera : MonoBehaviour
     {
         [Header("Target")]
-        [Tooltip("The transform to follow. Leave empty to auto-find the Player.")]
+        [Tooltip("Leave empty to auto-find the Player by tag.")]
         [SerializeField] private Transform target;
-        [Tooltip("Look-at height above the target's origin (chest/head height).")]
         [SerializeField] private float targetHeight = 1.5f;
 
         [Header("Orbit")]
-        [Tooltip("Distance from the target.")]
         [SerializeField] private float distance = 4f;
-        [Tooltip("Mouse look sensitivity.")]
         [SerializeField] private float sensitivity = 0.1f;
-        [Tooltip("Lowest the camera can pitch (looking down at the player).")]
         [SerializeField] private float minPitch = -10f;
-        [Tooltip("Highest the camera can pitch (looking down from above).")]
         [SerializeField] private float maxPitch = 60f;
 
+        [Header("Collision")]
+        [SerializeField] private bool collideWithGeometry = true;
+        [Tooltip("Set this to the Environment layer only.")]
+        [SerializeField] private LayerMask collisionMask = ~0;
+        [SerializeField] private float collisionRadius = 0.3f;
+        [SerializeField] private float minDistance = 1f;
+
         [Header("Aim Follow")]
-        [Tooltip("If on, the player yaws to match the camera's heading (aim follows view).")]
+        [Tooltip("Player yaws to match the camera heading.")]
         [SerializeField] private bool rotateTarget = true;
 
         [Header("Diagonal Turn")]
-        [Tooltip("Degrees the player turns when pressing W+A or W+D.")]
+        [Tooltip("Degrees the player turns when sprinting W+A or W+D.")]
         [SerializeField] private float diagonalTurnAngle = 35f;
-        [Tooltip("How fast the turn blends in/out (higher = snappier).")]
         [SerializeField] private float turnSmooth = 8f;
 
         [Header("First Person")]
-        [Tooltip("Toggle first-person view. Camera moves to the player's head and looks outward.")]
         [SerializeField] private bool firstPerson;
-        [Tooltip("Eye height above the player's origin.")]
         [SerializeField] private float firstPersonHeight = 1.7f;
 
         [Header("Death View")]
-        [Tooltip("On player death, pull the camera up and back into a bird's-eye view.")]
         [SerializeField] private bool deathView = true;
-        [Tooltip("Camera pitch at the end of the climb. 90 looks straight down; ~80 keeps a sliver of horizon so the castle still reads.")]
+        [Tooltip("90 looks straight down. 80 keeps some horizon so the castle still reads.")]
         [SerializeField] private float deathPitch = 80f;
-        [Tooltip("How far the camera pulls away from the body. Combined with the pitch this sets the height — 200 at 80 degrees puts the camera ~197m up. The scene camera's far clip is 1000, so there is room to go higher still.")]
         [SerializeField] private float deathDistance = 200f;
-        [Tooltip("Seconds the climb takes. Keep PlayerUI's fadeDuration in step so the screen blacks out as the camera settles.")]
+        [Tooltip("Keep PlayerUI's fadeDuration in step with this.")]
         [SerializeField] private float deathTransitionTime = 3f;
 
         [Header("Start Screen")]
@@ -131,13 +128,8 @@ namespace Game.Movement
             deathStartRot = transform.rotation;
         }
 
-        /// <summary>
-        /// True if <paramref name="entity"/> is the character we're following.
-        /// The player prefab nests several levels, so the transform assigned as
-        /// the follow target is not guaranteed to be the exact GameObject that
-        /// carries the health component. Accepting anything on the same branch
-        /// keeps this working however the prefab is rearranged.
-        /// </summary>
+        // The health component sits on a child, not on the object assigned as
+        // the follow target, so compare against the whole branch.
         bool IsFollowedTarget(GameObject entity)
         {
             if (target == null || entity == null) return false;
@@ -153,11 +145,10 @@ namespace Game.Movement
                 if (player != null) target = player.transform;
             }
 
-            // Seed yaw/pitch from the camera's current orientation so it
-            // doesn't snap to defaults on the first frame.
+            // Seed from the current orientation so it doesn't snap on frame one.
             yaw = transform.eulerAngles.y;
             pitch = transform.eulerAngles.x;
-            if (pitch > 180f) pitch -= 360f;   // wrap to -180..180
+            if (pitch > 180f) pitch -= 360f;
         }
 
         void LateUpdate()
@@ -181,20 +172,21 @@ namespace Game.Movement
                     return;
             }
 
-            if (Mouse.current != null)
+            bool locked = PlayerInputLock.InputLocked;
+
+            if (!locked && Mouse.current != null)
             {
                 Vector2 delta = Mouse.current.delta.ReadValue();
-                yaw   += delta.x * sensitivity;
-                pitch -= delta.y * sensitivity;                       // mouse up -> look up
-                pitch  = Mathf.Clamp(pitch, minPitch, maxPitch);
+                yaw += delta.x * sensitivity;
+                pitch -= delta.y * sensitivity;
+                pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
             }
 
             GameplayPose(out Vector3 pos, out Quaternion rot);
             transform.position = pos;
             transform.rotation = rot;
 
-            // Player faces the camera heading plus a diagonal turn offset.
-            if (rotateTarget)
+            if (rotateTarget && !locked)
             {
                 float targetOffset = 0f;
                 var kb = Keyboard.current;
@@ -203,7 +195,6 @@ namespace Game.Movement
                     bool w = kb.wKey.isPressed || kb.upArrowKey.isPressed;
                     bool a = kb.aKey.isPressed || kb.leftArrowKey.isPressed;
                     bool d = kb.dKey.isPressed || kb.rightArrowKey.isPressed;
-                    bool s = kb.sKey.isPressed || kb.downArrowKey.isPressed;
 
                     if (w && a && !d) targetOffset = -diagonalTurnAngle;
                     else if (w && d && !a) targetOffset = diagonalTurnAngle;
@@ -274,8 +265,6 @@ namespace Game.Movement
             deathBlend = Mathf.Clamp01(
                 deathBlend + Time.deltaTime / Mathf.Max(0.01f, deathTransitionTime));
 
-            // SmoothStep so the climb eases out of the gameplay shot and settles,
-            // rather than starting and stopping abruptly.
             float t = Mathf.SmoothStep(0f, 1f, deathBlend);
 
             // Same orbit maths as the live camera, just a steeper pitch
