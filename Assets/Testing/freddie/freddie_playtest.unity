@@ -8699,6 +8699,8 @@ GameObject:
   - component: {fileID: 7550478612390158264}
   - component: {fileID: 7550478612390158266}
   - component: {fileID: 7550478612390158265}
+  - component: {fileID: 7550478612390158268}
+  - component: {fileID: 7550478612390158267}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -55728,6 +55730,12 @@ MonoBehaviour:
   sensitivity: 0.1
   minPitch: -10
   maxPitch: 60
+  collideWithGeometry: 1
+  collisionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  collisionRadius: 0.3
+  minDistance: 1
   rotateTarget: 1
   diagonalTurnAngle: 35
   turnSmooth: 8
@@ -67315,6 +67323,7 @@ MonoBehaviour:
   wallet: {fileID: 7550478612390158261}
   loadout: {fileID: 7550478612390158262}
   stateMachine: {fileID: 404486885}
+  spellBook: {fileID: 0}
   items:
   - {fileID: 11400000, guid: 8e866df133db4ed47b30b42325a2655f, type: 2}
 --- !u!114 &7550478612390158264
@@ -67366,6 +67375,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22efeab14ed3634a98d6f3b223d544f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7550478612390158267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404486881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 440a7c4d6a3e0854d9ebf0cd1029a913, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+--- !u!114 &7550478612390158268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404486881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b5a3528f9ee1b4cbae75d0562aca9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lockedStates: 000000000300000004000000
+  freeCursorWhenLocked: 1
 --- !u!1001 &7566531922115100534
 PrefabInstance:
   m_ObjectHideFlags: 0
