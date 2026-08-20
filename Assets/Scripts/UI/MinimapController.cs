@@ -4,20 +4,6 @@ using Game.Core;
 
 namespace Game.UI
 {
-    // Bottom-left minimap: a top-down camera feed of the castle with the
-    // player centered, plus a red dot for every live enemy so the player can
-    // find fights instead of wandering the whole map looking for them.
-    //
-    // The minimap camera only translates to follow the player's XZ position —
-    // it never rotates — so the map stays north-up and dot positions are a
-    // plain viewport conversion, no manual trig needed.
-    //
-    // Enemy dots are pooled per-enemy (one RectTransform per GameObject in
-    // WaveSpawner.LiveEnemies) and cleaned up automatically as enemies die,
-    // so there's no separate death-tracking needed here.
-    //
-    // Goes on the minimap Canvas object, alongside the RawImage that shows
-    // the camera's RenderTexture.
     public class MinimapController : MonoBehaviour
     {
         [Header("References")]
@@ -44,6 +30,16 @@ namespace Game.UI
         [Tooltip("Optional. If set, the minimap fades in/out with a CanvasGroup instead of always being visible — hidden during Menu, shown for every other state. Leave empty to keep the old always-on behaviour.")]
         [SerializeField] private CanvasGroup visibilityGroup;
 
+        [Header("Border")]
+        [Tooltip("Decorative frame around the map. Ring mode matches the circular mask.")]
+        [SerializeField] private BorderStyle mapBorder = new BorderStyle
+        {
+            mode = BorderStyle.BorderMode.Ring,
+            color = new Color(0.85f, 0.72f, 0.35f, 1f),
+            thickness = 3f,
+            spriteName = "minimap_ring"
+        };
+
         private Camera cam;
         private bool isVisible = true;
         private readonly Dictionary<GameObject, RectTransform> dots = new Dictionary<GameObject, RectTransform>();
@@ -57,6 +53,8 @@ namespace Game.UI
             // state machine's first OnGameStateChanged has a chance to fire —
             // avoids a one-frame flash of the map over the start screen.
             if (visibilityGroup != null) SetVisible(false);
+
+            UIBuilder.ApplyBorder(mapRect, mapBorder);
         }
 
         private void OnEnable()
@@ -96,8 +94,6 @@ namespace Game.UI
             UpdateEnemyDots();
         }
 
-        // Keeps the camera centered over the player, looking straight down,
-        // never rotating, so the minimap always reads north-up.
         private void FollowPlayer()
         {
             Vector3 pos = player.position;
@@ -108,14 +104,6 @@ namespace Game.UI
         {
             if (playerIcon == null) return;
 
-            // The player is always at the camera's center by construction
-            // (FollowPlayer keeps them there), so the icon just sits in the
-            // middle of the map rect — only its rotation needs updating, to
-            // point the way the player's facing.
-            //
-            // NOTE: if the arrow ends up pointing the wrong way in testing,
-            // flip the sign here — it depends on the exact rotation you give
-            // the top-down camera in the editor setup.
             playerIcon.anchoredPosition = Vector2.zero;
             playerIcon.localRotation = Quaternion.Euler(0f, 0f, -player.eulerAngles.y);
         }
@@ -147,7 +135,6 @@ namespace Game.UI
             }
         }
 
-        // Drops dots for anyone who died or despawned since the last check.
         private void RemoveStaleDots(IReadOnlyList<GameObject> liveEnemies)
         {
             if (dots.Count == 0) return;
@@ -181,22 +168,6 @@ namespace Game.UI
             dots.Clear();
         }
 
-        // Converts a world position to a point inside the map rect via the
-        // minimap camera's viewport — works cleanly for a top-down
-        // orthographic camera without any manual trig.
-        //
-        // An enemy outside the camera's orthographic view produces a
-        // viewport value outside [0,1], which without clamping would place
-        // the dot way outside the panel — even over the 3D game view behind
-        // it. Clamping pins it to the rim instead, in the right direction,
-        // so a far-off enemy still shows as "something's over there" rather
-        // than vanishing or floating off the minimap entirely.
-        //
-        // The map is masked into a circle, so the clamp has to follow that
-        // circle too (by vector magnitude) rather than clamping X and Y
-        // independently — a square clamp lets dots sit in the square's
-        // corners, which are outside the visible circle and get sliced by
-        // the mask into odd shapes.
         private void PositionOnMap(RectTransform icon, Vector3 worldPos)
         {
             Vector3 viewport = cam.WorldToViewportPoint(worldPos);
