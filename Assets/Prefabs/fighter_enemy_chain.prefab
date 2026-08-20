@@ -365,6 +365,7 @@ GameObject:
   - component: {fileID: 5938204761293856212}
   - component: {fileID: 7395261481325794633}
   - component: {fileID: 6981728159280459862}
+  - component: {fileID: 7399276524850649914}
   m_Layer: 0
   m_Name: fighter_enemy_chain
   m_TagString: Enemy
@@ -701,6 +702,19 @@ MonoBehaviour:
   - {fileID: 6550804457596160986, guid: c2ff9a62d0009a64a81cc1a4bba59fd5, type: 3}
   - {fileID: 4055846304957825616, guid: 700b4d22453a6ef438be63e4c5c37167, type: 3}
   - {fileID: 4055846304957825616, guid: e855d12d7bfdb464b94ef1f1d20cf814, type: 3}
+--- !u!114 &7399276524850649914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340618435387090213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb8134abf6c2464889458c8426c82562, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bakeDelay: 8
 --- !u!1 &362665959175451141
 GameObject:
   m_ObjectHideFlags: 0
