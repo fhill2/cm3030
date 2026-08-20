@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Game.Core;
 using Game.Health;
@@ -33,11 +34,19 @@ namespace Game.Enemy
         {
             yield return new WaitForSeconds(bakeDelay);
 
+            LODGroup lodGroup = GetComponent<LODGroup>();
+            if (lodGroup != null) Destroy(lodGroup);
+
             SkinnedMeshRenderer[] smrs = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            var doomed = new List<GameObject>();
             int bakedCount = 0;
             foreach (SkinnedMeshRenderer smr in smrs)
             {
-                if (!smr.enabled || smr.sharedMesh == null) continue;
+                if (!smr.enabled || smr.sharedMesh == null)
+                {
+                    doomed.Add(smr.gameObject);
+                    continue;
+                }
 
                 Mesh mesh = new Mesh();
                 smr.BakeMesh(mesh);
@@ -58,6 +67,9 @@ namespace Game.Enemy
                 bakedCount++;
             }
 
+            foreach (GameObject go in doomed)
+                if (go != null) Destroy(go);
+
             Animator animator = GetComponentInChildren<Animator>();
             if (animator != null) Destroy(animator);
 
@@ -66,7 +78,7 @@ namespace Game.Enemy
             foreach (CharacterController cc in GetComponentsInChildren<CharacterController>(true))
                 cc.enabled = false;
 
-            Debug.Log($"[CorpseBaker] {name}: baked {bakedCount} mesh(es), rig disabled.");
+            Debug.Log($"[CorpseBaker] {name}: baked {bakedCount} mesh(es), removed {doomed.Count} inactive mesh objects.");
         }
     }
 }
