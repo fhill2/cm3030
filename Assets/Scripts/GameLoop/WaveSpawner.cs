@@ -48,6 +48,11 @@ namespace Game.Core
         // Which patrol path to assign next (cycles through patrolPathsRoot's children).
         private int patrolPathIndex;
 
+        // How many enemies have already been put on each path this wave, keyed
+        // by path index. Used to stagger where on the loop each one starts, so
+        // enemies sharing a path don't all walk toward waypoint 0 at once.
+        private readonly Dictionary<int, int> patrolPathAssignCounts = new Dictionary<int, int>();
+
         // Enemies from the current wave that are still alive.
         private readonly List<GameObject> liveEnemies = new List<GameObject>();
 
@@ -95,6 +100,7 @@ namespace Game.Core
         {
             liveEnemies.Clear();
             patrolPathIndex = 0;
+            patrolPathAssignCounts.Clear();
             spawningFinished = false;
             waveAlreadyCleared = false;
 
@@ -213,6 +219,12 @@ namespace Game.Core
 
         // Assigns the next patrol path's waypoints to the enemy's NpcFSM.
         // Cycles through patrolPathsRoot's children: enemy 1 → Patrol1, enemy 2 → Patrol2, etc.
+        //
+        // Once enemy count outgrows the number of paths, the cycle wraps and a
+        // path ends up with more than one enemy on it. Rather than start every
+        // one of them at waypoint 0 — which walks them all into the same spot
+        // at the same time — each additional enemy on a path starts further
+        // around the loop, so they're spread out from the moment they spawn.
         private void AssignPatrolPath(GameObject enemy)
         {
             if (patrolPathsRoot == null || patrolPathsRoot.childCount == 0) return;
@@ -222,7 +234,8 @@ namespace Game.Core
             var fsm = enemy.GetComponent(fsmType);
             if (fsm == null) return;
 
-            Transform path = patrolPathsRoot.GetChild(patrolPathIndex % patrolPathsRoot.childCount);
+            int pathIndex = patrolPathIndex % patrolPathsRoot.childCount;
+            Transform path = patrolPathsRoot.GetChild(pathIndex);
             patrolPathIndex++;
 
             var list = fsmType.GetField("patrolTargets")?.GetValue(fsm) as List<Transform>;
@@ -231,6 +244,15 @@ namespace Game.Core
             list.Clear();
             foreach (Transform wp in path)
                 list.Add(wp);
+
+            int assignedSoFar = patrolPathAssignCounts.TryGetValue(pathIndex, out int count) ? count : 0;
+            patrolPathAssignCounts[pathIndex] = assignedSoFar + 1;
+
+            if (list.Count > 0)
+            {
+                int startIndex = assignedSoFar % list.Count;
+                fsmType.GetField("targetIndex")?.SetValue(fsm, startIndex);
+            }
         }
 
         // Same reflection approach as AssignPatrolPath — avoids a hard dependency
