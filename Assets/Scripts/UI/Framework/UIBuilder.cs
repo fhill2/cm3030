@@ -142,10 +142,12 @@ namespace Game.UI
             return AttachText(textRt, content, alignment, fontSize, Color.white, GetFont(theme));
         }
 
-        public const float ButtonAspect = 1.75f;
+        public const float ButtonAspect = 1.55f;
         public const string ButtonResourceFolder = "UI/Buttons";
         public const string ButtonUnderlineName = "button_underline_2";
         public const float ButtonUnderlineHeight = 0.7f;
+        public static readonly Color ButtonHoverText = new Color(0.761f, 0.663f, 0.439f);
+        public const float ButtonHoverFontScale = 1.2f;
 
         public static Button CreateButton(Transform parent, string name, string label,
             Vector2 center, float width, UITheme theme, int fontSize,
@@ -179,8 +181,31 @@ namespace Game.UI
             }
 
             var labelRt = CreateStretchChild(rt, "Text");
-            AttachText(labelRt, label, TextAnchor.MiddleCenter, fontSize, theme.text, GetFont(theme));
+            var labelText = AttachText(labelRt, label, TextAnchor.MiddleCenter, fontSize, theme.text, GetFont(theme));
+            HookButtonHover(rt.gameObject, button, labelText, fontSize, theme);
             return button;
+        }
+
+        static void HookButtonHover(GameObject go, Button button, Text label, int fontSize, UITheme theme)
+        {
+            var trigger = go.AddComponent<EventTrigger>();
+
+            var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            enter.callback.AddListener(_ =>
+            {
+                if (!button.IsInteractable()) return;
+                label.fontSize = Mathf.Max(fontSize + 2, Mathf.RoundToInt(fontSize * ButtonHoverFontScale));
+                label.color = ButtonHoverText;
+            });
+            trigger.triggers.Add(enter);
+
+            var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+            exit.callback.AddListener(_ =>
+            {
+                label.fontSize = fontSize;
+                label.color = theme.text;
+            });
+            trigger.triggers.Add(exit);
         }
 
         public static Sprite GetButtonUnderline()

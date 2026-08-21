@@ -310,30 +310,34 @@ namespace Game.UI
 
             float inner = height - inset * 2f;
             float innerW = width - inset * 2f;
-            float quarter = inner * 0.25f;
-
-            UIBuilder.CreateText(content, "Title", "MARKET",
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -quarter * 0.25f),
-                new Vector2(innerW * 0.5f, quarter * 0.5f), TextAnchor.MiddleLeft, 24, Theme.text, Theme);
-
-            marketTimer = UIBuilder.CreateText(content, "Timer", "",
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -quarter * 0.25f),
-                new Vector2(innerW * 0.5f, quarter * 0.5f), TextAnchor.MiddleRight, 16, Theme.dimText, Theme);
 
             float navWidth = UIBuilder.MeasureButtonWidth(
-                new[] { "BUY", "RECHARGE", "DONE" },
+                new[] { "EQUIPMENT", "RECHARGE", "SPELLS", "DONE" },
                 ButtonPadding, 18, Theme);
             navWidth = Mathf.Min(navWidth, innerW / 3f - Padding);
             float navHeight = navWidth / UIBuilder.ButtonAspect;
 
-            float doneCenterY = -inner * 0.5f + Padding + navHeight * 0.5f;
-            float headerBottom = inner * 0.5f - quarter * 0.6f;
-            float navCenterY = (headerBottom + doneCenterY + navHeight * 0.5f) * 0.5f;
+            float headerHeight = navHeight * 0.6f;
+            float gap = Mathf.Max(4f,
+                (inner - headerHeight - navHeight * 2f) * 0.25f);
 
-            float gap = (innerW - navWidth * 3f) * 0.25f;
-            float navX = innerW * 0.5f - gap - navWidth * 0.5f;
+            float headerCenterY = inner * 0.5f - gap - headerHeight * 0.5f;
+            float navCenterY = headerCenterY - headerHeight * 0.5f - gap - navHeight * 0.5f;
+            float doneCenterY = navCenterY - navHeight * 0.5f - gap - navHeight * 0.5f;
 
-            UIBuilder.CreateButton(content, "EquipmentButton", "BUY",
+            UIBuilder.CreateText(content, "Title", "MARKET",
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(-innerW * 0.25f + Padding * 1.5f, headerCenterY),
+                new Vector2(innerW * 0.5f, headerHeight), TextAnchor.MiddleLeft, 32, Theme.text, Theme);
+
+            marketTimer = UIBuilder.CreateText(content, "Timer", "",
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(innerW * 0.25f, headerCenterY),
+                new Vector2(innerW * 0.5f, headerHeight), TextAnchor.MiddleRight, 16, Theme.dimText, Theme);
+
+            float navGap = (innerW - navWidth * 3f) * 0.25f;
+            float navX = innerW * 0.5f - navGap - navWidth * 0.5f;
+
+            UIBuilder.CreateButton(content, "EquipmentButton", "EQUIPMENT",
                 new Vector2(-navX, navCenterY), navWidth,
                 Theme, 18, ShowEquipmentPage);
 
@@ -341,7 +345,7 @@ namespace Game.UI
                 new Vector2(0f, navCenterY), navWidth,
                 Theme, 18, ShowPowerUpsPage);
 
-            UIBuilder.CreateButton(content, "SpellsButton", "BUY",
+            UIBuilder.CreateButton(content, "SpellsButton", "SPELLS",
                 new Vector2(navX, navCenterY), navWidth,
                 Theme, 18);
 
