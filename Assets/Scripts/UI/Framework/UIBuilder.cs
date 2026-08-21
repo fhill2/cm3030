@@ -311,10 +311,14 @@ namespace Game.UI
             return sprite;
         }
 
+        public const string GameFontPath = "UI/MedievalSharp-Regular";
+
         public static Font GetFont(UITheme theme)
         {
             if (theme != null && theme.font != null) return theme.font;
-            if (s_font == null) s_font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (s_font == null)
+                s_font = Resources.Load<Font>(GameFontPath)
+                    ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             return s_font;
         }
 
