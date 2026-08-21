@@ -32656,7 +32656,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 145, y: 145}
+  m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1170557368
 MonoBehaviour:
@@ -34137,7 +34137,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 145, y: 145}
+  m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1256975281
 MonoBehaviour:
@@ -34194,6 +34194,7 @@ MonoBehaviour:
   enemyDotPrefab: {fileID: 5163817061166790487, guid: 7fe8d01b8b756c84698268518336fdae, type: 3}
   cameraHeight: 30
   edgePadding: 8
+  visibilityGroup: {fileID: 1541233250}
 --- !u!1 &1257732184
 GameObject:
   m_ObjectHideFlags: 0
@@ -41106,7 +41107,7 @@ GameObject:
   - component: {fileID: 1541233246}
   - component: {fileID: 1541233248}
   - component: {fileID: 1541233247}
-  - component: {fileID: 1541233249}
+  - component: {fileID: 1541233250}
   m_Layer: 0
   m_Name: MinimapFrame
   m_TagString: Untagged
@@ -41154,7 +41155,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 26ea545bbd28dcd43a7f3522f610f8b7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f54d28c6e85c8294aa017faf1209a878, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -41172,19 +41173,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1541233245}
   m_CullTransparentMesh: 1
---- !u!114 &1541233249
-MonoBehaviour:
+--- !u!225 &1541233250
+CanvasGroup:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1541233245}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ShowMaskGraphic: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!4 &1541451625 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1305903497340106857, guid: 2064da721464ef24189aec9b392932c5, type: 3}
@@ -51171,15 +51171,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2775870359928196619, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 11.591244
+      value: -10.97
       objectReference: {fileID: 0}
     - target: {fileID: 2775870359928196619, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 12.014
       objectReference: {fileID: 0}
     - target: {fileID: 2775870359928196619, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.44955102
+      value: 24.14
       objectReference: {fileID: 0}
     - target: {fileID: 2775870359928196619, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_LocalRotation.w
