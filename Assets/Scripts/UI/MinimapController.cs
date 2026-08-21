@@ -30,15 +30,6 @@ namespace Game.UI
         [Tooltip("Optional. If set, the minimap fades in/out with a CanvasGroup instead of always being visible — hidden during Menu, shown for every other state. Leave empty to keep the old always-on behaviour.")]
         [SerializeField] private CanvasGroup visibilityGroup;
 
-        [Header("Border")]
-        [Tooltip("Decorative frame around the map. Ring mode matches the circular mask.")]
-        [SerializeField] private BorderStyle mapBorder = new BorderStyle
-        {
-            mode = BorderStyle.BorderMode.Ring,
-            color = new Color(0.85f, 0.72f, 0.35f, 1f),
-            thickness = 3f,
-            spriteName = "minimap_ring"
-        };
 
         private Camera cam;
         private bool isVisible = true;
@@ -53,8 +44,6 @@ namespace Game.UI
             // state machine's first OnGameStateChanged has a chance to fire —
             // avoids a one-frame flash of the map over the start screen.
             if (visibilityGroup != null) SetVisible(false);
-
-            UIBuilder.ApplyBorder(mapRect, mapBorder);
         }
 
         private void OnEnable()

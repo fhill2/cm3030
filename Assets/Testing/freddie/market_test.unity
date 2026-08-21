@@ -287,7 +287,7 @@ MonoBehaviour:
   logTransitions: 1
   initialState: 3
   waveCompleteDelay: 3
-  shopDuration: 30
+  shopDuration: 99999
 --- !u!114 &205
 MonoBehaviour:
   m_ObjectHideFlags: 0

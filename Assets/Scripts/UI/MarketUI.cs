@@ -20,25 +20,21 @@ namespace Game.UI
         [Tooltip("Border around the two market pages.")]
         [SerializeField] private BorderStyle panelBorder = new BorderStyle
         {
-            mode = BorderStyle.BorderMode.Sprite,
-            color = new Color(0.85f, 0.72f, 0.35f, 1f),
-            thickness = 4f,
-            spriteName = "market_frame"
-        };
-        [Tooltip("Border around one equipment cell.")]
-        [SerializeField] private BorderStyle cellBorder = new BorderStyle
-        {
-            mode = BorderStyle.BorderMode.Edges,
-            color = new Color(0.85f, 0.72f, 0.35f, 1f),
-            thickness = 2f
+            spriteName = "market_ui_panel_border"
         };
 
-        private const float PanelWidth   = 560f;
+        [Tooltip("Market panel size as a fraction of the canvas' shorter side. Keeps the square aspect ratio.")]
+        [SerializeField, Range(0.05f, 1f)] private float panelSizePercent = 0.25f;
+
+        [Tooltip("Inset of the content area from the panel edge as a fraction of panel size. Keeps content clear of the border art.")]
+        [SerializeField, Range(0f, 0.3f)] private float contentInsetPercent = 0.15f;
+
         private const float HeaderHeight = 96f;
         private const float RowHeight    = 64f;
-        private const float RowGap       = 8f;
-        private const float FooterHeight = 96f;
-        private const float Padding      = 16f;
+        private const float RowGap       = 14f;
+        private const float Padding      = 20f;
+        private const float ButtonPadding = 28f;
+        private const float PageInset    = 64f;
 
         private const float EquipPageWidth  = 1600f;
         private const float EquipPageHeight = 920f;
@@ -65,6 +61,8 @@ namespace Game.UI
         private GameObject root;
         private GameObject marketPage;
         private GameObject equipmentPage;
+        private GameObject powerUpsPage;
+        private RectTransform canvasRect;
 
         private Text marketTimer;
         private Text equipmentTimer;
@@ -79,13 +77,42 @@ namespace Game.UI
 
         private UITheme Theme => theme != null ? theme : UITheme.Default;
 
+        private float PanelSize
+        {
+            get
+            {
+                float shortSide = canvasRect != null
+                    ? Mathf.Min(canvasRect.rect.width, canvasRect.rect.height)
+                    : 1080f;
+                return shortSide * panelSizePercent;
+            }
+        }
+
         private void Awake()
         {
             if (shop == null) shop = FindFirstObjectByType<Shop>();
             if (wallet == null) wallet = FindFirstObjectByType<PlayerWallet>();
             if (stateMachine == null) stateMachine = FindFirstObjectByType<GameStateMachine>();
+        }
 
+        private void Start()
+        {
             BuildUI();
+            SyncWithCurrentState();
+        }
+
+        private void SyncWithCurrentState()
+        {
+            if (root == null || stateMachine == null || stateMachine.CurrentState == null) return;
+
+            if (stateMachine.CurrentState.Id == GameStateId.Shop)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                root.SetActive(true);
+                ShowMarketPage();
+                RefreshAll();
+            }
         }
 
         private void OnEnable()
@@ -177,6 +204,7 @@ namespace Game.UI
                     ? $"{item.DisplayName} \u2014 {cost}g"
                     : $"{item.DisplayName} \u2014 sold out";
                 row.Buy.interactable = shop.CanAfford(row.Index);
+                UIBuilder.FitButtonToLabel(row.BuyLabel, ButtonPadding);
             }
         }
 
@@ -193,6 +221,7 @@ namespace Game.UI
 
                 cell.BuyLabel.text = equipped ? "EQUIPPED" : $"BUY \u2014 {cell.Entry.Cost}g";
                 cell.Buy.interactable = !equipped && wallet != null && wallet.Gold >= cell.Entry.Cost;
+                UIBuilder.FitButtonToLabel(cell.BuyLabel, ButtonPadding);
             }
         }
 
@@ -216,12 +245,21 @@ namespace Game.UI
         {
             if (marketPage != null) marketPage.SetActive(true);
             if (equipmentPage != null) equipmentPage.SetActive(false);
+            if (powerUpsPage != null) powerUpsPage.SetActive(false);
         }
 
         private void ShowEquipmentPage()
         {
             if (marketPage != null) marketPage.SetActive(false);
             if (equipmentPage != null) equipmentPage.SetActive(true);
+            if (powerUpsPage != null) powerUpsPage.SetActive(false);
+        }
+
+        private void ShowPowerUpsPage()
+        {
+            if (marketPage != null) marketPage.SetActive(false);
+            if (equipmentPage != null) equipmentPage.SetActive(false);
+            if (powerUpsPage != null) powerUpsPage.SetActive(true);
         }
 
         private void BuildUI()
@@ -229,6 +267,7 @@ namespace Game.UI
             UIBuilder.EnsureEventSystem();
 
             root = UIBuilder.CreateOverlayCanvas("MarketUICanvas", sortingOrder: 50).gameObject;
+            canvasRect = root.GetComponent<RectTransform>();
 
             var backdropRt = UIBuilder.CreateStretchChild(root.transform, "Backdrop");
             var backdrop = UIBuilder.AttachImage(backdropRt, Theme.backdropDim);
@@ -236,58 +275,95 @@ namespace Game.UI
 
             marketPage = BuildMarketPage();
             equipmentPage = BuildEquipmentPage();
+            powerUpsPage = BuildPowerUpsPage();
 
             root.SetActive(false);
         }
 
         private GameObject BuildMarketPage()
         {
-            int itemCount = shop != null ? shop.ItemCount : 0;
-            float rowsHeight = Mathf.Max(1, itemCount) * (RowHeight + RowGap);
-            float height = HeaderHeight + rowsHeight + FooterHeight;
+            float size = PanelSize;
+            float inset = size * contentInsetPercent;
 
-            var panel = UIBuilder.CreateTitledPanel(root.transform, "MarketPanel",
-                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(PanelWidth, height),
-                "MARKET", Theme, out _, panelBorder);
+            var panel = UIBuilder.CreatePanel(root.transform, "MarketPanel",
+                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size, size),
+                Theme, panelBorder, Color.clear);
+            var content = UIBuilder.CreateContentRect(panel, inset);
 
-            marketTimer = UIBuilder.CreateText(panel, "Timer", "",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -48f),
-                new Vector2(0f, 24f), TextAnchor.MiddleCenter, 16, Theme.text, Theme);
+            float inner = size - inset * 2f;
+            float quarter = inner * 0.25f;
+            float buttonHeight = quarter * 0.36f;
 
-            float y = -HeaderHeight;
-            for (int i = 0; i < itemCount; i++)
-            {
-                CreateItemRow(panel, i, y);
-                y -= RowHeight + RowGap;
-            }
+            UIBuilder.CreateText(content, "Title", "MARKET",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -quarter * 0.05f),
+                new Vector2(0f, quarter * 0.5f), TextAnchor.MiddleCenter, 24, Theme.text, Theme);
 
-            float contentWidth = PanelWidth - Padding * 2f;
+            marketTimer = UIBuilder.CreateText(content, "Timer", "",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -quarter * 0.6f),
+                new Vector2(0f, quarter * 0.4f), TextAnchor.MiddleCenter, 16, Theme.dimText, Theme);
 
-            UIBuilder.CreateButton(panel, "DoneButton", "DONE",
-                new Vector2(0f, 0f), new Vector2(Padding, 48f), contentWidth, 36f,
-                Theme, 18, CloseShop);
+            float buttonsTop = inner * 0.5f - quarter * 0.85f;
+            float buttonsBottom = -inner * 0.5f + Padding;
+            const int buttonCount = 4;
+            float step = (buttonsTop - buttonsBottom) / buttonCount;
 
-            UIBuilder.CreateButton(panel, "EquipmentButton", "BUY EQUIPMENT",
-                new Vector2(0f, 0f), new Vector2(Padding, 8f), contentWidth, 36f,
+            UIBuilder.CreateButton(content, "EquipmentButton", "BUY EQUIPMENT",
+                new Vector2(0f, buttonsTop - step * 0.5f), ButtonPadding, buttonHeight,
                 Theme, 18, ShowEquipmentPage);
+
+            UIBuilder.CreateButton(content, "PowerUpsButton", "BUY POWERUPS",
+                new Vector2(0f, buttonsTop - step * 1.5f), ButtonPadding, buttonHeight,
+                Theme, 18, ShowPowerUpsPage);
+
+            UIBuilder.CreateButton(content, "SpellsButton", "BUY SPELLS",
+                new Vector2(0f, buttonsTop - step * 2.5f), ButtonPadding, buttonHeight,
+                Theme, 18);
+
+            UIBuilder.CreateButton(content, "DoneButton", "DONE",
+                new Vector2(0f, buttonsTop - step * 3.5f), ButtonPadding, buttonHeight,
+                Theme, 18, CloseShop);
 
             return panel.gameObject;
         }
 
-        private void CreateItemRow(RectTransform panel, int index, float topY)
+        private GameObject BuildPowerUpsPage()
+        {
+            float pageWidth = EquipPageWidth * 0.5f;
+            float pageHeight = EquipPageHeight * 0.5f;
+
+            var panel = UIBuilder.CreatePanel(root.transform, "PowerUpsPanel",
+                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(pageWidth, pageHeight),
+                Theme, panelBorder);
+            var content = UIBuilder.CreateContentRect(panel, PageInset);
+
+            UIBuilder.CreateText(content, "Title", "POWERUPS",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f),
+                new Vector2(0f, 40f), TextAnchor.MiddleCenter, 24, Theme.text, Theme);
+
+            float innerH = pageHeight - PageInset * 2f;
+
+            int itemCount = shop != null ? shop.ItemCount : 0;
+            for (int i = 0; i < itemCount; i++)
+            {
+                float centerY = innerH * 0.5f - HeaderHeight - i * (RowHeight + RowGap) - RowHeight * 0.5f;
+                CreateItemRow(content, i, centerY);
+            }
+
+            UIBuilder.CreateButton(content, "BackButton", "BACK",
+                new Vector2(0f, -innerH * 0.5f + Padding + 18f), ButtonPadding, 36f,
+                Theme, 16, ShowMarketPage);
+
+            panel.gameObject.SetActive(false);
+            return panel.gameObject;
+        }
+
+        private void CreateItemRow(RectTransform parent, int index, float centerY)
         {
             ShopItemDef item = shop.ItemAt(index);
             if (item == null) return;
 
-            float contentWidth = PanelWidth - Padding * 2f;
-
-            UIBuilder.CreateText(panel, "Description", item.Description,
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(Padding, topY),
-                new Vector2(contentWidth, 20f), TextAnchor.MiddleLeft, 14,
-                Theme.dimText, Theme);
-
-            var buy = UIBuilder.CreateButton(panel, "BuyButton", "",
-                new Vector2(0f, 1f), new Vector2(Padding, topY - 24f), contentWidth, 34f,
+            var buy = UIBuilder.CreateButton(parent, "BuyButton", "",
+                new Vector2(0f, centerY), ButtonPadding, RowHeight,
                 Theme, 18, () => BuyItem(index));
 
             rows.Add(new ItemRow
@@ -300,30 +376,41 @@ namespace Game.UI
 
         private GameObject BuildEquipmentPage()
         {
-            var panel = UIBuilder.CreateTitledPanel(root.transform, "EquipmentPanel",
+            var panel = UIBuilder.CreatePanel(root.transform, "EquipmentPanel",
                 new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(EquipPageWidth, EquipPageHeight),
-                "EQUIPMENT", Theme, out _, panelBorder);
+                Theme, panelBorder);
+            var pageContent = UIBuilder.CreateContentRect(panel, PageInset);
+            float innerWidth = EquipPageWidth - PageInset * 2f;
+            float innerHeight = EquipPageHeight - PageInset * 2f;
 
-            equipmentTimer = UIBuilder.CreateText(panel, "Timer", "",
+            UIBuilder.CreateText(pageContent, "Title", "EQUIPMENT",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f),
+                new Vector2(0f, 40f), TextAnchor.MiddleCenter, 24, Theme.text, Theme);
+
+            equipmentTimer = UIBuilder.CreateText(pageContent, "Timer", "",
                 new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -48f),
                 new Vector2(0f, 24f), TextAnchor.MiddleCenter, 16, Theme.text, Theme);
 
-            UIBuilder.CreateButton(panel, "BackButton", "BACK",
-                new Vector2(1f, 1f), new Vector2(-Padding, -42f), 110f, 30f,
+            var back = UIBuilder.CreateButton(pageContent, "BackButton", "BACK",
+                new Vector2(0f, innerHeight * 0.5f - 57f), ButtonPadding, 30f,
                 Theme, 16, ShowMarketPage);
+            var backRt = back.GetComponent<RectTransform>();
+            backRt.anchoredPosition = new Vector2(
+                innerWidth * 0.5f - backRt.rect.width * 0.5f - Padding,
+                backRt.anchoredPosition.y);
 
             IReadOnlyList<EquipmentEntry> entries = EquipmentCatalog.Entries;
             int rowCount = Mathf.Max(1, Mathf.CeilToInt(entries.Count / (float)Columns));
             float contentHeight = rowCount * (CellHeight + CellGap) + Padding * 2f;
 
-            UIBuilder.CreateScrollList(panel, "Grid",
+            UIBuilder.CreateScrollList(pageContent, "Grid",
                 new Vector2(0.5f, 1f), new Vector2(0f, -HeaderHeight),
-                new Vector2(EquipPageWidth - Padding * 2f, EquipPageHeight - HeaderHeight - Padding),
-                Theme, out RectTransform content);
-            content.sizeDelta = new Vector2(0f, contentHeight);
+                new Vector2(innerWidth - Padding * 2f, innerHeight - HeaderHeight - Padding),
+                Theme, out RectTransform gridContent);
+            gridContent.sizeDelta = new Vector2(0f, contentHeight);
 
             for (int i = 0; i < entries.Count; i++)
-                CreateEquipmentCell(content, entries[i], i);
+                CreateEquipmentCell(gridContent, entries[i], i);
 
             panel.gameObject.SetActive(false);
             return panel.gameObject;
@@ -334,7 +421,7 @@ namespace Game.UI
             int column = index % Columns;
             int row = index / Columns;
 
-            float innerWidth = EquipPageWidth - Padding * 2f;
+            float innerWidth = EquipPageWidth - PageInset * 2f - Padding * 2f;
             float gridWidth = Columns * CellWidth + (Columns - 1) * CellGap;
             float x0 = (innerWidth - gridWidth) * 0.5f;
 
@@ -342,11 +429,10 @@ namespace Game.UI
                 new Vector2(0f, 1f),
                 new Vector2(x0 + column * (CellWidth + CellGap),
                             -(Padding + row * (CellHeight + CellGap))),
-                new Vector2(CellWidth, CellHeight), Theme, cellBorder,
+                new Vector2(CellWidth, CellHeight), Theme, null,
                 new Color(0.1f, 0.1f, 0.12f, 0.95f));
 
             float textX = PreviewSize + Padding * 2f;
-            float textWidth = CellWidth - textX - Padding;
 
             Sprite preview = GetThumbnail(entry);
             if (preview != null)
@@ -368,8 +454,12 @@ namespace Game.UI
                 Theme.dimText, Theme);
 
             var buy = UIBuilder.CreateButton(cell, "BuyButton", "",
-                new Vector2(0f, 0f), new Vector2(textX, 12f), textWidth, 32f,
+                new Vector2(0f, -CellHeight * 0.5f + 28f), ButtonPadding, 32f,
                 Theme, 16, () => BuyEquipment(entry));
+            var buyRt = buy.GetComponent<RectTransform>();
+            buyRt.anchoredPosition = new Vector2(
+                -CellWidth * 0.5f + textX + buyRt.rect.width * 0.5f,
+                buyRt.anchoredPosition.y);
 
             cells.Add(new EquipCell
             {

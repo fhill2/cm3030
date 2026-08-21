@@ -10,17 +10,17 @@ namespace Game.UI
     public static class UIBuilder
     {
         private static Font s_font;
-        private static readonly Dictionary<string, Sprite> s_ringCache = new Dictionary<string, Sprite>();
-        private static readonly Dictionary<string, Sprite> s_borderCache = new Dictionary<string, Sprite>();
-        private static readonly HashSet<string> s_missingBorders = new HashSet<string>();
+        private static Sprite s_buttonFace;
+        private static readonly Dictionary<string, Sprite> s_artCache = new Dictionary<string, Sprite>();
+        private static readonly HashSet<string> s_missingArt = new HashSet<string>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             s_font = null;
-            s_ringCache.Clear();
-            s_borderCache.Clear();
-            s_missingBorders.Clear();
+            s_buttonFace = null;
+            s_artCache.Clear();
+            s_missingArt.Clear();
         }
 
         public static Canvas CreateOverlayCanvas(string name, int sortingOrder = 0)
@@ -93,6 +93,7 @@ namespace Game.UI
             txt.color = color;
             txt.font = font;
             txt.fontSize = fontSize;
+            txt.verticalOverflow = VerticalWrapMode.Overflow;
             txt.raycastTarget = false;
             return txt;
         }
@@ -141,13 +142,21 @@ namespace Game.UI
             return AttachText(textRt, content, alignment, fontSize, Color.white, GetFont(theme));
         }
 
-        public static Button CreateButton(Transform parent, string name, string label, Vector2 anchor,
-            Vector2 anchoredPosition, float width, float height, UITheme theme, int fontSize,
+        public static Button CreateButton(Transform parent, string name, string label,
+            Vector2 center, float padding, float height, UITheme theme, int fontSize,
             System.Action onClick = null)
         {
-            var rt = CreateRect(parent, anchor, anchor, anchoredPosition, new Vector2(width, height));
+            var rt = CreateRect(parent, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                center, new Vector2(0f, height));
             rt.gameObject.name = name;
             var img = AttachImage(rt, theme.buttonBackground);
+
+            var face = GetButtonFace();
+            if (face != null)
+            {
+                img.sprite = face;
+                img.color = Color.white;
+            }
 
             var button = rt.gameObject.AddComponent<Button>();
             button.targetGraphic = img;
@@ -155,12 +164,21 @@ namespace Game.UI
             colors.normalColor = Color.white;
             colors.highlightedColor = theme.accent;
             colors.pressedColor = theme.buttonPressed;
+            colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 1f);
             button.colors = colors;
             if (onClick != null) button.onClick.AddListener(() => onClick());
 
             var labelRt = CreateStretchChild(rt, "Text");
-            AttachText(labelRt, label, TextAnchor.MiddleCenter, fontSize, theme.text, GetFont(theme));
+            var txt = AttachText(labelRt, label, TextAnchor.MiddleCenter, fontSize, theme.text, GetFont(theme));
+            FitButtonToLabel(txt, padding);
             return button;
+        }
+
+        public static void FitButtonToLabel(Text label, float padding)
+        {
+            if (label == null) return;
+            if (!(label.transform.parent is RectTransform rt)) return;
+            rt.sizeDelta = new Vector2(label.preferredWidth + padding * 2f, rt.sizeDelta.y);
         }
 
         public static Image CreateIcon(Transform parent, string name, Sprite sprite, Vector2 anchor,
@@ -187,17 +205,12 @@ namespace Game.UI
             return rt;
         }
 
-        public static RectTransform CreateTitledPanel(Transform parent, string name, Vector2 anchor,
-            Vector2 anchoredPosition, Vector2 size, string title, UITheme theme,
-            out Text titleText, BorderStyle border = null, Color? background = null)
+        public static RectTransform CreateContentRect(RectTransform panel, float inset)
         {
-            var panel = CreatePanel(parent, name, anchor, anchoredPosition, size, theme, border, background);
-
-            var titleRt = CreateRect(panel, new Vector2(0f, 1f), new Vector2(1f, 1f),
-                Vector2.zero, new Vector2(0f, 40f));
-            titleRt.gameObject.name = "Title";
-            titleText = AttachText(titleRt, title, TextAnchor.MiddleCenter, 24, theme.text, GetFont(theme));
-            return panel;
+            var content = CreateStretchChild(panel, "Content");
+            content.offsetMin = Vector2.one * inset;
+            content.offsetMax = Vector2.one * -inset;
+            return content;
         }
 
         public static ScrollRect CreateScrollList(Transform parent, string name, Vector2 anchor,
@@ -228,160 +241,51 @@ namespace Game.UI
             return scroll;
         }
 
-        public static RectTransform ApplyBorder(RectTransform target, BorderStyle style)
+        public const string ButtonResourceFolder = "UI/Buttons";
+
+        public static Sprite GetButtonFace()
         {
-            if (target == null || style == null || !style.IsVisible) return null;
-
-            var containerRt = CreateStretchChild(target, "Border");
-
-            switch (style.mode)
-            {
-                case BorderStyle.BorderMode.Edges:
-                    CreateEdgeStrip(containerRt, "Top", style, isTop: true);
-                    CreateEdgeStrip(containerRt, "Bottom", style, isTop: false);
-                    CreateEdgeStrip(containerRt, "Left", style, isTop: false, isVertical: true);
-                    CreateEdgeStrip(containerRt, "Right", style, isTop: false, isVertical: true);
-                    break;
-
-                case BorderStyle.BorderMode.Ring:
-                    Sprite ringArt = ResolveBorderSprite(style);
-                    if (ringArt != null)
-                    {
-                        var art = containerRt.gameObject.AddComponent<Image>();
-                        art.sprite = ringArt;
-                        art.preserveAspect = true;
-                        art.raycastTarget = false;
-                        break;
-                    }
-
-                    float diameter = Mathf.Min(target.rect.width, target.rect.height);
-                    if (diameter <= 0f) diameter = Mathf.Min(target.sizeDelta.x, target.sizeDelta.y);
-                    if (diameter <= 0f) break;
-
-                    var ring = containerRt.gameObject.AddComponent<Image>();
-                    ring.sprite = GetRingSprite(diameter, style.thickness, style.color);
-                    ring.raycastTarget = false;
-                    break;
-
-                case BorderStyle.BorderMode.Sprite:
-                    Sprite frameSprite = ResolveBorderSprite(style);
-                    if (frameSprite == null)
-                    {
-                        CreateEdgeStrip(containerRt, "Top", style, isTop: true);
-                        CreateEdgeStrip(containerRt, "Bottom", style, isTop: false);
-                        CreateEdgeStrip(containerRt, "Left", style, isTop: false, isVertical: true);
-                        CreateEdgeStrip(containerRt, "Right", style, isTop: false, isVertical: true);
-                        break;
-                    }
-
-                    var frame = containerRt.gameObject.AddComponent<Image>();
-                    frame.sprite = frameSprite;
-                    frame.type = Image.Type.Sliced;
-                    frame.color = style.color;
-                    frame.raycastTarget = false;
-                    break;
-            }
-
-            return containerRt;
+            if (s_buttonFace == null)
+                s_buttonFace = LoadTextureSprite(ButtonResourceFolder + "/button");
+            return s_buttonFace;
         }
 
         public const string BorderResourceFolder = "UI/Borders";
 
+        public static RectTransform ApplyBorder(RectTransform target, BorderStyle style)
+        {
+            if (target == null || style == null) return null;
+
+            Sprite borderSprite = ResolveBorderSprite(style);
+            if (borderSprite == null) return null;
+
+            var containerRt = CreateStretchChild(target, "Border");
+            var img = containerRt.gameObject.AddComponent<Image>();
+            img.sprite = borderSprite;
+            img.preserveAspect = true;
+            img.color = style.tint;
+            img.raycastTarget = false;
+            return containerRt;
+        }
+
         public static Sprite ResolveBorderSprite(BorderStyle style)
         {
             if (style.sprite != null) return style.sprite;
+
             if (string.IsNullOrEmpty(style.spriteName)) return null;
-            return LoadBorderSprite(style.spriteName, style.spriteInset);
-        }
 
-        public static Sprite LoadBorderSprite(string name, float inset)
-        {
-            if (string.IsNullOrEmpty(name)) return null;
+            string path = BorderResourceFolder + "/" + style.spriteName;
+            if (s_artCache.TryGetValue(path, out Sprite cached)) return cached;
 
-            string path = BorderResourceFolder + "/" + name;
-            string key = $"{name}_{inset:0.###}";
-            if (s_borderCache.TryGetValue(key, out Sprite cached)) return cached;
-
-            var tex = Resources.Load<Texture2D>(path);
-            if (tex == null)
+            var sprite = LoadTextureSprite(path);
+            if (sprite == null)
             {
-                if (s_missingBorders.Add(name))
-                    Debug.LogWarning($"[UIBuilder] No border art found at Resources/{path}. " +
-                                     "Falling back to the generated border.");
+                if (s_missingArt.Add(path))
+                    Debug.LogWarning($"[UIBuilder] No border art found at Resources/{path}.");
                 return null;
             }
 
-            float band = Mathf.Min(tex.width, tex.height) * Mathf.Clamp01(inset);
-            var border = new Vector4(band, band, band, band);
-            var sprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height),
-                new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, border);
-            s_borderCache[key] = sprite;
-            return sprite;
-        }
-
-        private static void CreateEdgeStrip(RectTransform parent, string name, BorderStyle style,
-            bool isTop, bool isVertical = false)
-        {
-            bool on = isVertical ? (name == "Left" ? style.left : style.right)
-                                 : (isTop ? style.top : style.bottom);
-            if (!on) return;
-
-            float t = style.thickness;
-            var go = new GameObject(name);
-            go.transform.SetParent(parent, false);
-            var rt = go.AddComponent<RectTransform>();
-
-            if (isVertical)
-            {
-                float x = name == "Left" ? 0f : 1f;
-                rt.anchorMin = new Vector2(x, 0f);
-                rt.anchorMax = new Vector2(x, 1f);
-                rt.offsetMin = new Vector2(name == "Left" ? 0f : -t, style.bottom ? t : 0f);
-                rt.offsetMax = new Vector2(name == "Left" ? t : 0f, style.top ? -t : 0f);
-            }
-            else
-            {
-                rt.anchorMin = new Vector2(0f, isTop ? 1f : 0f);
-                rt.anchorMax = new Vector2(1f, isTop ? 1f : 0f);
-                rt.offsetMin = new Vector2(style.left ? t : 0f, isTop ? -t : 0f);
-                rt.offsetMax = new Vector2(style.right ? -t : 0f, isTop ? 0f : t);
-            }
-
-            var img = go.AddComponent<Image>();
-            img.color = style.color;
-            img.raycastTarget = false;
-        }
-
-        private static Sprite GetRingSprite(float rectSize, float thickness, Color color)
-        {
-            int d = Mathf.Max(16, Mathf.CeilToInt(rectSize));
-            int t = Mathf.Clamp(Mathf.RoundToInt(thickness), 2, d / 4);
-            string key = $"{d}_{t}_{ColorUtility.ToHtmlStringRGBA(color)}";
-            if (s_ringCache.TryGetValue(key, out Sprite cached)) return cached;
-
-            var tex = new Texture2D(d, d, TextureFormat.RGBA32, false);
-            tex.wrapMode = TextureWrapMode.Clamp;
-
-            float c = (d - 1) * 0.5f;
-            float radius = d * 0.5f - t * 0.5f - 0.5f;
-            float inner = radius - t * 0.5f;
-            float outer = radius + t * 0.5f;
-
-            var clear = new Color(0f, 0f, 0f, 0f);
-            for (int y = 0; y < d; y++)
-            {
-                for (int x = 0; x < d; x++)
-                {
-                    float dist = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c));
-                    float alpha = Mathf.Clamp01(outer - dist + 0.5f) *
-                                  Mathf.Clamp01(dist - inner + 0.5f);
-                    tex.SetPixel(x, y, alpha <= 0f ? clear : new Color(color.r, color.g, color.b, color.a * alpha));
-                }
-            }
-
-            tex.Apply();
-            var sprite = Sprite.Create(tex, new Rect(0f, 0f, d, d), new Vector2(0.5f, 0.5f), 100f);
-            s_ringCache[key] = sprite;
+            s_artCache[path] = sprite;
             return sprite;
         }
 

@@ -25,10 +25,6 @@ namespace Game.UI
         [Tooltip("Leave empty for the built-in runtime font.")]
         public Font font;
 
-        [Header("Borders")]
-        [Tooltip("Applied to panels that don't ask for a specific border.")]
-        public BorderStyle panelBorder = new BorderStyle();
-
         private static UITheme s_default;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -45,7 +41,6 @@ namespace Game.UI
                 {
                     s_default = CreateInstance<UITheme>();
                     s_default.hideFlags = HideFlags.HideAndDontSave;
-                    s_default.panelBorder.mode = BorderStyle.BorderMode.Edges;
                 }
                 return s_default;
             }

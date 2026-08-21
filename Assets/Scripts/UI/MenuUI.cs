@@ -29,7 +29,7 @@ namespace Game.UI
         private const string LogoResourcePath = "UI/start_screen";
 
         private const float TitleHeight   = 160f;
-        private const float ButtonWidth   = 280f;
+        private const float ButtonPadding = 48f;
         private const float ButtonHeight  = 64f;
         private const float HintHeight    = 40f;
         private const float HeaderGap     = 48f;
@@ -179,8 +179,8 @@ namespace Game.UI
         void CreatePlayButton(Transform parent, float centreY)
         {
             UIBuilder.CreateButton(parent, "PlayButton", playText,
-                new Vector2(0.5f, 0.5f), new Vector2(0f, centreY),
-                ButtonWidth, ButtonHeight, Theme, 30, Play);
+                new Vector2(0f, centreY),
+                ButtonPadding, ButtonHeight, Theme, 30, Play);
         }
 
         void CreateHint(Transform parent, float centreY)
