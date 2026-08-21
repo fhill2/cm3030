@@ -18,12 +18,18 @@ namespace Game.Core
         [SerializeField] private PlayerWallet wallet;
         [SerializeField] private PlayerLoadout loadout;
         [SerializeField] private GameStateMachine stateMachine;
+        [SerializeField] private SpellBook spellBook;
 
         [Header("Catalogue")]
         [SerializeField] private ShopItemDef[] items;
 
         // How many times each item has been bought this run, by index.
         private readonly Dictionary<int, int> purchaseCounts = new Dictionary<int, int>();
+
+        private void Awake()
+        {
+            if (spellBook == null) spellBook = GetComponent<SpellBook>();
+        }
 
         public int ItemCount => items != null ? items.Length : 0;
 
@@ -52,9 +58,20 @@ namespace Game.Core
         {
             ShopItemDef item = ItemAt(index);
             if (item == null) return false;
+
+            // Spells stay out of the catalogue until their tome has dropped.
+            if (item.Effect == ShopEffect.Tome && !TomeFound(item)) return false;
+
             if (item.MaxPurchases <= 0) return true;
 
             return TimesBought(index) < item.MaxPurchases;
+        }
+
+        // True if the player has picked up the tome this item sells.
+        private bool TomeFound(ShopItemDef item)
+        {
+            if (spellBook == null) return false;
+            return spellBook.IsUnlocked(item.Spell);
         }
 
         // True if the player can afford it right now and it's still available.
@@ -88,6 +105,20 @@ namespace Game.Core
 
         private void ApplyEffect(ShopItemDef item)
         {
+            // Spells are granted by the SpellBook, not the loadout, so this
+            // case is handled before the loadout null check below.
+            if (item.Effect == ShopEffect.Tome)
+            {
+                if (spellBook == null)
+                {
+                    Debug.LogWarning("[Shop] No SpellBook assigned, spell not granted.");
+                    return;
+                }
+
+                spellBook.Grant(item.Spell);
+                return;
+            }
+
             if (loadout == null)
             {
                 Debug.LogWarning("[Shop] No loadout assigned, effect not applied.");
@@ -106,7 +137,6 @@ namespace Game.Core
 
                 // Not built yet. The item can exist in the catalogue and be
                 // priced, it just does nothing until the system lands.
-                case ShopEffect.Tome:
                 case ShopEffect.WeaponSwap:
                 case ShopEffect.ShieldSwap:
                     Debug.Log($"[Shop] {item.Effect} is not implemented yet.");

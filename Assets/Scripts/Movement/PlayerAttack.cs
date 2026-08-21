@@ -34,6 +34,8 @@ namespace Game.Movement
         private CharacterController controller;
         private Melee melee;
         private StaminaSystem stamina;
+        // Read only for its ControlEnabled flag, so menu/shop states stops attacking 
+        private PlayerMovement movement;
         private int comboStep;
         private float lastAttackTime = -999f;
         private bool inCombat;
@@ -44,6 +46,7 @@ namespace Game.Movement
             controller = GetComponent<CharacterController>();
             melee = GetComponent<Melee>();
             stamina = GetComponent<StaminaSystem>();
+            movement = GetComponent<PlayerMovement>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
         }
 
@@ -66,6 +69,11 @@ namespace Game.Movement
         void Update()
         {
             if (isDead || animator == null) return;
+            if (PlayerInputLock.InputLocked) return;
+
+            // PlayerMovement owns the "is the player driving the character"
+            // decision, so menu/shop states disable attacking
+            if (movement != null && !movement.ControlEnabled) return;
 
             // Relax the combat stance once the player hasn't attacked for a while.
             if (inCombat && Time.time - lastAttackTime > idleTimeout)

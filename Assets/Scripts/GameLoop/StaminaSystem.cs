@@ -136,6 +136,13 @@ namespace Game.Combat
             regenPausedUntil = Time.time + regenDelayAfterSwing;
             return true;
         }
+        
+        // Spells cost a variable amount, unlike attacks and jumps which have
+        // fixed costs on this component, so the caller passes the amount in.
+        public bool TrySpendSpell(float cost)
+        {
+            return TrySpend(cost);
+        }
 
         public bool TrySpendJump()
         {

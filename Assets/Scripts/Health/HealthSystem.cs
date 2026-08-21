@@ -57,6 +57,28 @@ namespace Game.Health
             }
         }
 
+        // Restores health, capped at max. Raises a damage event with a
+        // negative amount so the health bar refreshes off the same signal it
+        // already listens to, rather than needing a separate one.
+        public virtual void Heal(float amount)
+        {
+            if (!alive || amount <= 0f) return;
+
+            float before = currentHealth;
+            currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+
+            float healed = currentHealth - before;
+            if (healed <= 0f) return;   // already at full
+
+            EventManager.RaiseDamage(
+                new DamageArgs(gameObject, -healed, DamageType.Magic, gameObject));
+        }
+
+        public virtual void HealToFull()
+        {
+            Heal(maxHealth - currentHealth);
+        }
+
         protected virtual void Die()
         {
             if (!alive) return;
