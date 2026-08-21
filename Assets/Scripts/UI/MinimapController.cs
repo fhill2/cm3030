@@ -40,18 +40,56 @@ namespace Game.UI
         [Tooltip("Enemies outside the camera's view get pinned to the rim of the panel, this many pixels in from the actual edge, instead of being placed off the panel entirely.")]
         [SerializeField] private float edgePadding = 8f;
 
+        [Header("Visibility")]
+        [Tooltip("Optional. If set, the minimap fades in/out with a CanvasGroup instead of always being visible — hidden during Menu, shown for every other state. Leave empty to keep the old always-on behaviour.")]
+        [SerializeField] private CanvasGroup visibilityGroup;
+
         private Camera cam;
+        private bool isVisible = true;
         private readonly Dictionary<GameObject, RectTransform> dots = new Dictionary<GameObject, RectTransform>();
         private readonly List<GameObject> staleBuffer = new List<GameObject>();
 
         private void Awake()
         {
             cam = minimapCamera != null ? minimapCamera.GetComponent<Camera>() : null;
+
+            // Hidden by default the instant the scene loads, before the game
+            // state machine's first OnGameStateChanged has a chance to fire —
+            // avoids a one-frame flash of the map over the start screen.
+            if (visibilityGroup != null) SetVisible(false);
+        }
+
+        private void OnEnable()
+        {
+            EventManager.OnGameStateChanged += HandleGameStateChanged;
+        }
+
+        private void OnDisable()
+        {
+            EventManager.OnGameStateChanged -= HandleGameStateChanged;
+        }
+
+        // Only the Menu (start screen) hides the map — every other state
+        // (WaveActive, WaveComplete, Shop, GameOver) shows it.
+        private void HandleGameStateChanged(GameStateChangedArgs e)
+        {
+            SetVisible(e.Current != GameStateId.Menu);
+        }
+
+        private void SetVisible(bool visible)
+        {
+            isVisible = visible;
+
+            if (visibilityGroup == null) return;
+            visibilityGroup.alpha = visible ? 1f : 0f;
+            visibilityGroup.interactable = visible;
+            visibilityGroup.blocksRaycasts = visible;
         }
 
         private void LateUpdate()
         {
             if (player == null || cam == null || mapRect == null) return;
+            if (visibilityGroup != null && !isVisible) return;
 
             FollowPlayer();
             UpdatePlayerIcon();
