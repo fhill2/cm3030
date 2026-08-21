@@ -33,9 +33,22 @@ namespace Game.UI
         [SerializeField] private float fadeDuration = 3f;
         [Tooltip("Seconds for the message to fade up once the screen is fully black.")]
         [SerializeField] private float messageFadeDuration = 1.2f;
-        [Tooltip("Shown once the screen is fully black.")]
+        [Tooltip("Artwork shown once the screen is fully black. Leave empty to load Resources/UI/End_Screen automatically. Falls back to the text message below if neither is found.")]
+        [SerializeField] private Sprite endScreen;
+        [Tooltip("End screen height in reference pixels (the canvas reference is 1920x1080). Width follows the image's own aspect ratio.")]
+        [SerializeField] private float endScreenHeight = 600f;
+        [Tooltip("Only used if no end screen sprite can be found.")]
         [SerializeField] private string deathMessage = "Camelot has Fallen";
         [SerializeField] private int messageFontSize = 72;
+
+        // Loaded by name so no dragging is needed, same as MenuUI's logo
+        private const string EndScreenResourcePath = "UI/End_Screen";
+
+        // Gap between the bottom of the end-screen artwork and the restart prompt.
+        private const float RestartGap = 48f;
+        // Drop used when falling back to the text message, which is far shorter
+        // than the artwork and so needs much less clearance
+        private const float TextPromptOffset = 180f;
 
         [Header("Restart")]
         [Tooltip("Shown under the death message once restarting is allowed.")]
@@ -62,12 +75,14 @@ namespace Game.UI
         private Text  waveLabel;
         private Image fadeOverlay;
         private Text  deathText;
+        // Whichever of the end-screen image or the text message got built
+        private Graphic deathVisual;
         private Text  restartText;
         private Coroutine deathRoutine;
 
         // Alessio's stamina system (sheet row 10), which replaced the
         // PlayerStamina placeholder. Null-safe: the bar just shows its default
-        // text if the component isn't on the player.
+        // text if the component isn't on the player
         private StaminaSystem stamina;
         private Image staminaFill;
         private Text  staminaLabel;
@@ -75,7 +90,7 @@ namespace Game.UI
       
         private RunController runController;
 
-        // Both live on the GameManager, not the player, so they're resolved in Start. Only used to seed the opening values — after that gold and wave arrive on the event bus
+        // Both live on the GameManager, not the player, so they're resolved in Start; Only used to seed the opening values — after that gold and wave arrive on the event bus
         private PlayerWallet wallet;
         private GameStateMachine stateMachine;
 
@@ -148,8 +163,7 @@ namespace Game.UI
 
             Refresh();
 
-            // Guard against a second death event re-running the sequence and
-            // flashing the screen back from black.
+            // Guard against a second death event re-running the sequence
             if (deathRoutine == null) deathRoutine = StartCoroutine(DeathSequence());
         }
 
@@ -157,7 +171,21 @@ namespace Game.UI
         IEnumerator DeathSequence()
         {
             yield return FadeTo(fadeOverlay, 1f, fadeDuration);
-            yield return FadeTo(deathText, 1f, messageFadeDuration);
+            yield return FadeTo(deathVisual, 1f, messageFadeDuration);
+        }
+
+        /// <summary>
+        /// Loads the end screen whichever way the texture is imported. Sprite
+        /// Mode "Single" answers Load&lt;Sprite&gt;; "Multiple" keeps the
+        /// Texture2D as the main asset and only LoadAll finds the sprites
+        /// </summary>
+        static Sprite LoadEndScreen()
+        {
+            var single = Resources.Load<Sprite>(EndScreenResourcePath);
+            if (single != null) return single;
+
+            var sliced = Resources.LoadAll<Sprite>(EndScreenResourcePath);
+            return sliced != null && sliced.Length > 0 ? sliced[0] : null;
         }
 
         static IEnumerator FadeTo(Graphic target, float to, float duration)
@@ -232,8 +260,7 @@ namespace Game.UI
             if (staminaFill != null)
             {
                 staminaFill.rectTransform.anchorMax = new Vector2(ratio, 1f);
-                // Turn the bar red while stunned, so it's obvious why nothing
-                // is responding.
+                // Turn the bar red while stunned
                 staminaFill.color = stamina.IsStunned ? StunnedColor : StaminaColor;
             }
 
@@ -245,7 +272,7 @@ namespace Game.UI
             }
         }
 
-        // Only shown once the run is over and the restart delay has passed.
+        // Only shown once the run is over and the restart delay has passed
         void RefreshRestartPrompt()
         {
             if (restartText == null) return;
@@ -426,32 +453,64 @@ namespace Game.UI
             fadeOverlay.color = new Color(0f, 0f, 0f, 0f);
             fadeOverlay.raycastTarget = false;
 
-            // Parented to the sheet so it always draws above the black.
-            var textGo = new GameObject("DeathMessage");
-            textGo.transform.SetParent(fadeGo.transform, false);
-            var textRt = textGo.AddComponent<RectTransform>();
-            textRt.anchorMin = Vector2.zero;
-            textRt.anchorMax = Vector2.one;
-            textRt.offsetMin = Vector2.zero;
-            textRt.offsetMax = Vector2.zero;
-            deathText = textGo.AddComponent<Text>();
-            deathText.text = deathMessage;
-            deathText.alignment = TextAnchor.MiddleCenter;
-            deathText.font = GetFont();
-            deathText.fontSize = messageFontSize;
-            // Red, but starting fully transparent
-            deathText.color = new Color(1f, 0f, 0f, 0f);
-            deathText.raycastTarget = false;
+            // Artwork if we have it, the text message if error or missing. The image is centered and sized to its own aspect ratio, the text fills the screen
+            if (endScreen == null) endScreen = LoadEndScreen();
 
-            // Restart prompt, sitting below the death message. Offset downward
-            // so the two don't overlap in the middle of the screen.
+            if (endScreen != null)
+            {
+                var imgGo = new GameObject("EndScreen");
+                imgGo.transform.SetParent(fadeGo.transform, false);
+                var imgRt = imgGo.AddComponent<RectTransform>();
+                imgRt.anchorMin = new Vector2(0.5f, 0.5f);
+                imgRt.anchorMax = new Vector2(0.5f, 0.5f);
+                imgRt.pivot     = new Vector2(0.5f, 0.5f);
+
+                // Size from the sprite's own aspect
+                float aspect = endScreen.rect.height > 0f
+                    ? endScreen.rect.width / endScreen.rect.height : 1f;
+                imgRt.sizeDelta = new Vector2(endScreenHeight * aspect, endScreenHeight);
+                imgRt.anchoredPosition = Vector2.zero;
+
+                var img = imgGo.AddComponent<Image>();
+                img.sprite = endScreen;
+                img.preserveAspect = true;
+                img.color = new Color(1f, 1f, 1f, 0f);
+                img.raycastTarget = false;
+                deathVisual = img;
+            }
+            else
+            {
+                // Parented to the sheet so it always draws above the black.
+                var textGo = new GameObject("DeathMessage");
+                textGo.transform.SetParent(fadeGo.transform, false);
+                var textRt = textGo.AddComponent<RectTransform>();
+                textRt.anchorMin = Vector2.zero;
+                textRt.anchorMax = Vector2.one;
+                textRt.offsetMin = Vector2.zero;
+                textRt.offsetMax = Vector2.zero;
+                deathText = textGo.AddComponent<Text>();
+                deathText.text = deathMessage;
+                deathText.alignment = TextAnchor.MiddleCenter;
+                deathText.font = GetFont();
+                deathText.fontSize = messageFontSize;
+                // Red, but starting fully transparent
+                deathText.color = new Color(1f, 0f, 0f, 0f);
+                deathText.raycastTarget = false;
+                deathVisual = deathText;
+            }
+
+            // Restart prompt, clear of whatever sits above it
+            float promptOffsetY = deathVisual is Image
+                ? -(endScreenHeight * 0.5f) - RestartGap
+                : -TextPromptOffset;
+
             var restartGo = new GameObject("RestartPrompt");
             restartGo.transform.SetParent(fadeGo.transform, false);
             var restartRt = restartGo.AddComponent<RectTransform>();
             restartRt.anchorMin = Vector2.zero;
             restartRt.anchorMax = Vector2.one;
-            restartRt.offsetMin = new Vector2(0f, -180f);
-            restartRt.offsetMax = new Vector2(0f, -180f);
+            restartRt.offsetMin = new Vector2(0f, promptOffsetY);
+            restartRt.offsetMax = new Vector2(0f, promptOffsetY);
             restartText = restartGo.AddComponent<Text>();
             restartText.text = restartMessage;
             restartText.alignment = TextAnchor.MiddleCenter;
@@ -487,7 +546,7 @@ namespace Game.UI
         }
 
         // Generic filled bar: a dark background with an inset fill image whose
-        // anchorMax.x drives the percentage. Used for both health and stamina.
+        // anchorMax.x drives the percentage. Used for both health and stamina
         Image CreateBar(Transform parent, Vector2 anchor, Vector2 pos, float width, float height, Color fillColor)
         {
             var bgRt = CreateRect(parent, anchor, anchor, pos, new Vector2(width, height));
