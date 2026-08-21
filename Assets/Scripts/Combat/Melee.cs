@@ -45,6 +45,25 @@ namespace Game.Combat
             return true;
         }
 
+        public float CooldownDuration
+        {
+            get
+            {
+                ResolveReferences();
+                return equipped != null && equipped.Def != null ? equipped.Def.Speed : 0f;
+            }
+        }
+
+        public float CooldownRemaining
+        {
+            get
+            {
+                ResolveReferences();
+                if (equipped == null || equipped.Def == null) return 0f;
+                return Mathf.Max(0f, lastAttackTime + equipped.Def.Speed - Time.time);
+            }
+        }
+
         // The weapon is instantiated by Equipment in Start, so we can't cache
         // these in Awake — they're resolved on first use instead.
         private void ResolveReferences()

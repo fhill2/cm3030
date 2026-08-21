@@ -357,6 +357,10 @@ namespace Game.UI
 
             BuildVolumeControl(t);
 
+            var hotbar = GetComponent<HotbarUI>();
+            if (hotbar == null) hotbar = gameObject.AddComponent<HotbarUI>();
+            hotbar.BuildInto(t);
+
             BuildDeathScreen(t);
         }
 

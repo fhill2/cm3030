@@ -11,6 +11,10 @@ namespace Game.Movement
         [Tooltip("Minimum seconds between taunts, so voice lines don't stack when mashing E. Set 0 to disable.")]
         [SerializeField] private float cooldown = 20f;
 
+        public float CooldownDuration => cooldown;
+
+        public float CooldownRemaining => Mathf.Max(0f, nextTauntTime - Time.time);
+
         private ActorAudio actorAudio;
         private Animator animator;
         private float nextTauntTime = float.NegativeInfinity;
