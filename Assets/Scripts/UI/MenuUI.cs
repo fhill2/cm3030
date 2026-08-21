@@ -30,7 +30,6 @@ namespace Game.UI
 
         private const float TitleHeight   = 160f;
         private const float ButtonPadding = 48f;
-        private const float ButtonHeight  = 64f;
         private const float HintHeight    = 40f;
         private const float HeaderGap     = 48f;
         private const float ButtonGap     = 16f;
@@ -105,12 +104,14 @@ namespace Game.UI
 
             if (logo == null) logo = LoadLogo();
             float headerHeight = logo != null ? logoHeight : TitleHeight;
+            float playHeight = UIBuilder.MeasureButtonWidth(
+                new[] { playText }, ButtonPadding, 30, Theme) / UIBuilder.ButtonAspect;
 
-            float blockHeight = headerHeight + HeaderGap + ButtonHeight + ButtonGap + HintHeight;
+            float blockHeight = headerHeight + HeaderGap + playHeight + ButtonGap + HintHeight;
             float top = blockHeight * 0.5f;
 
-            float buttonY = top - headerHeight - HeaderGap - ButtonHeight * 0.5f;
-            float hintY   = buttonY - ButtonHeight * 0.5f - ButtonGap - HintHeight * 0.5f;
+            float buttonY = top - headerHeight - HeaderGap - playHeight * 0.5f;
+            float hintY   = buttonY - playHeight * 0.5f - ButtonGap - HintHeight * 0.5f;
 
             CreateTitle(panel.transform, top);
             CreatePlayButton(panel.transform, buttonY);
@@ -178,9 +179,10 @@ namespace Game.UI
 
         void CreatePlayButton(Transform parent, float centreY)
         {
+            float width = UIBuilder.MeasureButtonWidth(
+                new[] { playText }, ButtonPadding, 30, Theme);
             UIBuilder.CreateButton(parent, "PlayButton", playText,
-                new Vector2(0f, centreY),
-                ButtonPadding, ButtonHeight, Theme, 30, Play);
+                new Vector2(0f, centreY), width, Theme, 30, Play);
         }
 
         void CreateHint(Transform parent, float centreY)

@@ -8,8 +8,6 @@ namespace Game.UI
         [Header("Palette")]
         [Tooltip("Panel, label and bar backgrounds.")]
         public Color panelBackground = new Color(0.15f, 0.15f, 0.15f, 0.95f);
-        [Tooltip("Button faces.")]
-        public Color buttonBackground = new Color(0.12f, 0.12f, 0.14f, 0.95f);
         [Tooltip("Full-screen dim behind overlay panels.")]
         public Color backdropDim = new Color(0f, 0f, 0f, 0.35f);
         [Tooltip("Primary text.")]

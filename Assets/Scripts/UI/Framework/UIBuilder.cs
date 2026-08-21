@@ -10,7 +10,7 @@ namespace Game.UI
     public static class UIBuilder
     {
         private static Font s_font;
-        private static Sprite s_buttonFace;
+        private static Sprite s_buttonUnderline;
         private static readonly Dictionary<string, Sprite> s_artCache = new Dictionary<string, Sprite>();
         private static readonly HashSet<string> s_missingArt = new HashSet<string>();
 
@@ -18,7 +18,7 @@ namespace Game.UI
         private static void ResetStatics()
         {
             s_font = null;
-            s_buttonFace = null;
+            s_buttonUnderline = null;
             s_artCache.Clear();
             s_missingArt.Clear();
         }
@@ -142,21 +142,19 @@ namespace Game.UI
             return AttachText(textRt, content, alignment, fontSize, Color.white, GetFont(theme));
         }
 
+        public const float ButtonAspect = 1.75f;
+        public const string ButtonResourceFolder = "UI/Buttons";
+        public const string ButtonUnderlineName = "button_underline_2";
+        public const float ButtonUnderlineHeight = 0.7f;
+
         public static Button CreateButton(Transform parent, string name, string label,
-            Vector2 center, float padding, float height, UITheme theme, int fontSize,
+            Vector2 center, float width, UITheme theme, int fontSize,
             System.Action onClick = null)
         {
             var rt = CreateRect(parent, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                center, new Vector2(0f, height));
+                center, new Vector2(width, width / ButtonAspect));
             rt.gameObject.name = name;
-            var img = AttachImage(rt, theme.buttonBackground);
-
-            var face = GetButtonFace();
-            if (face != null)
-            {
-                img.sprite = face;
-                img.color = Color.white;
-            }
+            var img = AttachImage(rt, Color.clear);
 
             var button = rt.gameObject.AddComponent<Button>();
             button.targetGraphic = img;
@@ -168,17 +166,52 @@ namespace Game.UI
             button.colors = colors;
             if (onClick != null) button.onClick.AddListener(() => onClick());
 
+            var underline = GetButtonUnderline();
+            if (underline != null)
+            {
+                var underlineRt = CreateRect(rt, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                    Vector2.zero, new Vector2(width, width / ButtonAspect * ButtonUnderlineHeight));
+                underlineRt.gameObject.name = "Underline";
+                var underlineImg = AttachImage(underlineRt, Color.white);
+                underlineImg.sprite = underline;
+                underlineImg.raycastTarget = false;
+                button.targetGraphic = underlineImg;
+            }
+
             var labelRt = CreateStretchChild(rt, "Text");
-            var txt = AttachText(labelRt, label, TextAnchor.MiddleCenter, fontSize, theme.text, GetFont(theme));
-            FitButtonToLabel(txt, padding);
+            AttachText(labelRt, label, TextAnchor.MiddleCenter, fontSize, theme.text, GetFont(theme));
             return button;
         }
 
-        public static void FitButtonToLabel(Text label, float padding)
+        public static Sprite GetButtonUnderline()
         {
-            if (label == null) return;
-            if (!(label.transform.parent is RectTransform rt)) return;
-            rt.sizeDelta = new Vector2(label.preferredWidth + padding * 2f, rt.sizeDelta.y);
+            if (s_buttonUnderline == null)
+                s_buttonUnderline = LoadTextureSprite(ButtonResourceFolder + "/" + ButtonUnderlineName);
+            return s_buttonUnderline;
+        }
+
+        public static float MeasureButtonWidth(string[] labels, float padding, int fontSize, UITheme theme)
+        {
+            var go = new GameObject();
+            var txt = AttachText(go.AddComponent<RectTransform>(), "",
+                TextAnchor.MiddleCenter, fontSize, Color.white, GetFont(theme));
+
+            float widest = 0f;
+            foreach (string label in labels)
+            {
+                if (string.IsNullOrEmpty(label)) continue;
+                txt.text = label;
+                widest = Mathf.Max(widest, txt.preferredWidth);
+            }
+
+            Object.Destroy(go);
+            return widest + padding * 2f;
+        }
+
+        public static void SetButtonSize(Button button, float width)
+        {
+            if (button == null) return;
+            ((RectTransform)button.transform).sizeDelta = new Vector2(width, width / ButtonAspect);
         }
 
         public static Image CreateIcon(Transform parent, string name, Sprite sprite, Vector2 anchor,
@@ -218,7 +251,6 @@ namespace Game.UI
         {
             var rootRt = CreateRect(parent, anchor, anchor, anchoredPosition, size);
             rootRt.gameObject.name = name;
-            AttachImage(rootRt, theme.panelBackground);
 
             var viewportRt = CreateStretchChild(rootRt, "Viewport");
             viewportRt.gameObject.AddComponent<RectMask2D>();
@@ -241,15 +273,6 @@ namespace Game.UI
             return scroll;
         }
 
-        public const string ButtonResourceFolder = "UI/Buttons";
-
-        public static Sprite GetButtonFace()
-        {
-            if (s_buttonFace == null)
-                s_buttonFace = LoadTextureSprite(ButtonResourceFolder + "/button");
-            return s_buttonFace;
-        }
-
         public const string BorderResourceFolder = "UI/Borders";
 
         public static RectTransform ApplyBorder(RectTransform target, BorderStyle style)
@@ -262,7 +285,6 @@ namespace Game.UI
             var containerRt = CreateStretchChild(target, "Border");
             var img = containerRt.gameObject.AddComponent<Image>();
             img.sprite = borderSprite;
-            img.preserveAspect = true;
             img.color = style.tint;
             img.raycastTarget = false;
             return containerRt;

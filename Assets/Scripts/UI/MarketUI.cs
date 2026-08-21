@@ -20,17 +20,18 @@ namespace Game.UI
         [Tooltip("Border around the two market pages.")]
         [SerializeField] private BorderStyle panelBorder = new BorderStyle
         {
-            spriteName = "market_ui_panel_border"
+            spriteName = "market_ui_panel_border_3"
         };
 
-        [Tooltip("Market panel size as a fraction of the canvas' shorter side. Keeps the square aspect ratio.")]
+        [Tooltip("Market panel height as a fraction of the canvas' shorter side. The panel renders at a 16:9 aspect ratio.")]
         [SerializeField, Range(0.05f, 1f)] private float panelSizePercent = 0.25f;
+
+        private const float PanelAspect = 16f / 9f;
 
         [Tooltip("Inset of the content area from the panel edge as a fraction of panel size. Keeps content clear of the border art.")]
         [SerializeField, Range(0f, 0.3f)] private float contentInsetPercent = 0.15f;
 
         private const float HeaderHeight = 96f;
-        private const float RowHeight    = 64f;
         private const float RowGap       = 14f;
         private const float Padding      = 20f;
         private const float ButtonPadding = 28f;
@@ -194,18 +195,22 @@ namespace Game.UI
 
             foreach (ItemRow row in rows)
             {
-                ShopItemDef item = shop.ItemAt(row.Index);
-                if (item == null) continue;
-
-                int cost = shop.CostOf(row.Index);
-                bool available = shop.IsAvailable(row.Index);
-
-                row.BuyLabel.text = available
-                    ? $"{item.DisplayName} \u2014 {cost}g"
-                    : $"{item.DisplayName} \u2014 sold out";
+                row.BuyLabel.text = ItemRowLabel(row.Index);
                 row.Buy.interactable = shop.CanAfford(row.Index);
-                UIBuilder.FitButtonToLabel(row.BuyLabel, ButtonPadding);
             }
+
+            FitRowsUniform();
+        }
+
+        private void FitRowsUniform()
+        {
+            float widest = 0f;
+            foreach (ItemRow row in rows)
+                widest = Mathf.Max(widest, row.BuyLabel.preferredWidth);
+            widest += ButtonPadding * 2f;
+
+            foreach (ItemRow row in rows)
+                UIBuilder.SetButtonSize(row.Buy, widest);
         }
 
         private void RefreshCells()
@@ -221,8 +226,20 @@ namespace Game.UI
 
                 cell.BuyLabel.text = equipped ? "EQUIPPED" : $"BUY \u2014 {cell.Entry.Cost}g";
                 cell.Buy.interactable = !equipped && wallet != null && wallet.Gold >= cell.Entry.Cost;
-                UIBuilder.FitButtonToLabel(cell.BuyLabel, ButtonPadding);
             }
+
+            FitCellsUniform();
+        }
+
+        private void FitCellsUniform()
+        {
+            float widest = 0f;
+            foreach (EquipCell cell in cells)
+                widest = Mathf.Max(widest, cell.BuyLabel.preferredWidth);
+            widest += ButtonPadding * 2f;
+
+            foreach (EquipCell cell in cells)
+                UIBuilder.SetButtonSize(cell.Buy, widest);
         }
 
         private void BuyItem(int index)
@@ -282,45 +299,54 @@ namespace Game.UI
 
         private GameObject BuildMarketPage()
         {
-            float size = PanelSize;
-            float inset = size * contentInsetPercent;
+            float height = PanelSize;
+            float width = height * PanelAspect;
+            float inset = height * contentInsetPercent;
 
             var panel = UIBuilder.CreatePanel(root.transform, "MarketPanel",
-                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size, size),
+                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(width, height),
                 Theme, panelBorder, Color.clear);
             var content = UIBuilder.CreateContentRect(panel, inset);
 
-            float inner = size - inset * 2f;
+            float inner = height - inset * 2f;
+            float innerW = width - inset * 2f;
             float quarter = inner * 0.25f;
-            float buttonHeight = quarter * 0.36f;
 
             UIBuilder.CreateText(content, "Title", "MARKET",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -quarter * 0.05f),
-                new Vector2(0f, quarter * 0.5f), TextAnchor.MiddleCenter, 24, Theme.text, Theme);
+                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -quarter * 0.25f),
+                new Vector2(innerW * 0.5f, quarter * 0.5f), TextAnchor.MiddleLeft, 24, Theme.text, Theme);
 
             marketTimer = UIBuilder.CreateText(content, "Timer", "",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -quarter * 0.6f),
-                new Vector2(0f, quarter * 0.4f), TextAnchor.MiddleCenter, 16, Theme.dimText, Theme);
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -quarter * 0.25f),
+                new Vector2(innerW * 0.5f, quarter * 0.5f), TextAnchor.MiddleRight, 16, Theme.dimText, Theme);
 
-            float buttonsTop = inner * 0.5f - quarter * 0.85f;
-            float buttonsBottom = -inner * 0.5f + Padding;
-            const int buttonCount = 4;
-            float step = (buttonsTop - buttonsBottom) / buttonCount;
+            float navWidth = UIBuilder.MeasureButtonWidth(
+                new[] { "BUY", "RECHARGE", "DONE" },
+                ButtonPadding, 18, Theme);
+            navWidth = Mathf.Min(navWidth, innerW / 3f - Padding);
+            float navHeight = navWidth / UIBuilder.ButtonAspect;
 
-            UIBuilder.CreateButton(content, "EquipmentButton", "BUY EQUIPMENT",
-                new Vector2(0f, buttonsTop - step * 0.5f), ButtonPadding, buttonHeight,
+            float doneCenterY = -inner * 0.5f + Padding + navHeight * 0.5f;
+            float headerBottom = inner * 0.5f - quarter * 0.6f;
+            float navCenterY = (headerBottom + doneCenterY + navHeight * 0.5f) * 0.5f;
+
+            float gap = (innerW - navWidth * 3f) * 0.25f;
+            float navX = innerW * 0.5f - gap - navWidth * 0.5f;
+
+            UIBuilder.CreateButton(content, "EquipmentButton", "BUY",
+                new Vector2(-navX, navCenterY), navWidth,
                 Theme, 18, ShowEquipmentPage);
 
-            UIBuilder.CreateButton(content, "PowerUpsButton", "BUY POWERUPS",
-                new Vector2(0f, buttonsTop - step * 1.5f), ButtonPadding, buttonHeight,
+            UIBuilder.CreateButton(content, "PowerUpsButton", "RECHARGE",
+                new Vector2(0f, navCenterY), navWidth,
                 Theme, 18, ShowPowerUpsPage);
 
-            UIBuilder.CreateButton(content, "SpellsButton", "BUY SPELLS",
-                new Vector2(0f, buttonsTop - step * 2.5f), ButtonPadding, buttonHeight,
+            UIBuilder.CreateButton(content, "SpellsButton", "BUY",
+                new Vector2(navX, navCenterY), navWidth,
                 Theme, 18);
 
             UIBuilder.CreateButton(content, "DoneButton", "DONE",
-                new Vector2(0f, buttonsTop - step * 3.5f), ButtonPadding, buttonHeight,
+                new Vector2(0f, doneCenterY), navWidth,
                 Theme, 18, CloseShop);
 
             return panel.gameObject;
@@ -333,7 +359,7 @@ namespace Game.UI
 
             var panel = UIBuilder.CreatePanel(root.transform, "PowerUpsPanel",
                 new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(pageWidth, pageHeight),
-                Theme, panelBorder);
+                Theme, panelBorder, Color.clear);
             var content = UIBuilder.CreateContentRect(panel, PageInset);
 
             UIBuilder.CreateText(content, "Title", "POWERUPS",
@@ -343,27 +369,50 @@ namespace Game.UI
             float innerH = pageHeight - PageInset * 2f;
 
             int itemCount = shop != null ? shop.ItemCount : 0;
+
+            var rowLabels = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < itemCount; i++)
+                rowLabels.Add(ItemRowLabel(i));
+            float rowWidth = UIBuilder.MeasureButtonWidth(rowLabels.ToArray(), ButtonPadding, 18, Theme);
+            float rowHeight = rowWidth / UIBuilder.ButtonAspect;
+
+            float cursor = innerH * 0.5f - HeaderHeight;
             for (int i = 0; i < itemCount; i++)
             {
-                float centerY = innerH * 0.5f - HeaderHeight - i * (RowHeight + RowGap) - RowHeight * 0.5f;
-                CreateItemRow(content, i, centerY);
+                cursor -= rowHeight * 0.5f;
+                CreateItemRow(content, i, new Vector2(0f, cursor), rowWidth);
+                cursor -= rowHeight * 0.5f + RowGap;
             }
 
+            float backWidth = UIBuilder.MeasureButtonWidth(
+                new[] { "BACK" }, ButtonPadding, 16, Theme);
+
             UIBuilder.CreateButton(content, "BackButton", "BACK",
-                new Vector2(0f, -innerH * 0.5f + Padding + 18f), ButtonPadding, 36f,
-                Theme, 16, ShowMarketPage);
+                new Vector2(0f, -innerH * 0.5f + Padding + backWidth / UIBuilder.ButtonAspect * 0.5f),
+                backWidth, Theme, 16, ShowMarketPage);
 
             panel.gameObject.SetActive(false);
             return panel.gameObject;
         }
 
-        private void CreateItemRow(RectTransform parent, int index, float centerY)
+        private string ItemRowLabel(int index)
+        {
+            ShopItemDef item = shop != null ? shop.ItemAt(index) : null;
+            if (item == null) return "";
+
+            int cost = shop.CostOf(index);
+            return shop.IsAvailable(index)
+                ? $"{item.DisplayName} \u2014 {cost}g"
+                : $"{item.DisplayName} \u2014 sold out";
+        }
+
+        private void CreateItemRow(RectTransform parent, int index, Vector2 center, float width)
         {
             ShopItemDef item = shop.ItemAt(index);
             if (item == null) return;
 
             var buy = UIBuilder.CreateButton(parent, "BuyButton", "",
-                new Vector2(0f, centerY), ButtonPadding, RowHeight,
+                center, width,
                 Theme, 18, () => BuyItem(index));
 
             rows.Add(new ItemRow
@@ -378,7 +427,7 @@ namespace Game.UI
         {
             var panel = UIBuilder.CreatePanel(root.transform, "EquipmentPanel",
                 new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(EquipPageWidth, EquipPageHeight),
-                Theme, panelBorder);
+                Theme, panelBorder, Color.clear);
             var pageContent = UIBuilder.CreateContentRect(panel, PageInset);
             float innerWidth = EquipPageWidth - PageInset * 2f;
             float innerHeight = EquipPageHeight - PageInset * 2f;
@@ -391,9 +440,12 @@ namespace Game.UI
                 new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -48f),
                 new Vector2(0f, 24f), TextAnchor.MiddleCenter, 16, Theme.text, Theme);
 
+            float backWidth = UIBuilder.MeasureButtonWidth(
+                new[] { "BACK" }, ButtonPadding, 16, Theme);
+
             var back = UIBuilder.CreateButton(pageContent, "BackButton", "BACK",
-                new Vector2(0f, innerHeight * 0.5f - 57f), ButtonPadding, 30f,
-                Theme, 16, ShowMarketPage);
+                new Vector2(0f, innerHeight * 0.5f - backWidth / UIBuilder.ButtonAspect * 0.5f - Padding),
+                backWidth, Theme, 16, ShowMarketPage);
             var backRt = back.GetComponent<RectTransform>();
             backRt.anchoredPosition = new Vector2(
                 innerWidth * 0.5f - backRt.rect.width * 0.5f - Padding,
@@ -403,6 +455,12 @@ namespace Game.UI
             int rowCount = Mathf.Max(1, Mathf.CeilToInt(entries.Count / (float)Columns));
             float contentHeight = rowCount * (CellHeight + CellGap) + Padding * 2f;
 
+            var cellLabels = new System.Collections.Generic.List<string> { "EQUIPPED" };
+            foreach (EquipmentEntry entry in entries)
+                cellLabels.Add($"BUY \u2014 {entry.Cost}g");
+            float cellButtonWidth = UIBuilder.MeasureButtonWidth(cellLabels.ToArray(), ButtonPadding, 16, Theme);
+            float cellButtonHeight = cellButtonWidth / UIBuilder.ButtonAspect;
+
             UIBuilder.CreateScrollList(pageContent, "Grid",
                 new Vector2(0.5f, 1f), new Vector2(0f, -HeaderHeight),
                 new Vector2(innerWidth - Padding * 2f, innerHeight - HeaderHeight - Padding),
@@ -410,13 +468,14 @@ namespace Game.UI
             gridContent.sizeDelta = new Vector2(0f, contentHeight);
 
             for (int i = 0; i < entries.Count; i++)
-                CreateEquipmentCell(gridContent, entries[i], i);
+                CreateEquipmentCell(gridContent, entries[i], i, cellButtonWidth, cellButtonHeight);
 
             panel.gameObject.SetActive(false);
             return panel.gameObject;
         }
 
-        private void CreateEquipmentCell(RectTransform content, EquipmentEntry entry, int index)
+        private void CreateEquipmentCell(RectTransform content, EquipmentEntry entry, int index,
+            float buttonWidth, float buttonHeight)
         {
             int column = index % Columns;
             int row = index / Columns;
@@ -429,8 +488,7 @@ namespace Game.UI
                 new Vector2(0f, 1f),
                 new Vector2(x0 + column * (CellWidth + CellGap),
                             -(Padding + row * (CellHeight + CellGap))),
-                new Vector2(CellWidth, CellHeight), Theme, null,
-                new Color(0.1f, 0.1f, 0.12f, 0.95f));
+                new Vector2(CellWidth, CellHeight), Theme, null, Color.clear);
 
             float textX = PreviewSize + Padding * 2f;
 
@@ -454,7 +512,7 @@ namespace Game.UI
                 Theme.dimText, Theme);
 
             var buy = UIBuilder.CreateButton(cell, "BuyButton", "",
-                new Vector2(0f, -CellHeight * 0.5f + 28f), ButtonPadding, 32f,
+                new Vector2(0f, -CellHeight * 0.5f + buttonHeight * 0.5f + Padding), buttonWidth,
                 Theme, 16, () => BuyEquipment(entry));
             var buyRt = buy.GetComponent<RectTransform>();
             buyRt.anchoredPosition = new Vector2(
