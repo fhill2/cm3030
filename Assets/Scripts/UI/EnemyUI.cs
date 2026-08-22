@@ -59,8 +59,12 @@ namespace Game.UI
         {
             if (e.Entity != gameObject) return;
 
+            // Destroyed outright rather than just deactivated — the corpse
+            // itself is a scene-lifetime object (see EnemyHealth.OnDeath), but
+            // the health bar above it has no reason to stick around, and a
+            // hard Destroy leaves nothing that could end up visible again.
             if (canvasTransform != null)
-                canvasTransform.gameObject.SetActive(false);
+                Destroy(canvasTransform.gameObject);
 
             enabled = false;
         }
