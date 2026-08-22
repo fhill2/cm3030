@@ -4,9 +4,9 @@ using Game.Health;
 
 namespace Game.Combat
 {
-    // Player stamina. Attacking, sprinting and jumping cost stamina, and
-    // running out stuns you for a fixed window where none of them work.
-    // Blocking is free and never touches stamina.
+    // Player stamina. Attacking, sprinting, jumping and blocking all cost
+    // stamina, and running out stuns you for a fixed window where none of
+    // them work.
     //
     // Regeneration runs continuously; the only pause is a short wait after
     // each swing.
@@ -31,6 +31,9 @@ namespace Game.Combat
         [Header("Continuous Costs")]
         [Tooltip("Stamina drained per second while sprinting.")]
         [SerializeField] private float sprintDrainPerSecond = 12f;
+
+        [Tooltip("Stamina drained per second while holding block. Lower than sprint's cost — blocking should be sustainable through a short exchange, not free.")]
+        [SerializeField] private float blockDrainPerSecond = 8f;
 
         [Header("Regeneration")]
         [Tooltip("Stamina recovered per second.")]
@@ -156,6 +159,11 @@ namespace Game.Combat
         public bool DrainSprint(float deltaTime)
         {
             return Drain(sprintDrainPerSecond * deltaTime);
+        }
+
+        public bool DrainBlock(float deltaTime)
+        {
+            return Drain(blockDrainPerSecond * deltaTime);
         }
 
         private bool Drain(float amount)

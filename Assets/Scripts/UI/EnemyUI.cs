@@ -41,6 +41,16 @@ namespace Game.UI
 
         void LateUpdate()
         {
+            // Belt-and-suspenders: HandleDeath (below) should already remove
+            // the bar the instant OnDeath fires, but checking IsAlive directly
+            // here too means the bar can never end up permanently stuck even
+            // if the event-based path somehow gets missed for a given enemy.
+            if (health != null && !health.IsAlive)
+            {
+                HandleDeath(new DeathArgs(gameObject));
+                return;
+            }
+
             if (canvasTransform != null && Camera.main != null)
                 canvasTransform.LookAt(Camera.main.transform);
         }
@@ -54,8 +64,16 @@ namespace Game.UI
         {
             if (e.Entity != gameObject) return;
 
-            if (canvasTransform != null)
-                canvasTransform.gameObject.SetActive(false);
+            // Destroyed outright rather than just deactivated — the corpse
+            // itself is a scene-lifetime object (see EnemyHealth.OnDeath), but
+            // the health bar above it has no reason to stick around, and a
+            // hard Destroy leaves nothing that could end up visible again.
+            //
+            // Looked up fresh via GetComponentsInChildren instead of relying
+            // on the cached canvasTransform field, so every Canvas under this
+            // enemy gets destroyed, not just the one Awake happened to build.
+            foreach (Canvas c in GetComponentsInChildren<Canvas>(true))
+                Destroy(c.gameObject);
 
             enabled = false;
         }
