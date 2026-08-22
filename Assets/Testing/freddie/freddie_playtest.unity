@@ -31523,6 +31523,7 @@ MonoBehaviour:
   playerIcon: {fileID: 437842073004927858, guid: 5ab2087fb7b27ab459d60c8af320ef8b, type: 3}
   enemyDotPrefab: {fileID: 5163817061166790487, guid: 7fe8d01b8b756c84698268518336fdae, type: 3}
   cameraHeight: 30
+  renderInterval: 0.25
   edgePadding: 8
   visibilityGroup: {fileID: 1541233250}
 --- !u!1 &1257732184
@@ -37133,7 +37134,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4294967231
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 315924ee485f4394abea04e1e3068a50, type: 2}
   m_TargetDisplay: 0

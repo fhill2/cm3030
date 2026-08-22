@@ -89,7 +89,6 @@ namespace Game.UI
 
             if (cam.enabled) cam.enabled = false;
 
-            FollowPlayer();
             UpdatePlayerIcon();
             UpdateEnemyDots();
             RenderMinimap();
@@ -97,15 +96,11 @@ namespace Game.UI
 
         private void RenderMinimap()
         {
-            if (renderInterval <= 0f)
-            {
-                cam.Render();
-                return;
-            }
-
             renderTimer += Time.unscaledDeltaTime;
-            if (renderTimer < renderInterval) return;
+            if (renderInterval > 0f && renderTimer < renderInterval) return;
             renderTimer = 0f;
+
+            FollowPlayer();
             cam.Render();
         }
 
