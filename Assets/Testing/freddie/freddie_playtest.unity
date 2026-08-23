@@ -51329,6 +51329,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clipPath: Ambient/The Stronghold
+  clipPaths:
+  - Ambient/RainForest_BW.59597
+  - Ambient/SPLC-1072_FX_Oneshot_Thunder_Distant_Ambience
   volume: 0.5
 --- !u!1001 &2099440310
 PrefabInstance:

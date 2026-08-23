@@ -1137,6 +1137,133 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lockedStates: 000000000300000004000000
   freeCursorWhenLocked: 1
+--- !u!114 &561268840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d12c16fff399fd54883bd708a7370856, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logTransitions: 1
+  initialState: 1
+  waveCompleteDelay: 3
+  shopDuration: 30
+--- !u!114 &561268841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c995161a451f4a54c82ba030cdef11dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startingGold: 500
+  goldPerKill: 10
+  waveClearBonus: 25
+  logChanges: 1
+--- !u!114 &561268842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47f53f177fcee5a4a9dc16fc016fa27d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logChanges: 1
+--- !u!114 &561268843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d80b36b93907b24d9f8d3f1632dddaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wallet: {fileID: 561268841}
+  loadout: {fileID: 0}
+  stateMachine: {fileID: 561268840}
+  spellBook: {fileID: 561268842}
+  items:
+  - {fileID: 11400000, guid: 8e866df133db4ed47b30b42325a2655f, type: 2}
+  - {fileID: 11400000, guid: 4df82e795b640cf44802f266cc27c190, type: 2}
+  - {fileID: 11400000, guid: 55d85359b11c0104e84309b7483d4471, type: 2}
+  - {fileID: 11400000, guid: 23d2081d38870464183db3c76f49c2ad, type: 2}
+  - {fileID: 11400000, guid: 83f6c562188d8b14f822551c4c5856ac, type: 2}
+  - {fileID: 11400000, guid: 551850bcd8e6eb44981f1db0668fc1d8, type: 2}
+  - {fileID: 11400000, guid: 87a5b607caaf7ae4bb599b1e822d92b5, type: 2}
+--- !u!114 &561268844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b82880a751474449a86320d78e71741, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateMachine: {fileID: 561268840}
+  shop: {fileID: 561268843}
+  wallet: {fileID: 561268841}
+--- !u!114 &561268845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9681a1bf72a51c2d436a356439b216b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shop: {fileID: 561268843}
+  wallet: {fileID: 561268841}
+  stateMachine: {fileID: 561268840}
+  theme: {fileID: 0}
+  panelBorder:
+    spriteName: market_ui_panel_border_3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+  panelSizePercent: 0.25
+  contentInsetPercent: 0.15
+  logDiagnostics: 1
+--- !u!114 &561268846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6237806d2bd447bca95b5ebc2964a382, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spellBook: {fileID: 561268842}
+  spells:
+  - {fileID: 11400000, guid: 5e6b5f468b129664abdb0311c421c23f, type: 2}
+  - {fileID: 11400000, guid: 08c628590b9fd254b894672a4bffe9ee, type: 2}
+  - {fileID: 11400000, guid: 816473e48a60133468630cf6c458c7e9, type: 2}
+  - {fileID: 11400000, guid: e9f19d2d544558f46803e055e91ba6ea, type: 2}
+  - {fileID: 11400000, guid: 756560591caea1f4e9a176bcbeb79dd9, type: 2}
+  - {fileID: 11400000, guid: 6f7d8fe0fcd017a40895a2da8bc969b4, type: 2}
 --- !u!43 &581912521
 Mesh:
   m_ObjectHideFlags: 0
@@ -5481,6 +5608,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: fighter_enemy_chain
       objectReference: {fileID: 0}
+    - target: {fileID: 898012942167584044, guid: f137d454ab91a4e3c8009be614c99e8a, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1148925901220757407, guid: f137d454ab91a4e3c8009be614c99e8a, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.0000067
@@ -6160,6 +6291,252 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4d09f40a894bc0932084803e4d176e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1001 &7700000000000000010
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 9.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_Name
+      value: TomePickup_Fire1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: spell
+      value: 
+      objectReference: {fileID: 11400000, guid: 5e6b5f468b129664abdb0311c421c23f, type: 2}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: logTriggers
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+--- !u!1001 &7700000000000000011
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 10.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_Name
+      value: TomePickup_Fire2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: spell
+      value: 
+      objectReference: {fileID: 11400000, guid: e9f19d2d544558f46803e055e91ba6ea, type: 2}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: logTriggers
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+--- !u!1001 &7700000000000000012
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 11.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_Name
+      value: TomePickup_Fire3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: spell
+      value: 
+      objectReference: {fileID: 11400000, guid: 6f7d8fe0fcd017a40895a2da8bc969b4, type: 2}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: logTriggers
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+--- !u!1001 &7700000000000000013
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 9.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_Name
+      value: TomePickup_Ice1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: spell
+      value: 
+      objectReference: {fileID: 11400000, guid: 08c628590b9fd254b894672a4bffe9ee, type: 2}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: logTriggers
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+--- !u!1001 &7700000000000000014
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 10.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_Name
+      value: TomePickup_Ice2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: spell
+      value: 
+      objectReference: {fileID: 11400000, guid: 756560591caea1f4e9a176bcbeb79dd9, type: 2}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: logTriggers
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+--- !u!1001 &7700000000000000015
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 11.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_Name
+      value: TomePickup_Ice3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: spell
+      value: 
+      objectReference: {fileID: 11400000, guid: 816473e48a60133468630cf6c458c7e9, type: 2}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: logTriggers
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -6184,405 +6561,3 @@ SceneRoots:
   - {fileID: 7700000000000000013}
   - {fileID: 7700000000000000014}
   - {fileID: 7700000000000000015}
---- !u!114 &561268840
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 561268834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d12c16fff399fd54883bd708a7370856, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  logTransitions: 1
-  initialState: 1
-  waveCompleteDelay: 3
-  shopDuration: 30
---- !u!114 &561268841
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 561268834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c995161a451f4a54c82ba030cdef11dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startingGold: 500
-  goldPerKill: 10
-  waveClearBonus: 25
-  logChanges: 1
---- !u!114 &561268842
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 561268834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47f53f177fcee5a4a9dc16fc016fa27d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  logChanges: 1
---- !u!114 &561268843
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 561268834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d80b36b93907b24d9f8d3f1632dddaa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  wallet: {fileID: 561268841}
-  loadout: {fileID: 0}
-  stateMachine: {fileID: 561268840}
-  spellBook: {fileID: 561268842}
-  items:
-  - {fileID: 11400000, guid: 8e866df133db4ed47b30b42325a2655f, type: 2}
-  - {fileID: 11400000, guid: 4df82e795b640cf44802f266cc27c190, type: 2}
-  - {fileID: 11400000, guid: 55d85359b11c0104e84309b7483d4471, type: 2}
-  - {fileID: 11400000, guid: 23d2081d38870464183db3c76f49c2ad, type: 2}
-  - {fileID: 11400000, guid: 83f6c562188d8b14f822551c4c5856ac, type: 2}
-  - {fileID: 11400000, guid: 551850bcd8e6eb44981f1db0668fc1d8, type: 2}
-  - {fileID: 11400000, guid: 87a5b607caaf7ae4bb599b1e822d92b5, type: 2}
---- !u!114 &561268844
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 561268834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b82880a751474449a86320d78e71741, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stateMachine: {fileID: 561268840}
-  shop: {fileID: 561268843}
-  wallet: {fileID: 561268841}
---- !u!114 &561268845
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 561268834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9681a1bf72a51c2d436a356439b216b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  shop: {fileID: 561268843}
-  wallet: {fileID: 561268841}
-  stateMachine: {fileID: 561268840}
-  theme: {fileID: 0}
-  panelBorder:
-    spriteName: market_ui_panel_border_3
-    sprite: {fileID: 0}
-    tint: {r: 1, g: 1, b: 1, a: 1}
-  panelSizePercent: 0.25
-  contentInsetPercent: 0.15
---- !u!1001 &7700000000000000010
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 3
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_Name
-      value: TomePickup_Fire1
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 9.9
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 1.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: logTriggers
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: spell
-      value: 
-      objectReference: {fileID: 11400000, guid: 5e6b5f468b129664abdb0311c421c23f, type: 2}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-  m_IsPrefabAsset: 0
-  m_IsEditing: 0
-  m_IsExpanded: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_OriginalGameObject: {fileID: 0}
---- !u!1001 &7700000000000000011
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 3
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_Name
-      value: TomePickup_Fire2
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 10.65
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 1.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: logTriggers
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: spell
-      value: 
-      objectReference: {fileID: 11400000, guid: e9f19d2d544558f46803e055e91ba6ea, type: 2}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-  m_IsPrefabAsset: 0
-  m_IsEditing: 0
-  m_IsExpanded: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_OriginalGameObject: {fileID: 0}
---- !u!1001 &7700000000000000012
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 3
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_Name
-      value: TomePickup_Fire3
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 11.4
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 1.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: logTriggers
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: spell
-      value: 
-      objectReference: {fileID: 11400000, guid: 6f7d8fe0fcd017a40895a2da8bc969b4, type: 2}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-  m_IsPrefabAsset: 0
-  m_IsEditing: 0
-  m_IsExpanded: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_OriginalGameObject: {fileID: 0}
---- !u!1001 &7700000000000000013
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 3
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_Name
-      value: TomePickup_Ice1
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 9.9
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 2.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: logTriggers
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: spell
-      value: 
-      objectReference: {fileID: 11400000, guid: 08c628590b9fd254b894672a4bffe9ee, type: 2}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-  m_IsPrefabAsset: 0
-  m_IsEditing: 0
-  m_IsExpanded: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_OriginalGameObject: {fileID: 0}
---- !u!1001 &7700000000000000014
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 3
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_Name
-      value: TomePickup_Ice2
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 10.65
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 2.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: logTriggers
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: spell
-      value: 
-      objectReference: {fileID: 11400000, guid: 756560591caea1f4e9a176bcbeb79dd9, type: 2}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-  m_IsPrefabAsset: 0
-  m_IsEditing: 0
-  m_IsExpanded: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_OriginalGameObject: {fileID: 0}
---- !u!1001 &7700000000000000015
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 3
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_Name
-      value: TomePickup_Ice3
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 11.4
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 2.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: logTriggers
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-      propertyPath: spell
-      value: 
-      objectReference: {fileID: 11400000, guid: 816473e48a60133468630cf6c458c7e9, type: 2}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
-  m_IsPrefabAsset: 0
-  m_IsEditing: 0
-  m_IsExpanded: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_OriginalGameObject: {fileID: 0}
---- !u!114 &561268846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 561268834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6237806d2bd447bca95b5ebc2964a382, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spellBook: {fileID: 561268842}
-  spells:
-  - {fileID: 11400000, guid: 5e6b5f468b129664abdb0311c421c23f, type: 2}
-  - {fileID: 11400000, guid: e9f19d2d544558f46803e055e91ba6ea, type: 2}
-  - {fileID: 11400000, guid: 6f7d8fe0fcd017a40895a2da8bc969b4, type: 2}
-  - {fileID: 11400000, guid: 08c628590b9fd254b894672a4bffe9ee, type: 2}
-  - {fileID: 11400000, guid: 756560591caea1f4e9a176bcbeb79dd9, type: 2}
-  - {fileID: 11400000, guid: 816473e48a60133468630cf6c458c7e9, type: 2}
