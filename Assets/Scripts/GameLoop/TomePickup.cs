@@ -1,5 +1,7 @@
 using UnityEngine;
 
+using Game.Audio;
+
 namespace Game.Core
 {
     // The tome lying on the ground. Walking into it unlocks the spell for
@@ -26,6 +28,10 @@ namespace Game.Core
         [Header("Debug")]
         [Tooltip("Log every trigger entry, so a pickup that does nothing can be traced.")]
         [SerializeField] private bool logTriggers = true;
+
+        [Header("Sound")]
+        [Tooltip("One-shot clip under Resources/ played when the tome is picked up.")]
+        [SerializeField] private string pickupClip = "Spells/learn/ESM_Magic_Game_Protection_Ward_Buff_Fantasy_Spell_Cast_Conjure_Craft_Mobile_App_Special_Click";
 
         private Vector3 restPosition;
 
@@ -68,6 +74,16 @@ namespace Game.Core
             }
 
             book.Unlock(spell);
+
+            if (!string.IsNullOrEmpty(pickupClip))
+            {
+                AudioClip clip = Resources.Load<AudioClip>(pickupClip);
+                if (clip != null)
+                    OneShotAudio.Play2D(clip, transform.position);
+                else
+                    Debug.LogWarning($"[TomePickup] No clip at Resources/{pickupClip}");
+            }
+
             Destroy(gameObject);
         }
 
