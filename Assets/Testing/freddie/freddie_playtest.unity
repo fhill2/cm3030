@@ -8450,6 +8450,7 @@ GameObject:
   - component: {fileID: 7550478612390158265}
   - component: {fileID: 7550478612390158268}
   - component: {fileID: 7550478612390158267}
+  - component: {fileID: 7550478612390158299}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -64573,9 +64574,15 @@ MonoBehaviour:
   wallet: {fileID: 7550478612390158261}
   loadout: {fileID: 7550478612390158262}
   stateMachine: {fileID: 404486885}
-  spellBook: {fileID: 0}
+  spellBook: {fileID: 7550478612390158299}
   items:
   - {fileID: 11400000, guid: 8e866df133db4ed47b30b42325a2655f, type: 2}
+  - {fileID: 11400000, guid: 4df82e795b640cf44802f266cc27c190, type: 2}
+  - {fileID: 11400000, guid: 55d85359b11c0104e84309b7483d4471, type: 2}
+  - {fileID: 11400000, guid: 23d2081d38870464183db3c76f49c2ad, type: 2}
+  - {fileID: 11400000, guid: 83f6c562188d8b14f822551c4c5856ac, type: 2}
+  - {fileID: 11400000, guid: 551850bcd8e6eb44981f1db0668fc1d8, type: 2}
+  - {fileID: 11400000, guid: 87a5b607caaf7ae4bb599b1e822d92b5, type: 2}
 --- !u!114 &7550478612390158264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66980,3 +66987,63 @@ SceneRoots:
   - {fileID: 84627164}
   - {fileID: 681653638}
   - {fileID: 2072994012}
+  - {fileID: 1234567890123456781}
+--- !u!114 &7550478612390158299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404486881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47f53f177fcee5a4a9dc16fc016fa27d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logChanges: 1
+--- !u!1001 &1234567890123456781
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 3
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_Name
+      value: TomePickup_Test
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -9.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 12.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 22.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 905589367531350645, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: logTriggers
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4223393831886963771, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+      propertyPath: spell
+      value: 
+      objectReference: {fileID: 11400000, guid: 5e6b5f468b129664abdb0311c421c23f, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+  m_SourcePrefab: {fileID: 100100000, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+  m_IsPrefabAsset: 0
+  m_IsEditing: 0
+  m_IsExpanded: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_OriginalGameObject: {fileID: 0}

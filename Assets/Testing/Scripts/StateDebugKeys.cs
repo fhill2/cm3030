@@ -6,9 +6,9 @@ namespace Game.Core
     // Temporary. Drives the game loop from the keyboard while there's no
     // menu or shop UI. Delete once the real triggers exist.
     //
-    // 1  next wave        4  buy shop item 0
-    // 2  open shop        5  close shop (the Done button)
-    // 3  back to menu     6  print gold and shop prices
+    // F1  next wave        F4  buy shop item 0
+    // F2  open shop        F5  close shop (the Done button)
+    // F3  back to menu     F6  print gold and shop prices
     //
     // Goes on the GameManager object.
     public class StateDebugKeys : MonoBehaviour
@@ -21,22 +21,22 @@ namespace Game.Core
         {
             if (Keyboard.current == null) return;
 
-            if (Keyboard.current.digit1Key.wasPressedThisFrame)
+            if (Keyboard.current.f1Key.wasPressedThisFrame)
                 stateMachine.MoveToState(GameStateId.WaveActive);
 
-            if (Keyboard.current.digit2Key.wasPressedThisFrame)
+            if (Keyboard.current.f2Key.wasPressedThisFrame)
                 stateMachine.MoveToState(GameStateId.Shop);
 
-            if (Keyboard.current.digit3Key.wasPressedThisFrame)
+            if (Keyboard.current.f3Key.wasPressedThisFrame)
                 stateMachine.MoveToState(GameStateId.Menu);
 
-            if (Keyboard.current.digit4Key.wasPressedThisFrame)
+            if (Keyboard.current.f4Key.wasPressedThisFrame)
                 Buy(0);
 
-            if (Keyboard.current.digit5Key.wasPressedThisFrame)
+            if (Keyboard.current.f5Key.wasPressedThisFrame)
                 shop.Close();
 
-            if (Keyboard.current.digit6Key.wasPressedThisFrame)
+            if (Keyboard.current.f6Key.wasPressedThisFrame)
                 PrintShop();
         }
 
