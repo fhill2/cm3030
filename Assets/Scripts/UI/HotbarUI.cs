@@ -202,7 +202,8 @@ namespace Game.UI
         {
             UpdateCooldown(attack,
                 melee != null ? melee.CooldownRemaining : 0f,
-                melee != null ? melee.CooldownDuration : 1f);
+                melee != null ? melee.CooldownDuration : 1f,
+                Color.white);
 
             bool blocking = movement != null && movement.IsBlocking;
             SetReady(guard, blocking ? GuardActive : Color.white);
@@ -210,10 +211,16 @@ namespace Game.UI
 
             UpdateCooldown(tauntSlot,
                 taunt != null ? taunt.CooldownRemaining : 0f,
-                taunt != null ? taunt.CooldownDuration : 1f);
+                taunt != null ? taunt.CooldownDuration : 1f,
+                Color.white);
 
             foreach (SpellSlot s in spells)
-                SetReady(s.Slot, SpellSlotColor(s));
+            {
+                UpdateCooldown(s.Slot,
+                    caster != null ? caster.CooldownRemaining(s.School) : 0f,
+                    caster != null ? caster.CooldownDuration(s.School) : 0f,
+                    SpellSlotColor(s));
+            }
         }
 
         private Color SpellSlotColor(SpellSlot s)
@@ -230,11 +237,11 @@ namespace Game.UI
             return best != null && s.Level <= best.Level ? Color.white : LockedDim;
         }
 
-        private void UpdateCooldown(Slot slot, float remaining, float duration)
+        private void UpdateCooldown(Slot slot, float remaining, float duration, Color readyColor)
         {
             if (remaining <= 0f || duration <= 0f)
             {
-                SetReady(slot, Color.white);
+                SetReady(slot, readyColor);
                 return;
             }
 
