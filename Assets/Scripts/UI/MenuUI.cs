@@ -19,6 +19,8 @@ namespace Game.UI
         [SerializeField] private string titleText = "THE FALL OF CAMELOT";
         [SerializeField] private string playText  = "PLAY";
         [SerializeField] private string hintText  = "or press SPACE";
+        [Tooltip("One-shot clip under Resources/ played when the Play button is pressed.")]
+        [SerializeField] private string playClip = "Ambient/KSHMR_sok5_drum_orchestral_low_degree";
 
         [Header("Logo")]
         [Tooltip("Shown in place of the title text. Leave empty to load Resources/UI/start_screen automatically.")]
@@ -82,6 +84,23 @@ namespace Game.UI
             if (stateMachine == null) return;
             if (stateMachine.CurrentState == null) return;
             if (stateMachine.CurrentState.Id != GameStateId.Menu) return;
+
+            if (!string.IsNullOrEmpty(playClip))
+            {
+                AudioClip clip = Resources.Load<AudioClip>(playClip);
+                if (clip != null)
+                {
+                    var source = gameObject.AddComponent<AudioSource>();
+                    source.clip = clip;
+                    source.loop = false;
+                    source.volume = 1f;
+                    source.Play();
+                }
+                else
+                {
+                    Debug.LogWarning($"[MenuUI] No clip at Resources/{playClip}");
+                }
+            }
 
             stateMachine.MoveToState(GameStateId.WaveActive);
         }
