@@ -39,6 +39,8 @@ namespace Game.Core
         [Header("Debug")]
         [SerializeField] private bool logCasts = true;
 
+        public System.Collections.Generic.IReadOnlyList<SpellDef> HotkeySpells => hotkeySpells;
+
         private StaminaSystem stamina;
         private bool isDead;
 

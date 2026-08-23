@@ -34,6 +34,7 @@ namespace Game.UI
             public SpellSchool School;
             public int Level;
             public Slot Slot;
+            public SpellDef Spell;
         }
 
         private readonly System.Collections.Generic.List<SpellSlot> spells = new System.Collections.Generic.List<SpellSlot>();
@@ -45,12 +46,14 @@ namespace Game.UI
         private Slot throwSlot;
 
         private SpellBook spellBook;
+        private SpellCaster caster;
         private Melee melee;
         private PlayerTaunt taunt;
         private PlayerMovement movement;
 
         private static readonly Color GuardActive = new Color(1f, 0.9f, 0.5f, 1f);
         private static readonly Color Dimmed = new Color(1f, 1f, 1f, 0.45f);
+        private static readonly Color LockedDim = new Color(1f, 1f, 1f, 0.2f);
         private static readonly Color CooldownDim = new Color(0.35f, 0.35f, 0.35f, 1f);
         private static readonly Color SweepColor = new Color(0.75f, 0.75f, 0.75f, 0.9f);
         private static readonly Color GoldBorder = new Color(0.85f, 0.72f, 0.35f, 1f);
@@ -59,6 +62,8 @@ namespace Game.UI
         private void Awake()
         {
             spellBook = FindFirstObjectByType<SpellBook>();
+            caster = GetComponent<SpellCaster>();
+            if (caster == null) caster = FindFirstObjectByType<SpellCaster>();
             melee = GetComponent<Melee>();
             taunt = GetComponent<PlayerTaunt>();
             movement = GetComponent<PlayerMovement>();
@@ -100,6 +105,8 @@ namespace Game.UI
             tauntSlot = CreateSlot(bar.transform, 2, "E", TauntIcon);
             throwSlot = CreateSlot(bar.transform, 3, "R", ThrowIcon);
 
+            var hotkeys = caster != null ? caster.HotkeySpells : null;
+
             for (int i = 0; i < 6; i++)
             {
                 SpellSchool school = i < 3 ? SpellSchool.Fire : SpellSchool.Ice;
@@ -107,7 +114,11 @@ namespace Game.UI
                 string icon = (school == SpellSchool.Fire ? "fire_" : "ice_") + level;
 
                 Slot slot = CreateSlot(bar.transform, 4 + i, (i + 1).ToString(), icon);
-                spells.Add(new SpellSlot { School = school, Level = level, Slot = slot });
+
+                SpellDef spell = null;
+                if (hotkeys != null && i < hotkeys.Count) spell = hotkeys[i];
+
+                spells.Add(new SpellSlot { School = school, Level = level, Slot = slot, Spell = spell });
             }
         }
 
@@ -202,15 +213,21 @@ namespace Game.UI
                 taunt != null ? taunt.CooldownDuration : 1f);
 
             foreach (SpellSlot s in spells)
-                SetReady(s.Slot, IsSlotOwned(s.School, s.Level) ? Color.white : Dimmed);
+                SetReady(s.Slot, SpellSlotColor(s));
         }
 
-        private bool IsSlotOwned(SpellSchool school, int level)
+        private Color SpellSlotColor(SpellSlot s)
         {
-            if (spellBook == null) return true;
+            if (spellBook == null) return Color.white;
 
-            SpellDef best = spellBook.BestOwned(school);
-            return best != null && level <= best.Level;
+            if (s.Spell != null)
+            {
+                if (spellBook.IsOwned(s.Spell)) return Color.white;
+                return spellBook.IsUnlocked(s.Spell) ? Dimmed : LockedDim;
+            }
+
+            SpellDef best = spellBook.BestOwned(s.School);
+            return best != null && s.Level <= best.Level ? Color.white : LockedDim;
         }
 
         private void UpdateCooldown(Slot slot, float remaining, float duration)
