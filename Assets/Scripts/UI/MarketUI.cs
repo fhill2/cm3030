@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using Game.Combat;
 using Game.Core;
 
@@ -286,6 +287,10 @@ namespace Game.UI
 
         private void ShowMarketPage()
         {
+            ClearPageHover(equipmentPage);
+            ClearPageHover(powerUpsPage);
+            ClearPageHover(spellsPage);
+            ClearSelection();
             if (marketPage != null) marketPage.SetActive(true);
             if (equipmentPage != null) equipmentPage.SetActive(false);
             if (powerUpsPage != null) powerUpsPage.SetActive(false);
@@ -294,6 +299,8 @@ namespace Game.UI
 
         private void ShowEquipmentPage()
         {
+            ClearPageHover(marketPage);
+            ClearSelection();
             if (marketPage != null) marketPage.SetActive(false);
             if (equipmentPage != null) equipmentPage.SetActive(true);
             if (powerUpsPage != null) powerUpsPage.SetActive(false);
@@ -302,6 +309,8 @@ namespace Game.UI
 
         private void ShowPowerUpsPage()
         {
+            ClearPageHover(marketPage);
+            ClearSelection();
             if (marketPage != null) marketPage.SetActive(false);
             if (equipmentPage != null) equipmentPage.SetActive(false);
             if (powerUpsPage != null) powerUpsPage.SetActive(true);
@@ -310,6 +319,10 @@ namespace Game.UI
 
         private void ShowSpellsPage()
         {
+            ClearPageHover(equipmentPage);
+            ClearPageHover(powerUpsPage);
+            ClearPageHover(spellsPage);
+            ClearSelection();
             if (marketPage != null) marketPage.SetActive(false);
             if (equipmentPage != null) equipmentPage.SetActive(false);
             if (powerUpsPage != null) powerUpsPage.SetActive(false);
@@ -323,6 +336,23 @@ namespace Game.UI
                 Diag($"  row[{row.Index}] '{row.BuyLabel.text}' parent={rt.parent.name}" +
                     $" pos={rt.anchoredPosition} size={rt.sizeDelta} active={row.Buy.gameObject.activeInHierarchy}");
             }
+        }
+
+        private static void ClearSelection()
+        {
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        private static void ClearPageHover(GameObject page)
+        {
+            if (page == null || !page.activeSelf) return;
+            var es = EventSystem.current;
+            if (es == null) return;
+            var ped = new PointerEventData(es);
+            foreach (var sel in page.GetComponentsInChildren<Selectable>())
+                ExecuteEvents.Execute<IPointerExitHandler>(sel.gameObject, ped,
+                    (h, e) => h.OnPointerExit((PointerEventData)e));
         }
 
         private void BuildUI()
