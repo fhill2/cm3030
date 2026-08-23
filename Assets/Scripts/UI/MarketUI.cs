@@ -37,6 +37,8 @@ namespace Game.UI
         private const float ButtonPadding = 28f;
         private const float PageInset    = 64f;
 
+        private const float ListRowHeight = 56f;
+
         private const float EquipPageWidth  = 1600f;
         private const float EquipPageHeight = 920f;
         private const int   Columns      = 3;
@@ -63,6 +65,7 @@ namespace Game.UI
         private GameObject marketPage;
         private GameObject equipmentPage;
         private GameObject powerUpsPage;
+        private GameObject spellsPage;
         private RectTransform canvasRect;
 
         private Text marketTimer;
@@ -72,6 +75,10 @@ namespace Game.UI
         private readonly List<EquipCell> cells = new List<EquipCell>();
         private readonly Dictionary<GameObject, Sprite> thumbnails = new Dictionary<GameObject, Sprite>();
         private bool warnedMissingThumbnail;
+
+        [Header("Debug")]
+        [Tooltip("Log page wiring, shop contents and row layout so a blank page can be traced in the Console.")]
+        [SerializeField] private bool logDiagnostics = true;
 
         private float secondsLeft;
         private Equipment playerEquipment;
@@ -94,6 +101,38 @@ namespace Game.UI
             if (shop == null) shop = FindFirstObjectByType<Shop>();
             if (wallet == null) wallet = FindFirstObjectByType<PlayerWallet>();
             if (stateMachine == null) stateMachine = FindFirstObjectByType<GameStateMachine>();
+
+            Diag($"Awake: shop={shop != null} wallet={wallet != null} stateMachine={stateMachine != null}" +
+                $" shopItemCount={(shop != null ? shop.ItemCount : -1)}");
+        }
+
+        private void Diag(string message)
+        {
+            if (logDiagnostics) Debug.Log("[MarketUI] " + message);
+        }
+
+        [ContextMenu("Dump Diagnostics")]
+        private void DumpDiagnostics()
+        {
+            Diag($"pages: market={marketPage != null} equipment={equipmentPage != null}" +
+                $" powerUps={powerUpsPage != null} spells={spellsPage != null} active={spellsPage != null && spellsPage.activeSelf}");
+            Diag($"shop={shop != null} itemCount={(shop != null ? shop.ItemCount : -1)} rows={rows.Count}");
+
+            if (shop != null)
+            {
+                for (int i = 0; i < shop.ItemCount; i++)
+                {
+                    ShopItemDef item = shop.ItemAt(i);
+                    Diag($"item[{i}]: {(item == null ? "NULL" : item.DisplayName + " effect=" + item.Effect)}");
+                }
+            }
+
+            foreach (ItemRow row in rows)
+            {
+                var rt = row.Buy.transform as RectTransform;
+                Diag($"row[{row.Index}] '{row.BuyLabel.text}' parent={rt.parent.name}" +
+                    $" pos={rt.anchoredPosition} size={rt.sizeDelta} active={row.Buy.gameObject.activeInHierarchy}");
+            }
         }
 
         private void Start()
@@ -198,19 +237,6 @@ namespace Game.UI
                 row.BuyLabel.text = ItemRowLabel(row.Index);
                 row.Buy.interactable = shop.CanAfford(row.Index);
             }
-
-            FitRowsUniform();
-        }
-
-        private void FitRowsUniform()
-        {
-            float widest = 0f;
-            foreach (ItemRow row in rows)
-                widest = Mathf.Max(widest, row.BuyLabel.preferredWidth);
-            widest += ButtonPadding * 2f;
-
-            foreach (ItemRow row in rows)
-                UIBuilder.SetButtonSize(row.Buy, widest);
         }
 
         private void RefreshCells()
@@ -263,6 +289,7 @@ namespace Game.UI
             if (marketPage != null) marketPage.SetActive(true);
             if (equipmentPage != null) equipmentPage.SetActive(false);
             if (powerUpsPage != null) powerUpsPage.SetActive(false);
+            if (spellsPage != null) spellsPage.SetActive(false);
         }
 
         private void ShowEquipmentPage()
@@ -270,6 +297,7 @@ namespace Game.UI
             if (marketPage != null) marketPage.SetActive(false);
             if (equipmentPage != null) equipmentPage.SetActive(true);
             if (powerUpsPage != null) powerUpsPage.SetActive(false);
+            if (spellsPage != null) spellsPage.SetActive(false);
         }
 
         private void ShowPowerUpsPage()
@@ -277,6 +305,24 @@ namespace Game.UI
             if (marketPage != null) marketPage.SetActive(false);
             if (equipmentPage != null) equipmentPage.SetActive(false);
             if (powerUpsPage != null) powerUpsPage.SetActive(true);
+            if (spellsPage != null) spellsPage.SetActive(false);
+        }
+
+        private void ShowSpellsPage()
+        {
+            if (marketPage != null) marketPage.SetActive(false);
+            if (equipmentPage != null) equipmentPage.SetActive(false);
+            if (powerUpsPage != null) powerUpsPage.SetActive(false);
+            if (spellsPage != null) spellsPage.SetActive(true);
+
+            Diag($"ShowSpellsPage: spellsPage={(spellsPage != null)}" +
+                $" active={(spellsPage != null && spellsPage.activeSelf)} rows={rows.Count}");
+            foreach (ItemRow row in rows)
+            {
+                var rt = row.Buy.transform as RectTransform;
+                Diag($"  row[{row.Index}] '{row.BuyLabel.text}' parent={rt.parent.name}" +
+                    $" pos={rt.anchoredPosition} size={rt.sizeDelta} active={row.Buy.gameObject.activeInHierarchy}");
+            }
         }
 
         private void BuildUI()
@@ -290,11 +336,27 @@ namespace Game.UI
             var backdrop = UIBuilder.AttachImage(backdropRt, Theme.backdropDim);
             backdrop.raycastTarget = true;
 
-            marketPage = BuildMarketPage();
-            equipmentPage = BuildEquipmentPage();
-            powerUpsPage = BuildPowerUpsPage();
+            marketPage    = BuildSafely("MarketPage",    BuildMarketPage);
+            equipmentPage = BuildSafely("EquipmentPage", BuildEquipmentPage);
+            powerUpsPage  = BuildSafely("PowerUpsPage",  BuildPowerUpsPage);
+            spellsPage    = BuildSafely("SpellsPage",    BuildSpellsPage);
 
             root.SetActive(false);
+        }
+
+        private GameObject BuildSafely(string pageName, System.Func<GameObject> build)
+        {
+            try
+            {
+                GameObject page = build();
+                Diag($"built {pageName}: {(page != null ? page.name : "null")}");
+                return page;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[MarketUI] {pageName} threw during build: {e}");
+                return null;
+            }
         }
 
         private GameObject BuildMarketPage()
@@ -347,7 +409,7 @@ namespace Game.UI
 
             UIBuilder.CreateButton(content, "SpellsButton", "SPELLS",
                 new Vector2(navX, navCenterY), navWidth,
-                Theme, 18);
+                Theme, 18, ShowSpellsPage);
 
             UIBuilder.CreateButton(content, "DoneButton", "DONE",
                 new Vector2(0f, doneCenterY), navWidth,
@@ -358,8 +420,8 @@ namespace Game.UI
 
         private GameObject BuildPowerUpsPage()
         {
-            float pageWidth = EquipPageWidth * 0.5f;
-            float pageHeight = EquipPageHeight * 0.5f;
+            float pageWidth = EquipPageWidth * 0.68f;
+            float pageHeight = EquipPageHeight * 0.68f;
 
             var panel = UIBuilder.CreatePanel(root.transform, "PowerUpsPanel",
                 new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(pageWidth, pageHeight),
@@ -370,29 +432,134 @@ namespace Game.UI
                 new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f),
                 new Vector2(0f, 40f), TextAnchor.MiddleCenter, 24, Theme.text, Theme);
 
+            float innerW = pageWidth - PageInset * 2f;
             float innerH = pageHeight - PageInset * 2f;
-
-            int itemCount = shop != null ? shop.ItemCount : 0;
-
-            var rowLabels = new System.Collections.Generic.List<string>();
-            for (int i = 0; i < itemCount; i++)
-                rowLabels.Add(ItemRowLabel(i));
-            float rowWidth = UIBuilder.MeasureButtonWidth(rowLabels.ToArray(), ButtonPadding, 18, Theme);
-            float rowHeight = rowWidth / UIBuilder.ButtonAspect;
-
-            float cursor = innerH * 0.5f - HeaderHeight;
-            for (int i = 0; i < itemCount; i++)
-            {
-                cursor -= rowHeight * 0.5f;
-                CreateItemRow(content, i, new Vector2(0f, cursor), rowWidth);
-                cursor -= rowHeight * 0.5f + RowGap;
-            }
 
             float backWidth = UIBuilder.MeasureButtonWidth(
                 new[] { "BACK" }, ButtonPadding, 16, Theme);
+            float backHeight = backWidth / UIBuilder.ButtonAspect;
+
+            float listWidth = innerW - Padding * 2f;
+            float listHeight = innerH - HeaderHeight - backHeight - Padding * 2f;
+
+            var stockIndices = new List<int>();
+            int itemCount = shop != null ? shop.ItemCount : 0;
+            for (int i = 0; i < itemCount; i++)
+            {
+                ShopItemDef item = shop.ItemAt(i);
+                if (item == null || item.Effect == ShopEffect.Tome) continue;
+                stockIndices.Add(i);
+            }
+
+            RectTransform listContent;
+            UIBuilder.CreateScrollList(content, "List",
+                new Vector2(0.5f, 1f), new Vector2(0f, -HeaderHeight),
+                new Vector2(listWidth, listHeight), Theme, out listContent);
+
+            float totalHeight = stockIndices.Count > 0
+                ? stockIndices.Count * (ListRowHeight + RowGap) + Padding * 2f
+                : 0f;
+            listContent.sizeDelta = new Vector2(0f, Mathf.Max(totalHeight, listHeight));
+
+            float cursor = Padding;
+            foreach (int i in stockIndices)
+            {
+                CreateItemRow(listContent, i,
+                    new Vector2(0f, -cursor - ListRowHeight * 0.5f), listWidth);
+                cursor += ListRowHeight + RowGap;
+            }
 
             UIBuilder.CreateButton(content, "BackButton", "BACK",
-                new Vector2(0f, -innerH * 0.5f + Padding + backWidth / UIBuilder.ButtonAspect * 0.5f),
+                new Vector2(0f, -innerH * 0.5f + Padding + backHeight * 0.5f),
+                backWidth, Theme, 16, ShowMarketPage);
+
+            panel.gameObject.SetActive(false);
+            return panel.gameObject;
+        }
+
+        private GameObject BuildSpellsPage()
+        {
+            float pageWidth = EquipPageWidth * 0.68f;
+            float pageHeight = EquipPageHeight * 0.68f;
+
+            var panel = UIBuilder.CreatePanel(root.transform, "SpellsPanel",
+                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(pageWidth, pageHeight),
+                Theme, panelBorder, Color.clear);
+            var content = UIBuilder.CreateContentRect(panel, PageInset);
+
+            UIBuilder.CreateText(content, "Title", "SPELLS",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f),
+                new Vector2(0f, 40f), TextAnchor.MiddleCenter, 24, Theme.text, Theme);
+
+            float innerW = pageWidth - PageInset * 2f;
+            float innerH = pageHeight - PageInset * 2f;
+
+            float backWidth = UIBuilder.MeasureButtonWidth(
+                new[] { "BACK" }, ButtonPadding, 16, Theme);
+            float backHeight = backWidth / UIBuilder.ButtonAspect;
+
+            float listWidth = innerW - Padding * 2f;
+            float listHeight = innerH - HeaderHeight - backHeight - Padding * 2f;
+
+            var spellIndices = new List<int>();
+            int itemCount = shop != null ? shop.ItemCount : 0;
+            for (int i = 0; i < itemCount; i++)
+            {
+                ShopItemDef item = shop.ItemAt(i);
+                if (item != null && item.Effect == ShopEffect.Tome) spellIndices.Add(i);
+            }
+
+            Diag($"SPELLS build: itemCount={itemCount} tomeCount={spellIndices.Count}" +
+                $" viewport={listWidth}x{listHeight} page={pageWidth}x{pageHeight}");
+
+            if (spellIndices.Count == 0 && itemCount > 0)
+            {
+                for (int i = 0; i < itemCount; i++)
+                {
+                    ShopItemDef item = shop.ItemAt(i);
+                    Diag($"  item[{i}]: {(item == null ? "NULL" : item.DisplayName + " effect=" + item.Effect)}");
+                }
+            }
+
+            if (spellIndices.Count == 0)
+            {
+                UIBuilder.CreateText(content, "Empty", "No spell tomes in this market.",
+                    new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -HeaderHeight),
+                    new Vector2(0f, 30f), TextAnchor.MiddleCenter, 18, Theme.dimText, Theme);
+            }
+            else
+            {
+                RectTransform listContent;
+                var scroll = UIBuilder.CreateScrollList(content, "List",
+                    new Vector2(0.5f, 1f), new Vector2(0f, -HeaderHeight),
+                    new Vector2(listWidth, listHeight), Theme, out listContent);
+
+                var catcher = scroll.viewport.gameObject.AddComponent<Image>();
+                catcher.color = Color.clear;
+                catcher.raycastTarget = true;
+
+                int columns = 2;
+                float colGap = RowGap;
+                float cellWidth = (listWidth - colGap * (columns - 1)) / columns;
+                int gridRows = Mathf.CeilToInt(spellIndices.Count / (float)columns);
+                float totalHeight = gridRows * ListRowHeight + (gridRows - 1) * colGap + Padding * 2f;
+                listContent.sizeDelta = new Vector2(0f, Mathf.Max(totalHeight, listHeight));
+
+                for (int i = 0; i < spellIndices.Count; i++)
+                {
+                    int column = i % columns;
+                    int gridRow = i / columns;
+                    float x = (column == 0 ? -1f : 1f) * (cellWidth + colGap) * 0.5f;
+                    float y = -(Padding + gridRow * (ListRowHeight + colGap) + ListRowHeight * 0.5f);
+                    CreateItemRow(listContent, spellIndices[i], new Vector2(x, y), cellWidth);
+                }
+
+                Diag($"SPELLS grid: {columns}x{gridRows} cell={cellWidth}x{ListRowHeight}" +
+                    $" contentHeight={listContent.sizeDelta.y} viewport={listHeight}");
+            }
+
+            UIBuilder.CreateButton(content, "BackButton", "BACK",
+                new Vector2(0f, -innerH * 0.5f + Padding + backHeight * 0.5f),
                 backWidth, Theme, 16, ShowMarketPage);
 
             panel.gameObject.SetActive(false);
@@ -404,10 +571,14 @@ namespace Game.UI
             ShopItemDef item = shop != null ? shop.ItemAt(index) : null;
             if (item == null) return "";
 
-            int cost = shop.CostOf(index);
-            return shop.IsAvailable(index)
-                ? $"{item.DisplayName} \u2014 {cost}g"
-                : $"{item.DisplayName} \u2014 sold out";
+            if (!shop.IsAvailable(index))
+            {
+                return item.Effect == ShopEffect.Tome
+                    ? $"{item.DisplayName} \u2014 tome not found"
+                    : $"{item.DisplayName} \u2014 sold out";
+            }
+
+            return $"{item.DisplayName} \u2014 {shop.CostOf(index)}g";
         }
 
         private void CreateItemRow(RectTransform parent, int index, Vector2 center, float width)
@@ -418,6 +589,13 @@ namespace Game.UI
             var buy = UIBuilder.CreateButton(parent, "BuyButton", "",
                 center, width,
                 Theme, 18, () => BuyItem(index));
+
+            var rt = (RectTransform)buy.transform;
+            rt.sizeDelta = new Vector2(width, ListRowHeight);
+
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
 
             rows.Add(new ItemRow
             {
