@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Core
@@ -36,6 +37,9 @@ namespace Game.Core
         [Tooltip("Relative chance of this tome being the one that drops. A weight of 6 is picked twice as often as a weight of 3. Set 0 to stop it dropping at all.")]
         [SerializeField] private float dropWeight = 1f;
 
+        private AudioClip[] castClip;
+        private AudioClip[] hitClip;
+
         public string DisplayName => displayName;
         public SpellSchool School => school;
         public int Level => level;
@@ -46,5 +50,41 @@ namespace Game.Core
         public float ProjectileSpeed => projectileSpeed;
         public float ProjectileLifetime => projectileLifetime;
         public float DropWeight => dropWeight;
+
+        public AudioClip[] CastClip
+        {
+            get
+            {
+                if (castClip == null || castClip.Length == 0) castClip = LoadClips("cast");
+                return castClip;
+            }
+        }
+
+        public AudioClip[] HitClip
+        {
+            get
+            {
+                if (hitClip == null || hitClip.Length == 0) hitClip = LoadClips("hit");
+                return hitClip;
+            }
+        }
+
+        private AudioClip[] LoadClips(string sub)
+        {
+            string path = "Spells/" + name + "/" + sub;
+            var loaded = Resources.LoadAll(path);
+            if (loaded == null)
+            {
+                Debug.Log($"[SpellDef] {name}: no clips at Resources/{path}");
+                return null;
+            }
+
+            var clips = new List<AudioClip>();
+            foreach (var obj in loaded)
+                if (obj is AudioClip clip) clips.Add(clip);
+
+            Debug.Log($"[SpellDef] {name}: {clips.Count} clip(s) at Resources/{path}");
+            return clips.Count > 0 ? clips.ToArray() : null;
+        }
     }
 }

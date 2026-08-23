@@ -1,4 +1,5 @@
 using UnityEngine;
+using Game.Audio;
 using Game.Shared;
 
 namespace Game.Core
@@ -24,11 +25,12 @@ namespace Game.Core
         private float damage;
         private float speed;
         private GameObject caster;
+        private SpellDef spell;
 
-        // Called by SpellCaster the moment the projectile is created.
-        public void Launch(float damageAmount, float projectileSpeed,
+        public void Launch(SpellDef spellDef, float damageAmount, float projectileSpeed,
                            float lifetime, GameObject source)
         {
+            spell = spellDef;
             damage = damageAmount;
             speed = projectileSpeed;
             caster = source;
@@ -87,6 +89,13 @@ namespace Game.Core
             {
                 target.TakeDamage(damage, DamageType.Magic, caster);
             }
+
+            var hitClips = spell != null ? spell.HitClip : null;
+            if (hitClips != null)
+                foreach (var clip in hitClips)
+                    OneShotAudio.Play2D(clip, transform.position);
+            else if (logHits)
+                Debug.Log($"[SpellProjectile] {spell?.DisplayName} hit has no clips");
 
             Destroy(gameObject);
         }

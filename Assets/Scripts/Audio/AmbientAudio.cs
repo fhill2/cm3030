@@ -7,23 +7,50 @@ namespace Game.Audio
         [Tooltip("Clip under Resources/Ambient to loop from scene start.")]
         [SerializeField] private string clipPath = "Ambient/The Stronghold";
 
+        [Tooltip("Extra clips to loop alongside the first, e.g. rain and thunder layers.")]
+        [SerializeField] private string[] clipPaths;
+
         [Tooltip("Loudness of the ambient loop relative to combat SFX.")]
-        [SerializeField, Range(0f, 1f)] private float volume = 0.5f;
+        [SerializeField, Range(0f,1f)] private float volume = 0.5f;
+
+        private static AudioSource MakeSource(GameObject host, AudioClip clip, float vol)
+        {
+            var source = host.AddComponent<AudioSource>();
+            source.clip = clip;
+            source.loop = true;
+            source.volume = vol;
+            return source;
+        }
 
         private void Awake()
         {
-            AudioClip clip = Resources.Load<AudioClip>(clipPath);
-            if (clip == null)
+            bool any = false;
+
+            AudioClip primary = Resources.Load<AudioClip>(clipPath);
+            if (primary != null)
             {
-                Debug.LogWarning($"[AmbientAudio] No clip at Resources/{clipPath}");
-                return;
+                MakeSource(gameObject, primary, volume).Play();
+                any = true;
             }
 
-            var source = gameObject.AddComponent<AudioSource>();
-            source.clip = clip;
-            source.loop = true;
-            source.volume = volume;
-            source.Play();
+            if (clipPaths != null)
+            {
+                foreach (string path in clipPaths)
+                {
+                    if (string.IsNullOrEmpty(path)) continue;
+                    AudioClip clip = Resources.Load<AudioClip>(path);
+                    if (clip == null)
+                    {
+                        Debug.LogWarning($"[AmbientAudio] No clip at Resources/{path}");
+                        continue;
+                    }
+                    MakeSource(gameObject, clip, volume).Play();
+                    any = true;
+                }
+            }
+
+            if (!any)
+                Debug.LogWarning($"[AmbientAudio] No clip at Resources/{clipPath}");
         }
     }
 }

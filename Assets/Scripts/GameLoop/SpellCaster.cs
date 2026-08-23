@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Audio;
 using Game.Combat;
 using Game.Health;
 
@@ -129,9 +130,16 @@ namespace Game.Core
             SpellProjectile component = projectile.GetComponent<SpellProjectile>();
             if (component != null)
             {
-                component.Launch(spell.Damage, spell.ProjectileSpeed,
+                component.Launch(spell, spell.Damage, spell.ProjectileSpeed,
                                  spell.ProjectileLifetime, gameObject);
             }
+
+            var castClips = spell.CastClip;
+            if (castClips != null)
+                foreach (var clip in castClips)
+                    OneShotAudio.Play2D(clip, origin);
+            else if (logCasts)
+                Debug.Log($"[SpellCaster] {spell.DisplayName} cast has no clips");
 
             if (logCasts) Debug.Log($"[SpellCaster] Cast {spell.DisplayName}");
         }
