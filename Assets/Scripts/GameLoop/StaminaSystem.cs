@@ -33,7 +33,7 @@ namespace Game.Combat
         [SerializeField] private float sprintDrainPerSecond = 12f;
 
         [Tooltip("Stamina drained per second while holding block. Lower than sprint's cost — blocking should be sustainable through a short exchange, not free.")]
-        [SerializeField] private float blockDrainPerSecond = 8f;
+        [SerializeField] private float blockDrainPerSecond = 1f;
 
         [Header("Regeneration")]
         [Tooltip("Stamina recovered per second.")]

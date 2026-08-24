@@ -169,7 +169,9 @@ namespace Game.Movement
             MoveActor(horizontal);
 
             float speed01 = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
-            UpdateAnimator(speed01, grounded, jumped);
+            // Grace-filtered so descending stairs doesn't fire the fall animation
+            // on every step. Physics above still uses the raw `grounded`.
+            UpdateAnimator(speed01, GroundedForAnimation(grounded, jumped), jumped);
 
             // Feed the directional locomotion blend.
             // Sprinting: forward/backward wins — W+A/D plays forward/backward while the
