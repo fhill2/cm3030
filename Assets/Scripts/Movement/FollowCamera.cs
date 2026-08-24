@@ -23,6 +23,12 @@ namespace Game.Movement
         [SerializeField] private float minPitch = -10f;
         [SerializeField] private float maxPitch = 60f;
 
+        [Header("Shoulder")]
+        [Tooltip("Shifts the camera to the player's right so the body doesn't sit under the crosshair. Negative for the left shoulder.")]
+        [SerializeField] private float shoulderOffset = 0.6f;
+        [Tooltip("Extra height on top of Target Height, to look over the shoulder rather than through it.")]
+        [SerializeField] private float shoulderHeight = 0.2f;
+
         [Header("Collision")]
         [SerializeField] private bool collideWithGeometry = true;
         [Tooltip("Set this to the Environment layer only.")]
@@ -172,6 +178,8 @@ namespace Game.Movement
                     return;
             }
 
+            // Mouse-look and player rotation both stop while the shop is open,
+            // otherwise clicking through the market spins the knight.
             bool locked = PlayerInputLock.InputLocked;
 
             if (!locked && Mouse.current != null)
@@ -219,10 +227,35 @@ namespace Game.Movement
             }
             else
             {
-                // Position the camera on a sphere around the focus point.
-                Vector3 focus = target.position + Vector3.up * targetHeight;
-                position = focus + rotation * new Vector3(0f, 0f, -distance);
+                // Push the focus point out to the right and up, so the knight
+                // sits to the left of frame and the crosshair looks past him
+                // instead of through his head.
+                Vector3 focus = target.position
+                                + Vector3.up * (targetHeight + shoulderHeight)
+                                + rotation * Vector3.right * shoulderOffset;
+
+                Vector3 back = rotation * Vector3.back;
+
+                position = focus + back * ArmLength(focus, back);
             }
+        }
+
+        // Shortens the arm when a wall is in the way, so indoors the camera
+        // stays in the room instead of ending up behind the geometry. A sphere
+        // rather than a ray, so it catches doorframes and corners the camera
+        // would otherwise slip past.
+        float ArmLength(Vector3 focus, Vector3 direction)
+        {
+            if (!collideWithGeometry) return distance;
+
+            if (Physics.SphereCast(focus, collisionRadius, direction,
+                    out RaycastHit hit, distance,
+                    collisionMask, QueryTriggerInteraction.Ignore))
+            {
+                return Mathf.Max(minDistance, hit.distance);
+            }
+
+            return distance;
         }
 
         /// <summary>Hold the framed opening shot while the start screen is up.</summary>
@@ -267,7 +300,9 @@ namespace Game.Movement
 
             float t = Mathf.SmoothStep(0f, 1f, deathBlend);
 
-            // Same orbit maths as the live camera, just a steeper pitch
+            // Same orbit maths as the live camera, just a steeper pitch. No
+            // shoulder offset either, since the body should sit centre frame
+            // when you die.
             Vector3 focus = target.position + Vector3.up * targetHeight;
             Quaternion rot = Quaternion.Euler(deathPitch, yaw, 0f);
             Vector3 pos = focus + rot * new Vector3(0f, 0f, -deathDistance);

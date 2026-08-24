@@ -34,6 +34,7 @@ namespace Game.Core
         public delegate void TauntHandler();
         public delegate void FleeHandler(FleeArgs e);
         public delegate void TomeFoundHandler(TomeFoundArgs e);
+        public delegate void LightningHandler(LightningArgs e);
 
         public static event DamageHandler OnDamage;
         public static event DeathHandler OnDeath;
@@ -49,6 +50,7 @@ namespace Game.Core
         public static event TauntHandler OnTaunt;
         public static event FleeHandler OnFlee;
         public static event TomeFoundHandler OnTomeFound;
+        public static event LightningHandler OnLightning;
 
         // ── Raise helpers (the only place events are actually invoked) ───────
         public static void RaiseDamage(DamageArgs e) => OnDamage?.Invoke(e);
@@ -64,10 +66,8 @@ namespace Game.Core
         public static void RaiseStun(StunArgs e) => OnStun?.Invoke(e);
         public static void RaiseTaunt() => OnTaunt?.Invoke();
         public static void RaiseFlee(FleeArgs e) => OnFlee?.Invoke(e);
-        public static void RaiseTomeFound(TomeFoundArgs e)
-        {
-            OnTomeFound?.Invoke(e);
-        }
+        public static void RaiseTomeFound(TomeFoundArgs e) => OnTomeFound?.Invoke(e);
+        public static void RaiseLightning(LightningArgs e) => OnLightning?.Invoke(e);
 
         // Clears every subscriber. Call on scene load so we don't keep
         // references to objects that no longer exist.
@@ -87,6 +87,7 @@ namespace Game.Core
             OnTaunt = null;
             OnFlee = null;
             OnTomeFound = null;
+            OnLightning = null;
         }
     }
 }

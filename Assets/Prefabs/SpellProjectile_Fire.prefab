@@ -103,4 +103,5 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  logHits: 0
+  targetRadius: 0.6
+  logHits: 1

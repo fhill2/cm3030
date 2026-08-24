@@ -28,7 +28,18 @@ namespace Game.Core
             Wave = wave;
         }
     }
+    
+    // Sent when lightning flashes. Delay is how long the audio should wait
+    // before the thunder clap, since sound lags light over distance.
+    public readonly struct LightningArgs
+    {
+        public readonly float ThunderDelay;
 
+        public LightningArgs(float thunderDelay)
+        {
+            ThunderDelay = thunderDelay;
+        }
+    }
     // Sent when a wave is cleared; Wave is the number that was just finished.
     public struct WaveClearedArgs
     {

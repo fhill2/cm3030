@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Greater Frost Bolt
   description: 
-  baseCost: 120
+  baseCost: 50
   costGrowth: 1
   effect: 2
   magnitude: 5
