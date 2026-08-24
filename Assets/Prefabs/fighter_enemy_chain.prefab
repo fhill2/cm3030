@@ -562,6 +562,7 @@ GameObject:
   - component: {fileID: 6981728159280459862}
   - component: {fileID: 7399276524850649914}
   - component: {fileID: 1751911013338381208}
+  - component: {fileID: 8357381875987473123}
   m_Layer: 0
   m_Name: fighter_enemy_chain
   m_TagString: Enemy
@@ -1046,6 +1047,28 @@ LODGroup:
     - renderer: {fileID: 6895144314534608049}
     - renderer: {fileID: 7211438315285373277}
   m_Enabled: 1
+--- !u!114 &8357381875987473123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340618435387090213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9b16ea211d50034795e9bc78bbe3ec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dropChance: 0.33
+  dropTable:
+  - {fileID: 11400000, guid: 5e6b5f468b129664abdb0311c421c23f, type: 2}
+  - {fileID: 11400000, guid: e9f19d2d544558f46803e055e91ba6ea, type: 2}
+  - {fileID: 11400000, guid: 6f7d8fe0fcd017a40895a2da8bc969b4, type: 2}
+  - {fileID: 11400000, guid: 08c628590b9fd254b894672a4bffe9ee, type: 2}
+  - {fileID: 11400000, guid: 756560591caea1f4e9a176bcbeb79dd9, type: 2}
+  - {fileID: 11400000, guid: 816473e48a60133468630cf6c458c7e9, type: 2}
+  tomePickupPrefab: {fileID: 966602058277806307, guid: 829ab856a3a683f48bbcf6b21cbea519, type: 3}
+  dropHeight: 1
 --- !u!1 &362665959175451141
 GameObject:
   m_ObjectHideFlags: 0
