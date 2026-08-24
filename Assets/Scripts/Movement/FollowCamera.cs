@@ -22,6 +22,12 @@ namespace Game.Movement
         [SerializeField] private float minPitch = -10f;
         [SerializeField] private float maxPitch = 60f;
 
+        [Header("Shoulder")]
+        [Tooltip("Shifts the camera to the player's right so the body doesn't sit under the crosshair. Negative for the left shoulder.")]
+        [SerializeField] private float shoulderOffset = 0.6f;
+        [Tooltip("Extra height on top of Target Height, to look over the shoulder rather than through it.")]
+        [SerializeField] private float shoulderHeight = 0.2f;
+
         [Header("Collision")]
         [SerializeField] private bool collideWithGeometry = true;
         [Tooltip("Set this to the Environment layer only.")]
@@ -115,6 +121,8 @@ namespace Game.Movement
                 return;
             }
 
+            // Mouse-look and player rotation both stop while the shop is open,
+            // otherwise clicking through the market spins the knight.
             bool locked = PlayerInputLock.InputLocked;
 
             if (!locked && Mouse.current != null)
@@ -132,8 +140,15 @@ namespace Game.Movement
             }
             else
             {
-                Vector3 focus = target.position + Vector3.up * targetHeight;
                 Quaternion rot = Quaternion.Euler(pitch, yaw, 0f);
+
+                // Push the focus point out to the right and up, so the knight
+                // sits to the left of frame and the crosshair looks past him
+                // instead of through his head.
+                Vector3 focus = target.position
+                                + Vector3.up * (targetHeight + shoulderHeight)
+                                + rot * Vector3.right * shoulderOffset;
+
                 Vector3 back = rot * Vector3.back;
 
                 transform.position = focus + back * ArmLength(focus, back);
@@ -185,7 +200,8 @@ namespace Game.Movement
 
             // Recomputed each frame so the shot stays centred while the body
             // finishes falling. No collision here, the climb goes up through
-            // the roof rather than jamming against it.
+            // the roof rather than jamming against it. No shoulder offset
+            // either, since the body should sit centre frame when you die.
             Vector3 focus = target.position + Vector3.up * targetHeight;
             Quaternion rot = Quaternion.Euler(deathPitch, yaw, 0f);
             Vector3 pos = focus + rot * new Vector3(0f, 0f, -deathDistance);

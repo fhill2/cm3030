@@ -64,6 +64,68 @@ Transform:
   - {fileID: 7800000000000000302}
   m_Father: {fileID: 1935360568696552821}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7800000000000000301
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7800000000000000302}
+  m_Layer: 0
+  m_Name: WeaponHandAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7800000000000000302
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7800000000000000301}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2287982501709851777}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7800000000000000303
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7800000000000000304}
+  m_Layer: 0
+  m_Name: ShieldHandAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7800000000000000304
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7800000000000000303}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 53029698714660935}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &418477825627137919
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1339,7 +1401,7 @@ PrefabInstance:
     - target: {fileID: 6692166033087513242, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
+      objectReference: {fileID: 9100000, guid: 127a9a7067fe6f2ecbbc9ce09b29577d, type: 2}
     - target: {fileID: 6692166033087513242, guid: c27d782f1c9e3433aac363406a4074f5, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -2104,6 +2166,7 @@ MonoBehaviour:
   weaponSocket: {fileID: 2287982501709851777}
   shieldPrefab: {fileID: 1895577389145918011, guid: 0a2edd723ab434504af00ec21d4ecaf8, type: 3}
   shieldSocket: {fileID: 53029698714660935}
+  liveTuning: 0
   weaponHandAnchor: {fileID: 7800000000000000302}
   shieldHandAnchor: {fileID: 7800000000000000304}
 --- !u!114 &480734305069673980
@@ -2279,6 +2342,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6936288533405264502, guid: 727979e97b12b441eac9132f4bf0bed1, type: 3}
+    - {fileID: 7755064118928730219, guid: 727979e97b12b441eac9132f4bf0bed1, type: 3}
+    - {fileID: 7668508076739903567, guid: 727979e97b12b441eac9132f4bf0bed1, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 7923514486520942848, guid: 727979e97b12b441eac9132f4bf0bed1, type: 3}
@@ -2304,65 +2369,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3936860204041351180, guid: 727979e97b12b441eac9132f4bf0bed1, type: 3}
   m_PrefabInstance: {fileID: 5579417035364394663}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &7800000000000000301
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7800000000000000302}
-  m_Layer: 0
-  m_Name: WeaponHandAnchor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7800000000000000302
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7800000000000000301}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2287982501709851777}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &7800000000000000303
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7800000000000000304}
-  m_Layer: 0
-  m_Name: ShieldHandAnchor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7800000000000000304
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7800000000000000303}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 53029698714660935}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

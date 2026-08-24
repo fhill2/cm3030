@@ -12,8 +12,8 @@ namespace Game.Core
     // the player can also choose a weaker, cheaper spell rather than always
     // firing their strongest.
     //
-    // Aim comes from the camera rather than the player's facing, since the
-    // camera is what the player is actually looking down.
+    // Spells fly at whatever sits under the crosshair, not parallel to the
+    // camera, so what you see at screen centre is what you hit.
     //
     // Goes on the player.
     public class SpellCaster : MonoBehaviour
@@ -23,11 +23,18 @@ namespace Game.Core
         [SerializeField] private SpellBook spellBook;
 
         [Tooltip("Leave empty to use Camera.main. Spells fly where the camera looks.")]
-        [SerializeField] private Transform aimSource;
+        [SerializeField] private Camera aimCamera;
 
         [Header("Hotkeys")]
         [Tooltip("Six spells in key order: 1, 2, 3, 4, 5, 6. Fire 1-3 then ice 1-3.")]
         [SerializeField] private SpellDef[] hotkeySpells = new SpellDef[6];
+
+        [Header("Aiming")]
+        [Tooltip("Layers the aim ray can land on. Leave as Everything unless spells start aiming at odd things.")]
+        [SerializeField] private LayerMask aimMask = ~0;
+
+        [Tooltip("How far ahead the crosshair aims when it isn't pointing at anything solid.")]
+        [SerializeField] private float maxAimDistance = 200f;
 
         [Header("Origin")]
         [Tooltip("Height above the player's origin the projectile leaves from.")]
@@ -51,7 +58,7 @@ namespace Game.Core
             stamina = GetComponent<StaminaSystem>();
 
             if (spellBook == null) spellBook = FindFirstObjectByType<SpellBook>();
-            if (aimSource == null && Camera.main != null) aimSource = Camera.main.transform;
+            if (aimCamera == null) aimCamera = Camera.main;
         }
 
         private void OnEnable()
@@ -114,10 +121,14 @@ namespace Game.Core
                 return;
             }
 
-            Vector3 direction = aimSource != null ? aimSource.forward : transform.forward;
-            Vector3 origin = transform.position
-                             + Vector3.up * castHeight
-                             + direction * castForward;
+            Vector3 aimPoint = AimPoint();
+            Vector3 origin = CastOrigin();
+
+            // Aim from the projectile's own start position to the point under
+            // the crosshair. Firing parallel to the camera instead would land
+            // off to one side, since the spell leaves the chest and not the lens.
+            Vector3 direction = (aimPoint - origin).normalized;
+            if (direction.sqrMagnitude < 0.001f) direction = transform.forward;
 
             GameObject projectile = Instantiate(
                 spell.ProjectilePrefab, origin, Quaternion.LookRotation(direction));
@@ -130,6 +141,35 @@ namespace Game.Core
             }
 
             if (logCasts) Debug.Log($"[SpellCaster] Cast {spell.DisplayName}");
+        }
+
+        // Whatever the crosshair is pointing at. Falls back to a point far
+        // down the view when the player is aiming at open sky.
+        private Vector3 AimPoint()
+        {
+            if (aimCamera == null) return transform.position + transform.forward * maxAimDistance;
+
+            Ray ray = aimCamera.ScreenPointToRay(
+                new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
+
+            if (Physics.Raycast(ray, out RaycastHit hit, maxAimDistance,
+                    aimMask, QueryTriggerInteraction.Ignore))
+            {
+                return hit.point;
+            }
+
+            return ray.origin + ray.direction * maxAimDistance;
+        }
+
+        private Vector3 CastOrigin()
+        {
+            Vector3 flatForward = transform.forward;
+            flatForward.y = 0f;
+            flatForward.Normalize();
+
+            return transform.position
+                   + Vector3.up * castHeight
+                   + flatForward * castForward;
         }
 
         private float ReadyTimeFor(SpellSchool school)

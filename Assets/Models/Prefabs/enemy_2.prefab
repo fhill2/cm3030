@@ -52,16 +52,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: enemy_2
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: a749f95eca2d7404c96edb6ec2b52aee, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 127a9a7067fe6f2ecbbc9ce09b29577d, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a749f95eca2d7404c96edb6ec2b52aee, type: 3}
-      insertIndex: 1
-      addedObject: {fileID: 7668508076739903567}
-    - targetCorrespondingSourceObject: {fileID: -5683837978429514067, guid: a749f95eca2d7404c96edb6ec2b52aee, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7755064118928730219}
     - targetCorrespondingSourceObject: {fileID: -5683837978429514067, guid: a749f95eca2d7404c96edb6ec2b52aee, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7802885393364040399}
@@ -71,46 +69,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: -5683837978429514067, guid: a749f95eca2d7404c96edb6ec2b52aee, type: 3}
   m_PrefabInstance: {fileID: 3542133892997502951}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7755064118928730219
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 15414582732998986}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04fff1e7039522941a2f6cee42cee6e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  settings:
-  - name: Cloth_01_Solfcloth
-    maxDistance: 20
-    maxPenetration: 10
-    weightMap: {fileID: 2800000, guid: 1626c4dfed2db4e039495e65c200cf48, type: 3}
-    weightMapPower: 1
-    weightMapOffset: 0
-    weightMapScale: 1
-    activate: 1
-    gravity: 1
-    mass: 1
-    friction: 0.1
-    damping: 0.3
-    drag: 0
-    stretch: 0
-    bending: 10
-    softRigidCollision: 1
-    softRigidMargin: 4
-    selfCollision: 0
-    selfMargin: 0
-    solverFrequency: 360
-    stiffnessFrequency: 10
-    colliderThreshold: 0.5
-  updateColliders: 1
-  optimizeColliders: 1
-  includeAllLimbColliders: 0
-  updateConstraints: 1
-  characterGUID: a749f95eca2d7404c96edb6ec2b52aee
 --- !u!183 &7802885393364040399
 Cloth:
   m_ObjectHideFlags: 0
@@ -5075,102 +5033,3 @@ Cloth:
   - {x: 0.6666667, y: 0.16666667, z: 0.16666667}
   - {x: 0.5, y: 0.5, z: 0}
   m_VirtualParticleIndices: 
---- !u!1 &4461195672199228086 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a749f95eca2d7404c96edb6ec2b52aee, type: 3}
-  m_PrefabInstance: {fileID: 3542133892997502951}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &7668508076739903567
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4461195672199228086}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56bc35a6425d98b49b5a4ae1a960562b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentEditType: 0
-  availableColliderTypes: 0
-  manipulator: 0
-  manipulatorArray:
-  - Position
-  - Rotation
-  - Scale
-  transformSymmetrically: 1
-  frameSymmetryPair: 0
-  selectedMirrorPlane: 0
-  magicaCloth2Available: 0
-  dynamicBoneAvailable: 0
-  hasGizmoUtility: 0
-  abstractedCapsuleColliders: []
-  cachedSelectedCollider:
-    transform: {fileID: 0}
-    isEnabled: 0
-    localPosition: {x: 0, y: 0, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 0}
-    height: 0
-    radius: 0
-    name: 
-    axis: 0
-    colliderTypes: 0
-    nativeRef: {fileID: 0}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  cachedMirrorImageCollider:
-    transform: {fileID: 0}
-    isEnabled: 0
-    localPosition: {x: 0, y: 0, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 0}
-    height: 0
-    radius: 0
-    name: 
-    axis: 0
-    colliderTypes: 0
-    nativeRef: {fileID: 0}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  selectedAbstractCapsuleCollider:
-    transform: {fileID: 0}
-    isEnabled: 0
-    localPosition: {x: 0, y: 0, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 0}
-    height: 0
-    radius: 0
-    name: 
-    axis: 0
-    colliderTypes: 0
-    nativeRef: {fileID: 0}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  mirrorImageAbstractCapsuleCollider:
-    transform: {fileID: 0}
-    isEnabled: 0
-    localPosition: {x: 0, y: 0, z: 0}
-    localRotation: {x: 0, y: 0, z: 0, w: 0}
-    height: 0
-    radius: 0
-    name: 
-    axis: 0
-    colliderTypes: 0
-    nativeRef: {fileID: 0}
-    magicaRef: {fileID: 0}
-    dynamicRef: {fileID: 0}
-  gizmoNames:
-  - CapsuleCollider
-  - Cloth
-  - SphereCollider
-  - BoxCollider
-  - MagicaCapsuleCollider
-  - MagicaCloth
-  - MagicaSphereCollider
-  - MagicaPlaneCollider
-  colliders: []
-  clothMeshes:
-  - GameObject: {fileID: 15414582732998986}
-    EnabledStatus: 1
-  magicaClothMeshes: []
-  settings: []
-  characterGUID: a749f95eca2d7404c96edb6ec2b52aee
