@@ -51169,6 +51169,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 841830101173988333, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: m_SlopeLimit
+      value: 45
+      objectReference: {fileID: 0}
+    - target: {fileID: 1637953152042674838, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: groundProbeDistance
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2775870359928196619, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_LocalPosition.x
       value: -10.97
@@ -51212,6 +51220,10 @@ PrefabInstance:
     - target: {fileID: 3300592954359289009, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_Name
       value: fighter_player_knight
+      objectReference: {fileID: 0}
+    - target: {fileID: 8870810811496802015, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: blockDrainPerSecond
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -68282,8 +68294,13 @@ MonoBehaviour:
   shop: {fileID: 7550478612390158263}
   wallet: {fileID: 7550478612390158261}
   stateMachine: {fileID: 404486885}
-  panelWidth: 420
-  rowHeight: 60
+  theme: {fileID: 0}
+  panelBorder:
+    spriteName: market_ui_panel_border_3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+  panelSizePercent: 0.25
+  contentInsetPercent: 0.15
 --- !u!114 &7550478612390158265
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -68297,6 +68314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stateMachine: {fileID: 0}
+  theme: {fileID: 0}
   titleText: THE FALL OF CAMELOT
   playText: PLAY
   hintText: or press SPACE

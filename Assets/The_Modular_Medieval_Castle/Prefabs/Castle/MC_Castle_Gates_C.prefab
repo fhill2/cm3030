@@ -400,10 +400,10 @@ MonoBehaviour:
   DoorOpenAngle: 87
   isSlidingDoor: 1
   slideOffset: {x: 0, y: 3, z: 0}
-  openMessage: Open E
-  closeMessage: Close E
+  openMessage: Open F
+  closeMessage: Close F
   messageFont: {fileID: 0}
-  fontSize: 32
+  fontSize: 18
   fontColor: {r: 1, g: 1, b: 1, a: 1}
   messagePosition: {x: 0.5, y: 0.5}
   openSound: {fileID: 0}
