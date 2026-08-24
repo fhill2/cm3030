@@ -805,6 +805,12 @@ MonoBehaviour:
   sensitivity: 0.1
   minPitch: -10
   maxPitch: 60
+  collideWithGeometry: 1
+  collisionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  collisionRadius: 0.3
+  minDistance: 1
   rotateTarget: 1
   diagonalTurnAngle: 35
   turnSmooth: 8
@@ -814,6 +820,8 @@ MonoBehaviour:
   deathPitch: 80
   deathDistance: 200
   deathTransitionTime: 3
+  menuCameraAnchor: {fileID: 0}
+  introDuration: 2.5
 --- !u!1001 &264632728
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -825,10 +833,6 @@ PrefabInstance:
     - target: {fileID: 2759925646633051954, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
       propertyPath: m_Name
       value: fighter_enemy
-      objectReference: {fileID: 0}
-    - target: {fileID: 3221478786223316964, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
-      propertyPath: liveTuning
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3244537232249191816, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -870,10 +874,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8928040708086966258, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1055,6 +1055,8 @@ GameObject:
   - component: {fileID: 561268836}
   - component: {fileID: 561268835}
   - component: {fileID: 561268837}
+  - component: {fileID: 561268839}
+  - component: {fileID: 561268838}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1101,6 +1103,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5572e28dcb7ddc029f68cc5186266d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &561268838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 440a7c4d6a3e0854d9ebf0cd1029a913, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+--- !u!114 &561268839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561268834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b5a3528f9ee1b4cbae75d0562aca9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lockedStates: 000000000300000004000000
+  freeCursorWhenLocked: 1
 --- !u!43 &581912521
 Mesh:
   m_ObjectHideFlags: 0
@@ -5384,10 +5413,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1343202340734608676, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
-      propertyPath: liveTuning
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2775870359928196619, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: m_LocalPosition.x
       value: 11.42
@@ -5432,22 +5457,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: fighter_player_knight
       objectReference: {fileID: 0}
-    - target: {fileID: 7800000000000000102, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.0786
-      objectReference: {fileID: 0}
-    - target: {fileID: 7800000000000000102, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.076
-      objectReference: {fileID: 0}
-    - target: {fileID: 7800000000000000102, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.041
-      objectReference: {fileID: 0}
-    - target: {fileID: 8099147468432970865, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: 79a3d0595adb98fd382707a552f52f4a, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

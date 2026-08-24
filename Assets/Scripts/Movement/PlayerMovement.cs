@@ -51,6 +51,12 @@ namespace Game.Movement
         /// Shift AND able to pay for it.</summary>
         public bool IsSprintingNow { get; private set; }
 
+        /// <summary>
+        /// False while the game loop is in a state the player shouldn't be
+        /// driving the character — the start menu, the shop
+        /// </summary>
+        public bool ControlEnabled { get; private set; } = true;
+
         protected override void Awake()
         {
             base.Awake();
@@ -74,13 +80,51 @@ namespace Game.Movement
                 shieldCollider = GetComponentInChildren<ShieldCollider>();
         }
 
+        // base.OnEnable must be called: CharacterMotor subscribes OnDeath there,
+        // and losing it would stop the player dying at all.
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            EventManager.OnGameStateChanged += HandleGameStateChanged;
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            EventManager.OnGameStateChanged -= HandleGameStateChanged;
+        }
+
+        private void HandleGameStateChanged(GameStateChangedArgs e)
+        {
+            ControlEnabled = AllowsControl(e.Current);
+
+            // One owner for the cursor. Locked only while the player is actually
+            // driving the character; free in the menu, the shop and after death
+            SetCursorLocked(ControlEnabled);
+        }
+
+        // Movement stays live through WaveComplete — that's the brief lull
+        // between waves, and freezing the player there feels like a hitch.
+        private static bool AllowsControl(GameStateId state)
+        {
+            return state == GameStateId.WaveActive || state == GameStateId.WaveComplete;
+        }
+
         protected override void Update()
         {
+            if (!ControlEnabled)
+            {
+                // Menu, shop or game over: no input, but gravity keeps running
+                // so the character rests on the ground instead of hovering.
+                SettleUncontrolled();
+                return;
+            }
+
             if (isDead)
             {
                 // Dead players don't walk, sprint, jump or block. Gravity still
                 // runs so the body settles rather than hanging where it died.
-                SettleDead();
+                SettleUncontrolled();
                 return;
             }
 
@@ -125,7 +169,9 @@ namespace Game.Movement
             MoveActor(horizontal);
 
             float speed01 = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
-            UpdateAnimator(speed01, grounded, jumped);
+            // Grace-filtered so descending stairs doesn't fire the fall animation
+            // on every step. Physics above still uses the raw `grounded`.
+            UpdateAnimator(speed01, GroundedForAnimation(grounded, jumped), jumped);
 
             // Feed the directional locomotion blend.
             // Sprinting: forward/backward wins — W+A/D plays forward/backward while the
@@ -166,11 +212,15 @@ namespace Game.Movement
             return stamina.DrainSprint(Time.deltaTime);
         }
 
-        // The shield is free to hold — blocking never touches stamina.
+        // Blocking is held down, so — like sprinting — it drains continuously.
+        // Runs out of stamina and the shield drops, same frame.
         private bool ResolveBlock()
         {
             if (Mouse.current == null) return false;
-            return Mouse.current.rightButton.isPressed;
+            if (!Mouse.current.rightButton.isPressed) return false;
+            if (stamina == null) return true;
+
+            return stamina.DrainBlock(Time.deltaTime);
         }
 
         private bool CanAffordJump()

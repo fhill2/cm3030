@@ -14,14 +14,15 @@ namespace Art_Equilibrium
         private Vector3 targetLocalSlidePos;
 
         [Header("Door Type")]
-        public bool isSlidingDoor = false;                  // Тумблер: обычная или раздвижная
-        public Vector3 slideOffset = new Vector3(1, 0, 0);  // Направление сдвига для раздвижной двери (в локальных координатах)
+        public bool isSlidingDoor = false;                  
+        public Vector3 slideOffset = new Vector3(1, 0, 0);  
 
         [Header("GUI Settings")]
-        public string openMessage = "Open E";
-        public string closeMessage = "Close E";
+        public string openMessage = "Open F";
+        public string closeMessage = "Close F";
+        [Tooltip("Leave empty to use the game's MedievalSharp font from Resources/UI.")]
         public Font messageFont;
-        public int fontSize = 24;
+        public int fontSize = 18;
         public Color fontColor = Color.white;
         public Vector2 messagePosition = new Vector2(0.5f, 0.5f);
 
@@ -55,7 +56,9 @@ namespace Art_Equilibrium
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * smooth);
             }
 
-            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && trig)
+            // F, not E: E is the shout/taunt (see PlayerTaunt), and standing in a
+            // doorway would otherwise fire both on one press.
+            if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame && trig)
             {
                 open = !open;
                 PlayDoorSound();
@@ -65,6 +68,20 @@ namespace Art_Equilibrium
         }
 
         private GUIStyle messageStyle;
+
+        // Same font the rest of the HUD uses (UIBuilder.GameFontPath), loaded by
+        // name so a door dropped into a scene matches without anyone wiring it.
+        // An explicitly assigned messageFont still wins.
+        private const string GameFontPath = "UI/MedievalSharp-Regular";
+        private static Font s_gameFont;
+
+        private Font ResolveFont()
+        {
+            if (messageFont != null) return messageFont;
+            if (s_gameFont == null) s_gameFont = Resources.Load<Font>(GameFontPath);
+            // Null is fine: GUIStyle falls back to the built-in skin font.
+            return s_gameFont;
+        }
 
         private void OnGUI()
         {
@@ -76,14 +93,28 @@ namespace Art_Equilibrium
                 {
                     alignment = TextAnchor.MiddleCenter,
                     fontSize = fontSize,
-                    normal = { textColor = fontColor }
+                    normal = { textColor = fontColor },
+                    wordWrap = false,
+                    // The skin's label padding eats into the drawable area and
+                    // clips the glyphs; the rect below is sized to the text.
+                    padding = new RectOffset(0, 0, 0, 0),
+                    // Last resort: draw past the rect rather than chop the text
+                    // if the measurement is still short.
+                    clipping = TextClipping.Overflow
                 };
-                if (messageFont != null) messageStyle.font = messageFont;
+                messageStyle.font = ResolveFont();
             }
 
             float screenWidth = Screen.width;
             float screenHeight = Screen.height;
             Vector2 labelSize = messageStyle.CalcSize(new GUIContent(doorMessage));
+
+            // CalcSize under-reports height for decorative fonts, whose
+            // ascenders and descenders reach past the nominal line box — which
+            // is what was slicing the tops and tails off the prompt. Give the
+            // rect a full font-size of headroom in both directions.
+            labelSize.x += fontSize;
+            labelSize.y += fontSize;
             float labelX = screenWidth * messagePosition.x - labelSize.x / 2;
             float labelY = screenHeight * messagePosition.y - labelSize.y / 2;
 
