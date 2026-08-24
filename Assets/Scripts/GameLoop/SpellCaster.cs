@@ -7,8 +7,10 @@ namespace Game.Core
 {
     // Reads the spell hotkeys and launches projectiles.
     //
-    // Key 1 casts the strongest owned fire spell, key 2 the strongest ice.
-    // Nothing happens if that school hasn't been bought yet.
+    // Keys 1-3 cast fire at levels 1-3, keys 4-6 cast ice at levels 1-3.
+    // A key does nothing until that spell has been bought in the market, so
+    // the player can also choose a weaker, cheaper spell rather than always
+    // firing their strongest.
     //
     // Aim comes from the camera rather than the player's facing, since the
     // camera is what the player is actually looking down.
@@ -17,11 +19,15 @@ namespace Game.Core
     public class SpellCaster : MonoBehaviour
     {
         [Header("References")]
-        [Tooltip("Leave empty to find the SpellBook on the GameManager.")]
+        [Tooltip("Leave empty to find the SpellBook in the scene.")]
         [SerializeField] private SpellBook spellBook;
 
         [Tooltip("Leave empty to use Camera.main. Spells fly where the camera looks.")]
         [SerializeField] private Transform aimSource;
+
+        [Header("Hotkeys")]
+        [Tooltip("Six spells in key order: 1, 2, 3, 4, 5, 6. Fire 1-3 then ice 1-3.")]
+        [SerializeField] private SpellDef[] hotkeySpells = new SpellDef[6];
 
         [Header("Origin")]
         [Tooltip("Height above the player's origin the projectile leaves from.")]
@@ -36,7 +42,7 @@ namespace Game.Core
         private StaminaSystem stamina;
         private bool isDead;
 
-        // Cooldowns are per school, so casting fire doesn't lock out ice.
+        // One cooldown per school, so casting fire doesn't lock out ice.
         private float fireReadyAt;
         private float iceReadyAt;
 
@@ -68,27 +74,36 @@ namespace Game.Core
         {
             if (isDead) return;
             if (PlayerInputLock.InputLocked) return;
-            if (Keyboard.current == null) return;
 
-            if (Keyboard.current.digit1Key.wasPressedThisFrame) TryCast(SpellSchool.Fire);
-            if (Keyboard.current.digit2Key.wasPressedThisFrame) TryCast(SpellSchool.Ice);
+            Keyboard kb = Keyboard.current;
+            if (kb == null) return;
+
+            if (kb.digit1Key.wasPressedThisFrame) TryCast(0);
+            if (kb.digit2Key.wasPressedThisFrame) TryCast(1);
+            if (kb.digit3Key.wasPressedThisFrame) TryCast(2);
+            if (kb.digit4Key.wasPressedThisFrame) TryCast(3);
+            if (kb.digit5Key.wasPressedThisFrame) TryCast(4);
+            if (kb.digit6Key.wasPressedThisFrame) TryCast(5);
         }
 
-        private void TryCast(SpellSchool school)
+        private void TryCast(int slot)
         {
-            if (spellBook == null) return;
+            if (hotkeySpells == null || slot < 0 || slot >= hotkeySpells.Length) return;
 
-            SpellDef spell = spellBook.BestOwned(school);
-            if (spell == null) return;   // not bought yet
+            SpellDef spell = hotkeySpells[slot];
+            if (spell == null) return;
 
-            if (Time.time < ReadyTimeFor(school)) return;
+            // Not bought yet, so the key does nothing.
+            if (spellBook == null || !spellBook.IsOwned(spell)) return;
+
+            if (Time.time < ReadyTimeFor(spell.School)) return;
 
             // Same order as PlayerAttack: check the cast can happen before
             // charging for it, so a wasted keypress costs nothing.
             if (stamina != null && !stamina.TrySpendSpell(spell.StaminaCost)) return;
 
             Fire(spell);
-            SetReadyTime(school, Time.time + spell.Cooldown);
+            SetReadyTime(spell.School, Time.time + spell.Cooldown);
         }
 
         private void Fire(SpellDef spell)

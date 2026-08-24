@@ -210,11 +210,15 @@ namespace Game.Movement
             return stamina.DrainSprint(Time.deltaTime);
         }
 
-        // The shield is free to hold — blocking never touches stamina.
+        // Blocking is held down, so — like sprinting — it drains continuously.
+        // Runs out of stamina and the shield drops, same frame.
         private bool ResolveBlock()
         {
             if (Mouse.current == null) return false;
-            return Mouse.current.rightButton.isPressed;
+            if (!Mouse.current.rightButton.isPressed) return false;
+            if (stamina == null) return true;
+
+            return stamina.DrainBlock(Time.deltaTime);
         }
 
         private bool CanAffordJump()

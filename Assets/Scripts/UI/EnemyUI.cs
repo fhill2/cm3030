@@ -5,11 +5,6 @@ using Game.Health;
 
 namespace Game.UI
 {
-    /// <summary>
-    /// World-space health bar floating above an enemy. Goes on the enemy root.
-    /// Creates a small world-space canvas at +2m Y, billboards toward the camera,
-    /// and refreshes on OnDamage filtered to this enemy.
-    /// </summary>
     public class EnemyUI : MonoBehaviour
     {
         private const float BarWorldWidth  = 1.0f;
@@ -46,6 +41,16 @@ namespace Game.UI
 
         void LateUpdate()
         {
+            // Belt-and-suspenders: HandleDeath (below) should already remove
+            // the bar the instant OnDeath fires, but checking IsAlive directly
+            // here too means the bar can never end up permanently stuck even
+            // if the event-based path somehow gets missed for a given enemy.
+            if (health != null && !health.IsAlive)
+            {
+                HandleDeath(new DeathArgs(gameObject));
+                return;
+            }
+
             if (canvasTransform != null && Camera.main != null)
                 canvasTransform.LookAt(Camera.main.transform);
         }
@@ -59,8 +64,16 @@ namespace Game.UI
         {
             if (e.Entity != gameObject) return;
 
-            if (canvasTransform != null)
-                canvasTransform.gameObject.SetActive(false);
+            // Destroyed outright rather than just deactivated — the corpse
+            // itself is a scene-lifetime object (see EnemyHealth.OnDeath), but
+            // the health bar above it has no reason to stick around, and a
+            // hard Destroy leaves nothing that could end up visible again.
+            //
+            // Looked up fresh via GetComponentsInChildren instead of relying
+            // on the cached canvasTransform field, so every Canvas under this
+            // enemy gets destroyed, not just the one Awake happened to build.
+            foreach (Canvas c in GetComponentsInChildren<Canvas>(true))
+                Destroy(c.gameObject);
 
             enabled = false;
         }
@@ -79,7 +92,6 @@ namespace Game.UI
 
         void BuildUI()
         {
-            // World-space canvas positioned above the enemy.
             var canvasGo = new GameObject("EnemyUICanvas");
             canvasGo.transform.SetParent(transform, false);
             canvasGo.transform.localPosition = new Vector3(0, HeightOffset, 0);
@@ -90,8 +102,6 @@ namespace Game.UI
             canvasGo.AddComponent<CanvasScaler>();
             canvasGo.AddComponent<GraphicRaycaster>();
 
-            // Size canvas in pixels, then scale down to world units so that
-            // child offsets (e.g. 2px margins) are proportional, not collapsing.
             var canvasRt = canvasGo.GetComponent<RectTransform>();
             canvasRt.sizeDelta = new Vector2(BarWorldWidth * PixelsPerUnit,
                                              BarWorldHeight * PixelsPerUnit);
@@ -103,27 +113,10 @@ namespace Game.UI
 
         Image CreateHealthBar(Transform parent)
         {
-            // Background
-            var bgGo = new GameObject("HealthBar_BG");
-            bgGo.transform.SetParent(parent, false);
-            var bgRt = bgGo.AddComponent<RectTransform>();
-            bgRt.anchorMin = Vector2.zero;
-            bgRt.anchorMax = Vector2.one;
-            bgRt.offsetMin = Vector2.zero;
-            bgRt.offsetMax = Vector2.zero;
-            var bgImg = bgGo.AddComponent<Image>();
-            bgImg.color = new Color(0.1f, 0.1f, 0.1f, 0.8f);
+            var bgRt = UIBuilder.CreateStretchChild(parent, "HealthBar_BG");
+            UIBuilder.AttachImage(bgRt, new Color(0.1f, 0.1f, 0.1f, 0.8f));
 
-            // Fill
-            var fillGo = new GameObject("HealthBar_Fill");
-            fillGo.transform.SetParent(bgGo.transform, false);
-            var fillRt = fillGo.AddComponent<RectTransform>();
-            fillRt.anchorMin = Vector2.zero;
-            fillRt.anchorMax = new Vector2(1f, 1f);
-            fillRt.offsetMin = new Vector2(2, 2);
-            fillRt.offsetMax = new Vector2(-2, -2);
-            var fillImg = fillGo.AddComponent<Image>();
-            fillImg.color = new Color(0.8f, 0.15f, 0.15f, 1f); // red
+            var fillImg = UIBuilder.CreateBarFill(bgRt, new Color(0.8f, 0.15f, 0.15f, 1f));
             fillImg.raycastTarget = false;
             return fillImg;
         }

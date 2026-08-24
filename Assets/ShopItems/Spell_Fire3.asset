@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b7b59717b346b141ab61518d0957bbd, type: 3}
+  m_Name: Spell_Fire3
+  m_EditorClassIdentifier: 
+  displayName: InfernalBlast
+  description: 
+  baseCost: 220
+  costGrowth: 1
+  effect: 2
+  magnitude: 5
+  maxPurchases: 1
+  spell: {fileID: 11400000, guid: 6f7d8fe0fcd017a40895a2da8bc969b4, type: 2}

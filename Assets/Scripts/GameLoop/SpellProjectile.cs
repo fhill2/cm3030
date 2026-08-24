@@ -18,6 +18,9 @@ namespace Game.Core
         [Tooltip("Layers the projectile stops against. Include enemies and the environment.")]
         [SerializeField] private LayerMask hitMask = ~0;
 
+        [Tooltip("Log what the projectile hits, to trace one that dies too early.")]
+        [SerializeField] private bool logHits = true;
+
         private float damage;
         private float speed;
         private GameObject caster;
@@ -41,21 +44,45 @@ namespace Game.Core
                     out RaycastHit hit, step, hitMask,
                     QueryTriggerInteraction.Ignore))
             {
-                // Ignore the caster's own colliders, otherwise the projectile
-                // dies on the frame it spawns.
-                if (caster == null || hit.transform.root != caster.transform.root)
+                if (IsCaster(hit.transform))
                 {
-                    Hit(hit);
+                    // Pass straight through our own body rather than dying on
+                    // the frame we spawned.
+                    transform.position += transform.forward * step;
                     return;
                 }
+
+                Hit(hit);
+                return;
             }
 
             transform.position += transform.forward * step;
         }
 
+        // The caster reference is whatever object SpellCaster sits on, which
+        // isn't necessarily the root of the player hierarchy, so compare the
+        // whole branch instead of just the roots.
+        private bool IsCaster(Transform other)
+        {
+            if (caster == null || other == null) return false;
+
+            Transform casterRoot = caster.transform.root;
+            return other == caster.transform
+                   || other.IsChildOf(casterRoot)
+                   || casterRoot.IsChildOf(other);
+        }
+
         private void Hit(RaycastHit hit)
         {
             IDamageable target = hit.collider.GetComponentInParent<IDamageable>();
+
+            if (logHits)
+            {
+                string name = hit.collider.name;
+                string root = hit.transform.root.name;
+                Debug.Log($"[SpellProjectile] Hit {name} (root {root}), damageable: {target != null}");
+            }
+
             if (target != null && target.IsAlive)
             {
                 target.TakeDamage(damage, DamageType.Magic, caster);
