@@ -39,6 +39,14 @@ namespace Game.Core
             return items[index];
         }
 
+        // Which market page this item belongs on. Spells get their own tab,
+        // everything else goes under upgrades.
+        public bool IsSpell(int index)
+        {
+            ShopItemDef item = ItemAt(index);
+            return item != null && item.Effect == ShopEffect.Tome;
+        }
+
         // Current price of an item, accounting for how often it's been bought.
         public int CostOf(int index)
         {
@@ -59,7 +67,7 @@ namespace Game.Core
             ShopItemDef item = ItemAt(index);
             if (item == null) return false;
 
-            // Spells stay out of the catalogue until their tome has dropped.
+            // Spells stay unbuyable until their tome has dropped.
             if (item.Effect == ShopEffect.Tome && !TomeFound(item)) return false;
 
             if (item.MaxPurchases <= 0) return true;
