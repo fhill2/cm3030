@@ -361,18 +361,19 @@ namespace Game.UI
             hudRoot = canvas.gameObject;
             Transform t = canvas.transform;
 
-            healthFill = UIBuilder.CreateBar(t, new Vector2(0, 1), new Vector2(Margin, -Margin),
-                BarWidth, BarHeight, Color.white, Theme.panelBackground);
-            healthLabel = UIBuilder.CreateLabel(t, "PLAYER  --- / ---",
-                new Vector2(0, 1), new Vector2(Margin, -Margin - BarHeight - 4f),
-                BarWidth, TextAnchor.MiddleLeft, Theme);
-
-            float staminaY = -Margin - BarHeight - 4f - 28f - 6f;
-            staminaFill = UIBuilder.CreateBar(t, new Vector2(0, 1), new Vector2(Margin, staminaY),
-                BarWidth, StaminaBarHeight, StaminaColor, Theme.panelBackground);
+            float barsY = 1080f * 0.04f + 32f + 16f;
             staminaLabel = UIBuilder.CreateLabel(t, "STAMINA  --- / ---",
-                new Vector2(0, 1), new Vector2(Margin, staminaY - StaminaBarHeight - 4f),
-                BarWidth, TextAnchor.MiddleLeft, Theme);
+                new Vector2(0.5f, 0f), new Vector2(0f, barsY),
+                BarWidth, TextAnchor.MiddleCenter, Theme);
+            staminaFill = UIBuilder.CreateBar(t, new Vector2(0.5f, 0f), new Vector2(0f, barsY + RowStep),
+                BarWidth, StaminaBarHeight, StaminaColor, Theme.panelBackground);
+
+            float healthY = barsY + RowStep + StaminaBarHeight + 6f;
+            healthLabel = UIBuilder.CreateLabel(t, "PLAYER  --- / ---",
+                new Vector2(0.5f, 0f), new Vector2(0f, healthY),
+                BarWidth, TextAnchor.MiddleCenter, Theme);
+            healthFill = UIBuilder.CreateBar(t, new Vector2(0.5f, 0f), new Vector2(0f, healthY + RowStep),
+                BarWidth, BarHeight, Color.white, Theme.panelBackground);
 
             Vector2 topRight = new Vector2(1, 1);
             goldLabel = UIBuilder.CreateLabel(t, "GOLD  --",

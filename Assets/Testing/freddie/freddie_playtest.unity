@@ -29900,7 +29900,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 160, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1170557368
 MonoBehaviour:
@@ -31468,7 +31468,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 160, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1256975281
 MonoBehaviour:
@@ -37646,10 +37646,10 @@ RectTransform:
   - {fileID: 1170557367}
   m_Father: {fileID: 1374445857}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 100, y: 100}
-  m_SizeDelta: {x: 155, y: 155}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 131.5, y: -131.5}
+  m_SizeDelta: {x: 215, y: 215}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1541233247
 MonoBehaviour:
@@ -51336,7 +51336,7 @@ MonoBehaviour:
   clipPaths:
   - Ambient/RainForest_BW.59597
   - Ambient/SPLC-1072_FX_Oneshot_Thunder_Distant_Ambience
-  volume: 0.5
+  volume: 0.25
 --- !u!1001 &2099440310
 PrefabInstance:
   m_ObjectHideFlags: 0
