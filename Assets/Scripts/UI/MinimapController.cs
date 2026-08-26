@@ -101,7 +101,11 @@ namespace Game.UI
             renderTimer = 0f;
 
             FollowPlayer();
+
+            bool fog = RenderSettings.fog;
+            RenderSettings.fog = false;
             cam.Render();
+            RenderSettings.fog = fog;
         }
 
         private void FollowPlayer()
