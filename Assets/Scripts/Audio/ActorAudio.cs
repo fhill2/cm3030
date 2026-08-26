@@ -36,7 +36,7 @@ namespace Game.Audio
         private const float SwingDelay = 0.03f;
         private const float FleshDelay = 0.1f;
         private const float FleshVolume = 0.65f;
-        private const float TauntVolume = 1.5f;
+        private const float TauntVolume = 0.9f;
         private const float UnequipDelay = 0.5f;
 
         private static AudioClip[] s_effortClips;
@@ -219,7 +219,7 @@ namespace Game.Audio
             return roll < gruntCount ? grunts[roll] : screams[roll - gruntCount];
         }
 
-        private void Play(AudioClip clip, float volumeScale = 1f)
+        private void Play(AudioClip clip, float volumeScale = 0.9f)
         {
             if (clip != null && source != null)
                 source.PlayOneShot(clip, volumeScale);

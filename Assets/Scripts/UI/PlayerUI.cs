@@ -57,11 +57,9 @@ namespace Game.UI
 
         [Header("Volume")]
         [Tooltip("Master volume 0-1, applied to AudioListener.volume on startup and adjusted with the -/+ hotkeys.")]
-        [SerializeField, Range(0f, 1f)] private float volume = 0.6f;
+        [SerializeField, Range(0f, 1f)] private float volume = 0.5f;
         [Tooltip("How much each -/+ key press changes the volume.")]
         [SerializeField] private float volumeStep = 0.1f;
-
-        private const string VolumePrefKey = "playerui.volume";
 
         private const float StaminaBarHeight = 16f;
         private static readonly Color StaminaColor = new Color(0.95f, 0.8f, 0.25f, 1f);
@@ -106,8 +104,8 @@ namespace Game.UI
             health = GetComponent<HealthSystem>();
             stamina = GetComponent<StaminaSystem>();
 
-            volume = PlayerPrefs.GetFloat(VolumePrefKey, volume);
-            AudioListener.volume = volume;
+            volume = 0.5f;
+            AudioListener.volume = Mathf.Pow(volume, 2f);
 
             BuildUI();
         }
@@ -292,13 +290,10 @@ namespace Game.UI
         void ApplyVolume(float value)
         {
             volume = Mathf.Clamp01(value);
-            AudioListener.volume = volume;
+            AudioListener.volume = Mathf.Pow(volume, 2f);
 
             if (volumeFill != null)
                 volumeFill.rectTransform.anchorMax = new Vector2(volume, 1f);
-
-            PlayerPrefs.SetFloat(VolumePrefKey, volume);
-            PlayerPrefs.Save();
         }
 
         void BuildVolumeControl(Transform parent)

@@ -2727,7 +2727,7 @@ MonoBehaviour:
   speakerIcon: {fileID: 0}
   restartMessage: Press R to start over
   restartFontSize: 28
-  volume: 0.6
+  volume: 0.5
   volumeStep: 0.1
 --- !u!114 &8870810811496802015
 MonoBehaviour:
