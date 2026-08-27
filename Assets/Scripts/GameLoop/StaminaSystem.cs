@@ -23,7 +23,7 @@ namespace Game.Combat
 
         [Header("One-off Costs")]
         [Tooltip("Stamina spent per swing.")]
-        [SerializeField] private float attackCost = 25f;
+        [SerializeField] private float attackCost = 10f;
 
         [Tooltip("Stamina spent per jump.")]
         [SerializeField] private float jumpCost = 20f;

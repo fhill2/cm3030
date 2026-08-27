@@ -2742,7 +2742,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxStamina: 100
-  attackCost: 25
+  attackCost: 10
   jumpCost: 20
   sprintDrainPerSecond: 12
   blockDrainPerSecond: 2
