@@ -22,6 +22,8 @@ namespace Game.Health
         /// </summary>
         public static event System.Action OnAliveCountChanged;
 
+        public int GoldReward { get; set; }
+
         // Static state survives leaving play mode when Enter Play Mode Options
         // has domain reload turned off, which would carry a stale count into the
         // next run. Wiping it before the first scene loads keeps runs independent.
