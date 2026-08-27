@@ -40,7 +40,7 @@ namespace Game.Combat
         [SerializeField] private float regenPerSecond = 18f;
 
         [Tooltip("Seconds after a swing before regeneration resumes. Everything else regenerates immediately.")]
-        [SerializeField] private float regenDelayAfterSwing = 1f;
+        [SerializeField] private float regenDelayAfterSwing = 0f;
 
         [Header("Stun")]
         [Tooltip("Seconds of being unable to act after running out.")]

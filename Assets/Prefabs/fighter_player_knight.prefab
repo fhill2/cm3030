@@ -2747,7 +2747,7 @@ MonoBehaviour:
   sprintDrainPerSecond: 12
   blockDrainPerSecond: 2
   regenPerSecond: 18
-  regenDelayAfterSwing: 1
+  regenDelayAfterSwing: 0
   stunDuration: 2
   stunRecoveryFraction: 0.3
   logChanges: 0
