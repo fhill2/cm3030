@@ -1,6 +1,7 @@
 using UnityEngine;
 
 using Game.Audio;
+using Game.Health;
 
 namespace Game.Core
 {
@@ -18,8 +19,9 @@ namespace Game.Core
         [Header("Motion")]
         [Tooltip("Degrees per second the tome spins, so it reads as a pickup.")]
         [SerializeField] private float spinSpeed = 60f;
-        [SerializeField] private float bobHeight = 0.2f;
-        [SerializeField] private float bobSpeed = 2f;
+
+        [Tooltip("Height kept above the ground point the tome settles on.")]
+        [SerializeField] private float groundOffset = 0.1f;
 
         [Header("Lifetime")]
         [Tooltip("Seconds before an uncollected tome disappears. 0 means it stays forever.")]
@@ -33,8 +35,6 @@ namespace Game.Core
         [Tooltip("One-shot clip under Resources/ played when the tome is picked up.")]
         [SerializeField] private string pickupClip = "Spells/learn/ESM_Magic_Game_Protection_Ward_Buff_Fantasy_Spell_Cast_Conjure_Craft_Mobile_App_Special_Click";
 
-        private Vector3 restPosition;
-
         public void Assign(SpellDef def)
         {
             spell = def;
@@ -42,15 +42,34 @@ namespace Game.Core
 
         private void Start()
         {
-            restPosition = transform.position;
+            Ground();
+            gameObject.AddComponent<Halo>().Place(transform.position - Vector3.up * groundOffset);
             if (lifetime > 0f) Destroy(gameObject, lifetime);
         }
 
         private void Update()
         {
             transform.Rotate(Vector3.up, spinSpeed * Time.deltaTime, Space.World);
-            transform.position = restPosition +
-                Vector3.up * Mathf.Sin(Time.time * bobSpeed) * bobHeight;
+        }
+
+        private void Ground()
+        {
+            Vector3 origin = transform.position + Vector3.up * 0.5f;
+            RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, 50f);
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (IsBody(hit.collider)) continue;
+                transform.position = hit.point + Vector3.up * groundOffset;
+                return;
+            }
+        }
+
+        private static bool IsBody(Collider collider)
+        {
+            if (collider.CompareTag("Player")) return true;
+            return collider.GetComponentInParent<EnemyHealth>() != null;
         }
 
         private void OnTriggerEnter(Collider other)
