@@ -63,7 +63,6 @@ namespace Game.UI
 
         private const float StaminaBarHeight = 16f;
         private static readonly Color StaminaColor = new Color(0.95f, 0.8f, 0.25f, 1f);
-        private static readonly Color StunnedColor = new Color(0.8f, 0.25f, 0.2f, 1f);
 
         private HealthSystem health;
         private Image healthFill;
@@ -254,15 +253,12 @@ namespace Game.UI
             if (staminaFill != null)
             {
                 staminaFill.rectTransform.anchorMax = new Vector2(ratio, 1f);
-                // Turn the bar red while stunned
-                staminaFill.color = stamina.IsStunned ? StunnedColor : StaminaColor;
+                staminaFill.color = StaminaColor;
             }
 
             if (staminaLabel != null)
             {
-                staminaLabel.text = stamina.IsStunned
-                    ? "STAMINA  EXHAUSTED"
-                    : $"STAMINA  {stamina.Current:0} / {stamina.Max:0}";
+                staminaLabel.text = $"STAMINA  {stamina.Current:0} / {stamina.Max:0}";
             }
         }
 
