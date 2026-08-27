@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MC_Axe_Big
   m_EditorClassIdentifier: 
   damage: 15
-  speed: 2.5
+  speed: 2
   level: 2
-  rotationOffset: {x: 0, y: -20, z: -40}
   cost: 50
+  rotationOffset: {x: 0, y: -20, z: -40}
