@@ -8,6 +8,7 @@ namespace Game.Combat
     public class EquipmentEjector : MonoBehaviour
     {
         private const float EjectDelay = 0.5f;
+        private const float HaloDelay = 1f;
         private const float MinUpForce = 2.5f;
         private const float MaxUpForce = 4.5f;
         private const float MinLateralForce = 3f;
@@ -73,6 +74,19 @@ namespace Game.Combat
                 Vector3.up * Random.Range(MinUpForce, MaxUpForce) + lateral * Random.Range(MinLateralForce, MaxLateralForce),
                 Random.insideUnitSphere * Random.Range(MinSpin, MaxSpin),
                 owner);
+
+            StartCoroutine(HaloAfterDelay(gear));
+        }
+
+        private IEnumerator HaloAfterDelay(GameObject gear)
+        {
+            yield return new WaitForSeconds(HaloDelay);
+
+            if (gear == null) yield break;
+
+            Vector3 origin = gear.transform.position + Vector3.up * 0.5f;
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 2f))
+                gear.AddComponent<Halo>().Place(hit.point);
         }
     }
 }
