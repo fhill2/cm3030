@@ -175,6 +175,14 @@ namespace Game.Combat
             Announce();
         }
 
+        public void Restore(float amount)
+        {
+            if (amount <= 0f) return;
+
+            current = Mathf.Min(maxStamina, current + amount);
+            Announce();
+        }
+
         private void Announce()
         {
             if (logChanges) Debug.Log($"[Stamina] {current:0} / {maxStamina:0}");
