@@ -8,9 +8,12 @@ namespace Game.Combat
     public class EquipmentEjector : MonoBehaviour
     {
         private const float EjectDelay = 0.5f;
-        private const float UpForce = 2.5f;
-        private const float LateralForce = 1.5f;
-        private const float Spin = 300f;
+        private const float MinUpForce = 2.5f;
+        private const float MaxUpForce = 4.5f;
+        private const float MinLateralForce = 3f;
+        private const float MaxLateralForce = 6f;
+        private const float MinSpin = 250f;
+        private const float MaxSpin = 450f;
 
         private Equipment equipment;
 
@@ -57,6 +60,7 @@ namespace Game.Combat
 
             Transform owner = gear.transform.root;
             gear.transform.SetParent(null);
+            equipment.Detach(gear);
 
             var gravity = gear.GetComponent<Gravity>();
             if (gravity == null) gravity = gear.AddComponent<Gravity>();
@@ -66,8 +70,8 @@ namespace Game.Combat
             lateral = lateral.sqrMagnitude > 0.001f ? lateral.normalized : Vector3.forward;
 
             gravity.Launch(
-                Vector3.up * UpForce + lateral * LateralForce,
-                Random.insideUnitSphere * Spin,
+                Vector3.up * Random.Range(MinUpForce, MaxUpForce) + lateral * Random.Range(MinLateralForce, MaxLateralForce),
+                Random.insideUnitSphere * Random.Range(MinSpin, MaxSpin),
                 owner);
         }
     }

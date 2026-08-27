@@ -47,6 +47,12 @@ namespace Game.Combat
         public GameObject WeaponInstance => weaponInstance;
         public GameObject ShieldInstance => shieldInstance;
 
+        public void Detach(GameObject instance)
+        {
+            if (weaponInstance == instance) weaponInstance = null;
+            if (shieldInstance == instance) shieldInstance = null;
+        }
+
         public void EquipWeapon(GameObject prefab)
         {
             if (prefab == null || weaponSocket == null) return;
