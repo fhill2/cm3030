@@ -8,30 +8,16 @@ namespace Game.Combat
 {
     public class WeaponThrower : MonoBehaviour
     {
-        [Tooltip("Minimum seconds between throws.")]
-        [SerializeField] private float cooldown = 20f;
-
         [Tooltip("Height above the player's origin the weapon leaves from.")]
         [SerializeField] private float throwHeight = 1.4f;
 
         [Tooltip("How far in front of the chest the weapon spawns, so it clears the player's own body.")]
         [SerializeField] private float throwForward = 0.6f;
 
-        public float CooldownDuration => cooldown;
-
-        public float CooldownRemaining => Mathf.Max(0f, readyAt - Time.time);
-
-        public void SetCooldown(float seconds)
-        {
-            cooldown = Mathf.Max(0f, seconds);
-            readyAt = float.NegativeInfinity;
-        }
-
         private Equipment equipment;
         private ActorAudio actorAudio;
         private StaminaSystem stamina;
         private Animator animator;
-        private float readyAt = float.NegativeInfinity;
 
         void Awake()
         {
@@ -48,7 +34,6 @@ namespace Game.Combat
             if (!kb.rKey.wasPressedThisFrame) return;
             if (PlayerInputLock.InputLocked) return;
             if (stamina != null && !stamina.CanAct) return;
-            if (Time.time < readyAt) return;
 
             TryThrow();
         }
@@ -57,8 +42,6 @@ namespace Game.Combat
         {
             GameObject weapon = equipment != null ? equipment.WeaponInstance : null;
             if (weapon == null) return;
-
-            readyAt = Time.time + cooldown;
 
             if (animator != null) animator.SetTrigger(AnimParams.Throw);
             if (actorAudio != null) actorAudio.PlayEffort();

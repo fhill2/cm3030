@@ -7301,7 +7301,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbfdbc5c88ab48a891fd39f826f28352, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  cooldown: 20
   throwHeight: 1.4
   throwForward: 0.6
 --- !u!114 &5533001100000000003
