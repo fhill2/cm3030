@@ -54,6 +54,7 @@ namespace Game.UI
         private PlayerTaunt taunt;
         private PlayerMovement movement;
         private PotionBelt belt;
+        private WeaponThrower thrower;
 
         private static readonly Color GuardActive = new Color(1f, 0.9f, 0.5f, 1f);
         private static readonly Color Dimmed = new Color(1f, 1f, 1f, 0.45f);
@@ -72,6 +73,7 @@ namespace Game.UI
             taunt = GetComponent<PlayerTaunt>();
             movement = GetComponent<PlayerMovement>();
             belt = GetComponent<PotionBelt>();
+            thrower = GetComponent<WeaponThrower>();
         }
 
         private void OnEnable()
@@ -232,6 +234,11 @@ namespace Game.UI
             bool blocking = movement != null && movement.IsBlocking;
             SetReady(guard, blocking ? GuardActive : Color.white);
             guard.Border.enabled = blocking;
+
+            UpdateCooldown(throwSlot,
+                thrower != null ? thrower.CooldownRemaining : 0f,
+                thrower != null ? thrower.CooldownDuration : 1f,
+                Color.white);
 
             UpdateCooldown(tauntSlot,
                 taunt != null ? taunt.CooldownRemaining : 0f,
