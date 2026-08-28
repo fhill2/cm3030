@@ -49,6 +49,7 @@ namespace Game.UI
         [SerializeField] private Sprite speakerIcon;
 
         private const string SpeakerResourcePath = "UI/speaker";
+        private const string SpeakerOffResourcePath = "UI/speaker-off";
 
         [Header("Restart")]
         [Tooltip("Shown under the death message once restarting is allowed.")]
@@ -91,10 +92,12 @@ namespace Game.UI
         private GameStateMachine stateMachine;
 
         private Image volumeFill;
+        private Image speakerImage;
 
         private GameObject hudRoot;
 
         private static Sprite s_speaker;
+        private static Sprite s_speakerOff;
 
         private UITheme Theme => theme != null ? theme : UITheme.Default;
 
@@ -290,14 +293,21 @@ namespace Game.UI
 
             if (volumeFill != null)
                 volumeFill.rectTransform.anchorMax = new Vector2(volume, 1f);
+
+            if (speakerImage != null)
+            {
+                Sprite current = volume > 0f ? GetSpeakerIcon() : GetSpeakerOffIcon();
+                if (current != null) speakerImage.sprite = current;
+            }
         }
 
         void BuildVolumeControl(Transform parent)
         {
-            Sprite speaker = GetSpeakerIcon();
+            Sprite speaker = volume > 0f ? GetSpeakerIcon() : GetSpeakerOffIcon();
             if (speaker != null)
-                UIBuilder.CreateIcon(parent, "SpeakerIcon", speaker,
+                speakerImage = UIBuilder.CreateIcon(parent, "SpeakerIcon", speaker,
                     new Vector2(0, 0), new Vector2(Margin, Margin), 32f);
+                if (speakerImage != null) speakerImage.color = new Color(0.72f, 0.72f, 0.72f, 1f);
 
             CreateGlyph(parent, "-", new Vector2(Margin + 38f, Margin + 2f));
             volumeFill = UIBuilder.CreateBar(parent, new Vector2(0, 0),
@@ -349,6 +359,13 @@ namespace Game.UI
                                      "Set the texture's Texture Type to 'Sprite (2D and UI)'.");
             }
             return s_speaker;
+        }
+
+        Sprite GetSpeakerOffIcon()
+        {
+            if (s_speakerOff == null)
+                s_speakerOff = UIBuilder.LoadIcon(SpeakerOffResourcePath);
+            return s_speakerOff;
         }
 
         void BuildUI()
