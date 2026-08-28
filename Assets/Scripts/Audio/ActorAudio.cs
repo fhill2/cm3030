@@ -153,7 +153,34 @@ namespace Game.Audio
         private IEnumerator UnequipRoutine()
         {
             yield return new WaitForSeconds(UnequipDelay);
-            Play(RandomClip(s_unequipClips));
+
+            AudioClip clip = RandomClip(s_unequipClips);
+            if (clip == null) yield break;
+
+            GameObject holder = new GameObject("UnequipSound");
+            holder.transform.SetParent(transform, false);
+            AudioSource unequip = holder.AddComponent<AudioSource>();
+            unequip.spatialBlend = source != null ? source.spatialBlend : 0f;
+            unequip.clip = clip;
+            unequip.volume = 1f;
+            unequip.Play();
+
+            const float Total = 2f;
+            const float FadeStart = 1.2f;
+
+            yield return new WaitForSeconds(FadeStart);
+
+            float fade = Total - FadeStart;
+            float elapsed = 0f;
+            while (elapsed < fade)
+            {
+                elapsed += Time.deltaTime;
+                unequip.volume = Mathf.Max(0f, 1f - elapsed / fade);
+                yield return null;
+            }
+
+            unequip.Stop();
+            Destroy(holder);
         }
 
         void HandleHit(HitArgs e)
