@@ -83,7 +83,11 @@ namespace Game.Core
             healthReadyAt = Time.time + cooldown;
 
             if (health != null) health.Heal(healthRestore);
-            if (animator != null) animator.SetTrigger(AnimParams.Drink);
+            if (animator != null)
+            {
+                Debug.Log("[PotionBelt] Drink trigger sent (health)");
+                animator.SetTrigger(AnimParams.Drink);
+            }
             PlayDrinkSound();
         }
 
@@ -97,7 +101,11 @@ namespace Game.Core
             staminaReadyAt = Time.time + cooldown;
 
             if (stamina != null) stamina.Restore(staminaRestore);
-            if (animator != null) animator.SetTrigger(AnimParams.Drink);
+            if (animator != null)
+            {
+                Debug.Log("[PotionBelt] Drink trigger sent (stamina)");
+                animator.SetTrigger(AnimParams.Drink);
+            }
             PlayDrinkSound();
         }
 
