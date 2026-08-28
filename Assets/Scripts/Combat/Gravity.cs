@@ -13,6 +13,8 @@ namespace Game.Combat
         [Tooltip("Rotate toward the flat resting orientation while falling, so the item lands face-down instead of on its edge.")]
         [SerializeField] private bool selfRighting = false;
 
+        public bool SelfRighting { get => selfRighting; set => selfRighting = value; }
+
         [Tooltip("How quickly the item rights itself while falling.")]
         [SerializeField] private float rightingSpeed = 3f;
 

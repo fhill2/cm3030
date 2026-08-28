@@ -10,7 +10,7 @@ namespace Game.UI
     {
         public const string IconFolder = "UI/hotbar_icons";
 
-        private const int TotalSlots = 12;
+        private const int TotalSlots = 13;
         private const float SlotSize = 64f;
         private const float SlotGap = 0f;
         private const float AnchoredY = 0.04f;
@@ -45,6 +45,7 @@ namespace Game.UI
         private Slot guard;
         private Slot tauntSlot;
         private Slot throwSlot;
+        private Slot collectSlot;
         private Slot healthPotion;
         private Slot staminaPotion;
 
@@ -107,12 +108,13 @@ namespace Game.UI
             bar.gameObject.name = "Hotbar";
             root = bar.gameObject;
 
-            attack = CreateSlot(bar.transform, 0, "LClick", AttackIcon);
-            guard = CreateSlot(bar.transform, 1, "RClick", GuardIcon);
-            tauntSlot = CreateSlot(bar.transform, 2, "E", TauntIcon);
-            throwSlot = CreateSlot(bar.transform, 3, "R", ThrowIcon);
-            healthPotion = CreatePotionSlot(bar.transform, 4, "T", "health_potion");
-            staminaPotion = CreatePotionSlot(bar.transform, 5, "G", "stamina_potion");
+            attack = CreateSlot(bar.transform, 1, "LClick", AttackIcon);
+            guard = CreateSlot(bar.transform, 2, "RClick", GuardIcon);
+            tauntSlot = CreateSlot(bar.transform, 3, "E", TauntIcon);
+            throwSlot = CreateSlot(bar.transform, 4, "R", ThrowIcon);
+            healthPotion = CreatePotionSlot(bar.transform, 5, "T", "health_potion");
+            staminaPotion = CreatePotionSlot(bar.transform, 6, "G", "stamina_potion");
+            collectSlot = CreateSlot(bar.transform, 0, "TAB", "collect");
 
             var hotkeys = caster != null ? caster.HotkeySpells : null;
 
@@ -122,7 +124,7 @@ namespace Game.UI
                 int level = i % 3 + 1;
                 string icon = (school == SpellSchool.Fire ? "fire_" : "ice_") + level;
 
-                Slot slot = CreateSlot(bar.transform, 6 + i, (i + 1).ToString(), icon);
+                Slot slot = CreateSlot(bar.transform, 7 + i, (i + 1).ToString(), icon);
 
                 SpellDef spell = null;
                 if (hotkeys != null && i < hotkeys.Count) spell = hotkeys[i];
@@ -226,6 +228,8 @@ namespace Game.UI
 
         private void UpdateSlots()
         {
+            SetReady(collectSlot, Color.white);
+
             UpdateCooldown(attack,
                 melee != null ? melee.CooldownRemaining : 0f,
                 melee != null ? melee.CooldownDuration : 1f,

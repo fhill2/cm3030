@@ -95,6 +95,7 @@ namespace Game.Combat
 
             var gravity = GetComponent<Gravity>();
             if (gravity == null) gravity = gameObject.AddComponent<Gravity>();
+            gravity.SelfRighting = true;
 
             Vector3 lateral = Random.insideUnitSphere;
             lateral.y = 0f;

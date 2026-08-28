@@ -49,6 +49,12 @@ namespace Game.Combat
             Launch(equipment.ShieldInstance);
         }
 
+        public void Eject(GameObject gear)
+        {
+            if (gear == null) return;
+            Launch(gear);
+        }
+
         private void Launch(GameObject gear)
         {
             if (gear == null) return;
@@ -65,6 +71,7 @@ namespace Game.Combat
 
             var gravity = gear.GetComponent<Gravity>();
             if (gravity == null) gravity = gear.AddComponent<Gravity>();
+            gravity.SelfRighting = true;
 
             Vector3 lateral = Random.insideUnitSphere;
             lateral.y = 0f;

@@ -22,6 +22,7 @@ namespace Game.Combat
         }
 
         private const float Pullback = 0.2f; // blade pulled back, not yet dangerous
+        private const float UnarmedSpeed = 0.8f; // swing pace with fists, when no weapon is equipped
 
         // Whether a swing would actually start right now. Callers check this
         // before spending stamina, so clicks during the cooldown cost nothing.
@@ -30,9 +31,9 @@ namespace Game.Combat
             get
             {
                 ResolveReferences();
-                if (equipped == null || equipped.Def == null) return false;
+                if (equipped != null && equipped.Def == null) return false;
 
-                return Time.time - lastAttackTime >= equipped.Def.Speed;
+                return Time.time - lastAttackTime >= SwingSpeed;
             }
         }
 
@@ -45,36 +46,34 @@ namespace Game.Combat
             return true;
         }
 
-        public float CooldownDuration
-        {
-            get
-            {
-                ResolveReferences();
-                return equipped != null && equipped.Def != null ? equipped.Def.Speed : 0f;
-            }
-        }
+        public float CooldownDuration => SwingSpeed;
 
-        public float CooldownRemaining
+        public float CooldownRemaining => Mathf.Max(0f, lastAttackTime + SwingSpeed - Time.time);
+
+        private float SwingSpeed
         {
             get
             {
                 ResolveReferences();
-                if (equipped == null || equipped.Def == null) return 0f;
-                return Mathf.Max(0f, lastAttackTime + equipped.Def.Speed - Time.time);
+                return equipped != null && equipped.Def != null ? equipped.Def.Speed : UnarmedSpeed;
             }
         }
 
         // The weapon is instantiated by Equipment in Start, so we can't cache
-        // these in Awake — they're resolved on first use instead.
+        // these in Awake — they're resolved on first use instead. A cached
+        // reference that has left the hierarchy (thrown weapon, ejected gear)
+        // is re-resolved so a freshly collected weapon is picked up.
         private void ResolveReferences()
         {
-            if (equipped == null) equipped = GetComponentInChildren<Weapon>();
-            if (weaponCollider == null) weaponCollider = GetComponentInChildren<WeaponCollider>();
+            if (equipped == null || !equipped.transform.IsChildOf(transform))
+                equipped = GetComponentInChildren<Weapon>();
+            if (weaponCollider == null || !weaponCollider.transform.IsChildOf(transform))
+                weaponCollider = GetComponentInChildren<WeaponCollider>();
         }
 
         private IEnumerator SwingRoutine()
         {
-            var def = equipped.Def;
+            float speed = SwingSpeed;
 
             if (animator != null) animator.SetTrigger(AnimParams.Attack);
             EventManager.RaiseHit(new HitArgs(gameObject));
@@ -85,7 +84,7 @@ namespace Game.Combat
 
             // Active swing: arm the blade for the remaining duration.
             if (weaponCollider != null) weaponCollider.BeginSwing();
-            yield return new WaitForSeconds(def.Speed - Pullback);
+            yield return new WaitForSeconds(speed - Pullback);
             if (weaponCollider != null) weaponCollider.EndSwing();
 
             OnAttackEnd?.Invoke();

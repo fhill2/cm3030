@@ -21,6 +21,7 @@ namespace Game.Shared
         public static readonly int Buff        = Animator.StringToHash("Buff");
         public static readonly int Drink       = Animator.StringToHash("Drink");
         public static readonly int Throw       = Animator.StringToHash("Throw");
+        public static readonly int Collect     = Animator.StringToHash("Collect");
 
         // ── Health ─────────────────────────────────
         public static readonly int Hit         = Animator.StringToHash("Hit");

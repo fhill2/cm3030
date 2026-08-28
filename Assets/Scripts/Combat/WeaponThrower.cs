@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Core;
@@ -16,9 +15,6 @@ namespace Game.Combat
 
         [Tooltip("How far in front of the chest the weapon spawns, so it clears the player's own body.")]
         [SerializeField] private float throwForward = 0.6f;
-
-        [Tooltip("Seconds after the throw before a fresh weapon is drawn.")]
-        [SerializeField] private float rearmDelay = 3f;
 
         public float CooldownDuration => cooldown;
 
@@ -63,10 +59,6 @@ namespace Game.Combat
 
             if (animator != null) animator.SetTrigger(AnimParams.Throw);
 
-            GameObject prefab = equipment.WeaponPrefab;
-            Weapon defHolder = weapon.GetComponent<Weapon>();
-            WeaponDef def = defHolder != null ? defHolder.Def : null;
-
             Camera camera = Camera.main;
             Vector3 aim = camera != null ? camera.transform.forward : transform.forward;
             aim.y = 0f;
@@ -92,24 +84,7 @@ namespace Game.Combat
             if (thrown == null) thrown = weapon.AddComponent<ThrownWeapon>();
             thrown.Launch(gameObject, direction);
 
-            StartCoroutine(Rearm(prefab, def));
-        }
-
-        private IEnumerator Rearm(GameObject prefab, WeaponDef def)
-        {
-            yield return new WaitForSeconds(rearmDelay);
-
-            if (prefab == null) yield break;
-
-            Debug.Log($"[WeaponThrower] Rearming after {rearmDelay}s");
-
-            equipment.EquipWeapon(prefab);
-
-            if (def != null && equipment.WeaponInstance != null)
-            {
-                Weapon fresh = equipment.WeaponInstance.GetComponent<Weapon>();
-                if (fresh != null) fresh.Def = def;
-            }
+            Debug.Log($"[WeaponThrower] Threw {weapon.name} — unarmed until collected or bought.");
         }
     }
 }
