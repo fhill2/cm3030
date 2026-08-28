@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Audio;
 using Game.Core;
 using Game.Shared;
 
@@ -27,6 +28,7 @@ namespace Game.Combat
         }
 
         private Equipment equipment;
+        private ActorAudio actorAudio;
         private StaminaSystem stamina;
         private Animator animator;
         private float readyAt = float.NegativeInfinity;
@@ -34,6 +36,7 @@ namespace Game.Combat
         void Awake()
         {
             equipment = GetComponent<Equipment>();
+            actorAudio = GetComponent<ActorAudio>();
             stamina = GetComponent<StaminaSystem>();
             animator = GetComponentInChildren<Animator>();
         }
@@ -58,6 +61,7 @@ namespace Game.Combat
             readyAt = Time.time + cooldown;
 
             if (animator != null) animator.SetTrigger(AnimParams.Throw);
+            if (actorAudio != null) actorAudio.PlayEffort();
 
             Camera camera = Camera.main;
             Vector3 aim = camera != null ? camera.transform.forward : transform.forward;

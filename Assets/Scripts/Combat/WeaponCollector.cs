@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Audio;
 using Game.Core;
 using Game.Shared;
 
@@ -12,6 +13,7 @@ namespace Game.Combat
 
         private Equipment equipment;
         private EquipmentEjector ejector;
+        private ActorAudio actorAudio;
         private StaminaSystem stamina;
         private Animator animator;
 
@@ -19,6 +21,7 @@ namespace Game.Combat
         {
             equipment = GetComponent<Equipment>();
             ejector = GetComponent<EquipmentEjector>();
+            actorAudio = GetComponent<ActorAudio>();
             stamina = GetComponent<StaminaSystem>();
             animator = GetComponentInChildren<Animator>();
         }
@@ -47,6 +50,8 @@ namespace Game.Combat
             if (current != null && ejector != null) ejector.Eject(current);
             else if (current != null && equipment != null) equipment.Detach(current);
 
+            if (current != null && actorAudio != null) actorAudio.PlayDrop();
+
             foreach (var halo in gear.GetComponentsInChildren<Halo>()) Destroy(halo);
             var flight = gear.GetComponent<ThrownWeapon>();
             if (flight != null) Destroy(flight);
@@ -57,6 +62,8 @@ namespace Game.Combat
             if (sourcePrefab != null) equipment.WeaponPrefab = sourcePrefab;
 
             equipment.TakeWeaponInstance(gear);
+
+            if (actorAudio != null) actorAudio.PlayUnequipDelayed();
 
             Debug.Log($"[WeaponCollector] Swapped for {gear.name}.");
         }

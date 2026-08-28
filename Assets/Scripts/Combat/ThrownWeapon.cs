@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Game.Audio;
 using Game.Core;
 using Game.Shared;
 
@@ -25,12 +26,20 @@ namespace Game.Combat
         [Tooltip("Downward acceleration while in flight (m/s^2).")]
         [SerializeField] private float gravity = -5f;
 
+        [Header("Sound")]
+        [Tooltip("Whoosh clip under Resources/ played while the weapon is airborne.")]
+        [SerializeField] private string whooshClip = "Throw/floraphonic-rotate-movement-whoosh-1-185335";
+
+        [Tooltip("Clip under Resources/ played when the weapon strikes an enemy.")]
+        [SerializeField] private string hitClip = "Throw/hit/axe-hit-trimmed";
+
         private GameObject thrower;
         private Vector3 flightDirection = Vector3.forward;
         private float roll;
         private float fallSpeed;
         private float launchedAt;
         private bool spent;
+        private AudioSource whooshSource;
 
         public void Launch(GameObject source, Vector3 direction)
         {
@@ -39,6 +48,17 @@ namespace Game.Combat
             roll = Random.Range(-rollSpin, rollSpin);
             fallSpeed = 0f;
             launchedAt = Time.time;
+
+            AudioClip whoosh = LoadClip(whooshClip);
+            if (whoosh != null)
+            {
+                whooshSource = gameObject.AddComponent<AudioSource>();
+                whooshSource.clip = whoosh;
+                whooshSource.loop = true;
+                whooshSource.spatialBlend = 0f;
+                whooshSource.volume = 0.9f;
+                whooshSource.Play();
+            }
         }
 
         private void Update()
@@ -83,15 +103,41 @@ namespace Game.Combat
             IDamageable target = hit.collider.GetComponentInParent<IDamageable>();
 
             if (target != null && target.IsAlive)
+            {
                 target.TakeDamage(99999f, DamageType.Melee, thrower);
+                PlayClip(hitClip);
+            }
 
             transform.position = hit.point;
             Fall();
         }
 
+        private static AudioClip LoadClip(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return null;
+
+            AudioClip clip = Resources.Load<AudioClip>(path);
+            if (clip == null) Debug.LogWarning($"[ThrownWeapon] No clip at Resources/{path}");
+            return clip;
+        }
+
+        private static void PlayClip(string path)
+        {
+            AudioClip clip = LoadClip(path);
+            if (clip != null)
+                OneShotAudio.Play2D(clip, Vector3.zero);
+        }
+
         private void Fall()
         {
             spent = true;
+
+            if (whooshSource != null)
+            {
+                whooshSource.Stop();
+                Destroy(whooshSource);
+                whooshSource = null;
+            }
 
             var gravity = GetComponent<Gravity>();
             if (gravity == null) gravity = gameObject.AddComponent<Gravity>();

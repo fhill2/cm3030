@@ -196,6 +196,10 @@ namespace Game.Audio
 
         public void PlayTaunt() => Play(RandomClip(s_tauntClips), TauntVolume);
 
+        public void PlayDrop() => Play(RandomClip(s_dropClips));
+
+        public void PlayUnequipDelayed() => StartCoroutine(UnequipRoutine());
+
         private IEnumerator SwingRoutine()
         {
             yield return new WaitForSeconds(SwingDelay);
