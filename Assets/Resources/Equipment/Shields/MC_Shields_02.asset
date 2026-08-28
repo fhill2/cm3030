@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f08d799d6bcfa4372b54b0d75dc4cd65, type: 3}
   m_Name: MC_Shields_02
   m_EditorClassIdentifier: 
+  displayName: Heater Shield
   level: 2
   cost: 100

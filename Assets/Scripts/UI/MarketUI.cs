@@ -71,6 +71,8 @@ namespace Game.UI
 
         private Text marketTimer;
         private Text equipmentTimer;
+        private Text powerUpsTimer;
+        private Text spellsTimer;
 
         private readonly List<ItemRow> rows = new List<ItemRow>();
         private readonly List<EquipCell> cells = new List<EquipCell>();
@@ -85,6 +87,8 @@ namespace Game.UI
         private Equipment playerEquipment;
 
         private UITheme Theme => theme != null ? theme : UITheme.Default;
+
+        private static readonly Color CannotAffordColor = new Color(0.85f, 0.3f, 0.25f, 1f);
 
         private float PanelSize
         {
@@ -227,6 +231,8 @@ namespace Game.UI
             string line = $"{Mathf.CeilToInt(secondsLeft)}s left    \u00b7    {wallet.Gold} gold";
             if (marketTimer != null) marketTimer.text = line;
             if (equipmentTimer != null) equipmentTimer.text = line;
+            if (powerUpsTimer != null) powerUpsTimer.text = line;
+            if (spellsTimer != null) spellsTimer.text = line;
         }
 
         private void RefreshRows()
@@ -236,7 +242,13 @@ namespace Game.UI
             foreach (ItemRow row in rows)
             {
                 row.BuyLabel.text = ItemRowLabel(row.Index);
-                row.Buy.interactable = shop.CanAfford(row.Index);
+                bool affordable = shop.CanAfford(row.Index);
+                row.Buy.interactable = affordable;
+                row.BuyLabel.color = affordable ? Theme.text : CannotAffordColor;
+
+                RectTransform rt = (RectTransform)row.Buy.transform;
+                float measured = UIBuilder.MeasureButtonWidth(new[] { row.BuyLabel.text }, ButtonPadding, 18, Theme);
+                rt.sizeDelta = new Vector2(measured, rt.sizeDelta.y);
             }
         }
 
@@ -252,7 +264,9 @@ namespace Game.UI
                         : equip.WeaponPrefab == cell.Entry.Prefab);
 
                 cell.BuyLabel.text = equipped ? "EQUIPPED" : $"BUY \u2014 {cell.Entry.Cost}g";
-                cell.Buy.interactable = !equipped && wallet != null && wallet.Gold >= cell.Entry.Cost;
+                bool affordable = wallet != null && wallet.Gold >= cell.Entry.Cost;
+                cell.Buy.interactable = !equipped && affordable;
+                cell.BuyLabel.color = !equipped && !affordable ? CannotAffordColor : Theme.text;
             }
 
             FitCellsUniform();
@@ -458,9 +472,13 @@ namespace Game.UI
                 Theme, panelBorder, Color.clear);
             var content = UIBuilder.CreateContentRect(panel, PageInset);
 
-            UIBuilder.CreateText(content, "Title", "POWERUPS",
+            UIBuilder.CreateText(content, "Title", "RECHARGE",
                 new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f),
                 new Vector2(0f, 40f), TextAnchor.MiddleCenter, 24, Theme.text, Theme);
+
+            powerUpsTimer = UIBuilder.CreateText(content, "Timer", "",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -48f),
+                new Vector2(0f, 24f), TextAnchor.MiddleCenter, 16, Theme.text, Theme);
 
             float innerW = pageWidth - PageInset * 2f;
             float innerH = pageHeight - PageInset * 2f;
@@ -520,6 +538,10 @@ namespace Game.UI
             UIBuilder.CreateText(content, "Title", "SPELLS",
                 new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f),
                 new Vector2(0f, 40f), TextAnchor.MiddleCenter, 24, Theme.text, Theme);
+
+            spellsTimer = UIBuilder.CreateText(content, "Timer", "",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -48f),
+                new Vector2(0f, 24f), TextAnchor.MiddleCenter, 16, Theme.text, Theme);
 
             float innerW = pageWidth - PageInset * 2f;
             float innerH = pageHeight - PageInset * 2f;
@@ -616,8 +638,12 @@ namespace Game.UI
             ShopItemDef item = shop.ItemAt(index);
             if (item == null) return;
 
-            var buy = UIBuilder.CreateButton(parent, "BuyButton", "",
-                center, width,
+            string label = ItemRowLabel(index);
+            float buttonWidth = Mathf.Min(width,
+                UIBuilder.MeasureButtonWidth(new[] { label }, ButtonPadding, 18, Theme));
+
+            var buy = UIBuilder.CreateButton(parent, "BuyButton", label,
+                center, buttonWidth,
                 Theme, 18, () => BuyItem(index));
 
             var rt = (RectTransform)buy.transform;
@@ -663,7 +689,9 @@ namespace Game.UI
                 innerWidth * 0.5f - backRt.rect.width * 0.5f - Padding,
                 backRt.anchoredPosition.y);
 
-            IReadOnlyList<EquipmentEntry> entries = EquipmentCatalog.Entries;
+            var sorted = new System.Collections.Generic.List<EquipmentEntry>(EquipmentCatalog.Entries);
+            sorted.Sort((a, b) => a.Level != b.Level ? a.Level.CompareTo(b.Level) : string.Compare(a.Name, b.Name, System.StringComparison.OrdinalIgnoreCase));
+            IReadOnlyList<EquipmentEntry> entries = sorted;
             int rowCount = Mathf.Max(1, Mathf.CeilToInt(entries.Count / (float)Columns));
             float contentHeight = rowCount * (CellHeight + CellGap) + Padding * 2f;
 
@@ -673,11 +701,13 @@ namespace Game.UI
             float cellButtonWidth = UIBuilder.MeasureButtonWidth(cellLabels.ToArray(), ButtonPadding, 16, Theme);
             float cellButtonHeight = cellButtonWidth / UIBuilder.ButtonAspect;
 
-            UIBuilder.CreateScrollList(pageContent, "Grid",
+            Vector2 gridSize = new Vector2(innerWidth - Padding * 2f - 16f, innerHeight - HeaderHeight - Padding);
+            ScrollRect gridScroll = UIBuilder.CreateScrollList(pageContent, "Grid",
                 new Vector2(0.5f, 1f), new Vector2(0f, -HeaderHeight),
-                new Vector2(innerWidth - Padding * 2f, innerHeight - HeaderHeight - Padding),
-                Theme, out RectTransform gridContent);
+                gridSize, Theme, out RectTransform gridContent);
             gridContent.sizeDelta = new Vector2(0f, contentHeight);
+            Scrollbar gridBar = UIBuilder.CreateScrollbar(gridScroll.transform, gridScroll, gridSize.y, Theme);
+            gridBar.gameObject.SetActive(contentHeight > gridSize.y);
 
             for (int i = 0; i < entries.Count; i++)
                 CreateEquipmentCell(gridContent, entries[i], i, cellButtonWidth, cellButtonHeight);

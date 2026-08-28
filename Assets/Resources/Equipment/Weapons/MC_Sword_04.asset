@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0740d4442ed4c499d01e4e745a657e, type: 3}
   m_Name: MC_Sword_04
   m_EditorClassIdentifier: 
+  displayName: Royal Longsword
   damage: 18
   speed: 1.5
   level: 3

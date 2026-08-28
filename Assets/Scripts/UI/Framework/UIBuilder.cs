@@ -200,6 +200,7 @@ namespace Game.UI
             var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
             exit.callback.AddListener(_ =>
             {
+                if (!button.IsInteractable()) return;
                 label.fontSize = fontSize;
                 label.color = theme.text;
                 if (underline != null) underline.Hide();
@@ -288,6 +289,39 @@ namespace Game.UI
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity = 30f;
             return scroll;
+        }
+
+        public static Scrollbar CreateScrollbar(Transform parent, ScrollRect scroll, float height, UITheme theme)
+        {
+            var trackRt = CreateRect(parent, new Vector2(1f, 1f), new Vector2(1f, 1f),
+                new Vector2(-4f, -4f), new Vector2(10f, height - 8f));
+            trackRt.gameObject.name = "Scrollbar";
+            AttachImage(trackRt, theme.panelBackground);
+
+            var handleGo = new GameObject("Handle");
+            handleGo.transform.SetParent(trackRt, false);
+            var handleRt = handleGo.AddComponent<RectTransform>();
+            handleRt.anchorMin = Vector2.zero;
+            handleRt.anchorMax = Vector2.one;
+            handleRt.offsetMin = new Vector2(2f, 2f);
+            handleRt.offsetMax = new Vector2(-2f, -2f);
+            var handleImg = AttachImage(handleRt, theme.dimText);
+
+            var bar = trackRt.gameObject.AddComponent<Scrollbar>();
+            bar.handleRect = handleRt;
+            bar.targetGraphic = handleImg;
+            bar.direction = Scrollbar.Direction.BottomToTop;
+
+            var colors = bar.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = Color.white;
+            colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
+            colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+            bar.colors = colors;
+
+            scroll.verticalScrollbar = bar;
+            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
+            return bar;
         }
 
         public const string BorderResourceFolder = "UI/Borders";
