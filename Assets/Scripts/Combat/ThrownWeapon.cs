@@ -46,7 +46,8 @@ namespace Game.Combat
         {
             thrower = source;
             flightDirection = direction.sqrMagnitude > 0.001f ? direction.normalized : Vector3.forward;
-            strikeDamage = (GetComponent<Weapon>()?.Def?.Damage ?? 0f) * 2f;
+            WeaponDef def = GetComponent<Weapon>()?.Def;
+            strikeDamage = def != null && def.Speed > 0f ? def.Damage / def.Speed * 3f : 0f;
             roll = Random.Range(-rollSpin, rollSpin);
             fallSpeed = 0f;
             launchedAt = Time.time;
