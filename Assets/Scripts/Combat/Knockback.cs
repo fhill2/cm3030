@@ -24,6 +24,12 @@ namespace Game.Combat
         [Tooltip("Seconds the enemy is frozen on impact before the launch sends them flying.")]
         [SerializeField] private float launchDelay = 0.25f;
 
+        [Tooltip("Radius of the wall sweep while airborne, matched loosely to the body.")]
+        [SerializeField] private float wallRadius = 0.35f;
+
+        [Tooltip("Gap kept between the enemy and whatever stopped them.")]
+        [SerializeField] private float skinWidth = 0.05f;
+
         private NavMeshAgent agent;
         private WeaponCollider[] weaponColliders;
         private Vector3 velocity;
@@ -72,8 +78,33 @@ namespace Game.Combat
             if (!airborne) return;
 
             velocity.y += gravity * Time.deltaTime;
-            transform.position += velocity * Time.deltaTime;
+            MoveWithCollisions();
+            TryLand();
+        }
 
+        private void MoveWithCollisions()
+        {
+            Vector3 move = velocity * Time.deltaTime;
+            float dist = move.magnitude;
+            if (dist < 0.0001f) return;
+
+            Vector3 origin = transform.position + Vector3.up * 0.5f;
+            if (Physics.SphereCast(origin, wallRadius, move.normalized, out RaycastHit hit,
+                    dist + skinWidth, ~0, QueryTriggerInteraction.Ignore) &&
+                !CombatProbe.IsIgnored(hit.transform, transform))
+            {
+                float travel = Mathf.Max(0f, hit.distance - skinWidth);
+                transform.position += move.normalized * travel;
+                velocity = Vector3.ProjectOnPlane(velocity, hit.normal);
+            }
+            else
+            {
+                transform.position += move;
+            }
+        }
+
+        private void TryLand()
+        {
             Vector3 origin = transform.position + Vector3.up * 0.5f;
             if (velocity.y < 0f &&
                 Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 0.5f + landDistance,
