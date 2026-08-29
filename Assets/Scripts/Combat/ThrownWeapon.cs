@@ -35,6 +35,7 @@ namespace Game.Combat
 
         private GameObject thrower;
         private Vector3 flightDirection = Vector3.forward;
+        private float strikeDamage;
         private float roll;
         private float fallSpeed;
         private float launchedAt;
@@ -45,6 +46,7 @@ namespace Game.Combat
         {
             thrower = source;
             flightDirection = direction.sqrMagnitude > 0.001f ? direction.normalized : Vector3.forward;
+            strikeDamage = (GetComponent<Weapon>()?.Def?.Damage ?? 0f) * 2f;
             roll = Random.Range(-rollSpin, rollSpin);
             fallSpeed = 0f;
             launchedAt = Time.time;
@@ -73,43 +75,21 @@ namespace Game.Combat
             Vector3 velocity = flightDirection * speed + Vector3.up * fallSpeed;
             float step = velocity.magnitude * Time.deltaTime;
 
-            if (Physics.SphereCast(transform.position, radius, velocity.normalized,
-                    out RaycastHit hit, step, ~0, QueryTriggerInteraction.Ignore))
+            IDamageable struck = CombatProbe.Sweep(transform.position, velocity.normalized,
+                step, radius, thrower != null ? thrower.transform : null);
+
+            if (struck != null)
             {
-                if (!IsThrower(hit.transform))
-                {
-                    Impact(hit);
-                    return;
-                }
+                struck.TakeDamage(strikeDamage, DamageType.Melee, thrower);
+                PlayClip(hitClip);
+                transform.position += velocity * Time.deltaTime;
+                Fall();
+                return;
             }
 
             transform.position += velocity * Time.deltaTime;
 
             if (Time.time - launchedAt > lifetime) Fall();
-        }
-
-        private bool IsThrower(Transform other)
-        {
-            if (thrower == null || other == null) return false;
-
-            Transform throwerRoot = thrower.transform.root;
-            return other == thrower.transform
-                   || other.IsChildOf(throwerRoot)
-                   || throwerRoot.IsChildOf(other);
-        }
-
-        private void Impact(RaycastHit hit)
-        {
-            IDamageable target = hit.collider.GetComponentInParent<IDamageable>();
-
-            if (target != null && target.IsAlive)
-            {
-                target.TakeDamage(99999f, DamageType.Melee, thrower);
-                PlayClip(hitClip);
-            }
-
-            transform.position = hit.point;
-            Fall();
         }
 
         private static AudioClip LoadClip(string path)

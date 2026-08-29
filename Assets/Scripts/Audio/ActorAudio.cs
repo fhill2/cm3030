@@ -223,6 +223,8 @@ namespace Game.Audio
 
         public void PlayTaunt() => Play(RandomClip(s_tauntClips), TauntVolume);
 
+        public void PlayHit() => Play(RandomVocal(s_damageClips, s_shortScreamClips));
+
         public void PlayDrop() => Play(RandomClip(s_dropClips));
 
         public void PlayUnequipDelayed() => StartCoroutine(UnequipRoutine());

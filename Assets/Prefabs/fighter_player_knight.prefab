@@ -7265,6 +7265,7 @@ GameObject:
   - component: {fileID: 5533001100000000001}
   - component: {fileID: 5533001100000000002}
   - component: {fileID: 5533001100000000003}
+  - component: {fileID: 5533001100000000004}
   m_Layer: 0
   m_Name: fighter_player_knight
   m_TagString: Player
@@ -7316,6 +7317,21 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   collectRadius: 2.5
+--- !u!114 &5533001100000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3300592954359289009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf538dfcbeb94248ad084878b856431a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  range: 4
+  arcAngle: 90
+  arcHeight: 1.2
 --- !u!4 &2775870359928196619
 Transform:
   m_ObjectHideFlags: 0

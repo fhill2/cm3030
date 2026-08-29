@@ -10,7 +10,7 @@ namespace Game.UI
     {
         public const string IconFolder = "UI/hotbar_icons";
 
-        private const int TotalSlots = 13;
+        private const int TotalSlots = 14;
         private const float SlotSize = 64f;
         private const float SlotGap = 0f;
         private const float AnchoredY = 0.04f;
@@ -44,6 +44,7 @@ namespace Game.UI
         private Slot attack;
         private Slot guard;
         private Slot tauntSlot;
+        private Slot knockbackSlot;
         private Slot throwSlot;
         private Slot collectSlot;
         private Slot healthPotion;
@@ -55,6 +56,7 @@ namespace Game.UI
         private PlayerTaunt taunt;
         private PlayerMovement movement;
         private PotionBelt belt;
+        private ArcStrikes strikes;
 
         private static readonly Color GuardActive = new Color(1f, 0.9f, 0.5f, 1f);
         private static readonly Color Dimmed = new Color(1f, 1f, 1f, 0.45f);
@@ -73,6 +75,7 @@ namespace Game.UI
             taunt = GetComponent<PlayerTaunt>();
             movement = GetComponent<PlayerMovement>();
             belt = GetComponent<PotionBelt>();
+            strikes = GetComponent<ArcStrikes>();
         }
 
         private void OnEnable()
@@ -108,10 +111,11 @@ namespace Game.UI
 
             attack = CreateSlot(bar.transform, 1, "LClick", AttackIcon);
             guard = CreateSlot(bar.transform, 2, "RClick", GuardIcon);
-            tauntSlot = CreateSlot(bar.transform, 3, "E", TauntIcon);
-            throwSlot = CreateSlot(bar.transform, 4, "R", ThrowIcon);
-            healthPotion = CreatePotionSlot(bar.transform, 5, "T", "health_potion");
-            staminaPotion = CreatePotionSlot(bar.transform, 6, "G", "stamina_potion");
+            knockbackSlot = CreateSlot(bar.transform, 3, "Q", "knockback");
+            tauntSlot = CreateSlot(bar.transform, 4, "E", TauntIcon);
+            throwSlot = CreateSlot(bar.transform, 5, "R", ThrowIcon);
+            healthPotion = CreatePotionSlot(bar.transform, 6, "C", "health_potion");
+            staminaPotion = CreatePotionSlot(bar.transform, 7, "V", "stamina_potion");
             collectSlot = CreateSlot(bar.transform, 0, "TAB", "collect");
 
             var hotkeys = caster != null ? caster.HotkeySpells : null;
@@ -122,7 +126,7 @@ namespace Game.UI
                 int level = i % 3 + 1;
                 string icon = (school == SpellSchool.Fire ? "fire_" : "ice_") + level;
 
-                Slot slot = CreateSlot(bar.transform, 7 + i, (i + 1).ToString(), icon);
+                Slot slot = CreateSlot(bar.transform, 8 + i, (i + 1).ToString(), icon);
 
                 SpellDef spell = null;
                 if (hotkeys != null && i < hotkeys.Count) spell = hotkeys[i];
@@ -236,6 +240,11 @@ namespace Game.UI
             bool blocking = movement != null && movement.IsBlocking;
             SetReady(guard, blocking ? GuardActive : Color.white);
             guard.Border.enabled = blocking;
+
+            UpdateCooldown(knockbackSlot,
+                strikes != null ? strikes.CooldownRemaining : 0f,
+                strikes != null ? strikes.CooldownDuration : 1f,
+                Color.white);
 
             UpdateCooldown(tauntSlot,
                 taunt != null ? taunt.CooldownRemaining : 0f,

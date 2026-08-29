@@ -13,6 +13,7 @@ namespace Game.Shared
 
         // ── Combat ─────────────────────────────────
         public static readonly int Attack      = Animator.StringToHash("Attack");
+        public static readonly int Knockback   = Animator.StringToHash("Knockback");
         public static readonly int ComboStep   = Animator.StringToHash("ComboStep");
         public static readonly int InCombat    = Animator.StringToHash("InCombat");
         public static readonly int Block       = Animator.StringToHash("Block");

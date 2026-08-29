@@ -69,8 +69,8 @@ namespace Game.Core
             if (kb == null) return;
             if (movement != null && !movement.ControlEnabled) return;
 
-            if (kb.tKey.wasPressedThisFrame) TryUseHealth();
-            if (kb.gKey.wasPressedThisFrame) TryUseStamina();
+            if (kb.cKey.wasPressedThisFrame) TryUseHealth();
+            if (kb.vKey.wasPressedThisFrame) TryUseStamina();
         }
 
         private void TryUseHealth()
