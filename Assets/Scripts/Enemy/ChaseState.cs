@@ -31,8 +31,10 @@ namespace Game.Enemy
                 return;
             }
 
-            // Pursue the player's current position.
-            agent.SetDestination(player.transform.position);
+            // Pursue the player's current position. Skipped while the agent is
+            // disabled (e.g. a Knockback has the enemy airborne).
+            if (agent != null && agent.enabled)
+                agent.SetDestination(player.transform.position);
 
             float dist = HorizontalDistance(npc.transform.position, player.transform.position);
 
