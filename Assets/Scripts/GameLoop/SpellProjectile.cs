@@ -27,7 +27,7 @@ namespace Game.Core
         [SerializeField] private float targetRadius = 0.6f;
 
         [Header("Debug")]
-        [SerializeField] private bool logHits = true;
+        [SerializeField] private bool logHits;
 
         private float damage;
         private float speed;
@@ -35,6 +35,11 @@ namespace Game.Core
         private SpellDef spell;
         private Transform casterRoot;
 
+        private GameObject impactEffect;
+        private float impactScale = 1f;
+        private float impactLifetime = 3f;
+
+        // Called by SpellCaster the moment the projectile is created.
         public void Launch(SpellDef spellDef, float damageAmount, float projectileSpeed,
                            float lifetime, GameObject source)
         {
@@ -45,6 +50,15 @@ namespace Game.Core
             casterRoot = source != null ? source.transform.root : null;
 
             if (lifetime > 0f) Destroy(gameObject, lifetime);
+        }
+
+        // Impact visuals are set separately so Launch keeps the same signature
+        // it had before the VFX existed.
+        public void SetImpact(GameObject effect, float scale, float lifetime)
+        {
+            impactEffect = effect;
+            impactScale = scale;
+            impactLifetime = lifetime;
         }
 
         private void Update()
@@ -86,7 +100,7 @@ namespace Game.Core
                     Debug.Log($"[SpellProjectile] Hit {col.transform.root.name} for {damage}");
 
                 target.TakeDamage(damage, DamageType.Magic, caster);
-                Destroy(gameObject);
+                Detonate(transform.position, -transform.forward);
                 return true;
             }
 
@@ -112,6 +126,17 @@ namespace Game.Core
             if (logHits)
                 Debug.Log($"[SpellProjectile] Stopped on {hit.collider.name}");
 
+            // Face the effect out of the surface, so sparks fly away from the
+            // wall instead of into it.
+            Detonate(hit.point, hit.normal);
+            return true;
+        }
+
+        // Spawn the impact effect, play the hit sound and remove the
+        // projectile. The effect is a separate object so it can outlive the
+        // ball and finish its particles.
+        private void Detonate(Vector3 position, Vector3 normal)
+        {
             var hitClips = spell != null ? spell.HitClip : null;
             if (hitClips != null)
                 foreach (var clip in hitClips)
@@ -119,8 +144,16 @@ namespace Game.Core
             else if (logHits)
                 Debug.Log($"[SpellProjectile] {spell?.DisplayName} hit has no clips");
 
+            if (impactEffect != null)
+            {
+                GameObject vfx = Instantiate(
+                    impactEffect, position, Quaternion.LookRotation(normal));
+
+                vfx.transform.localScale *= impactScale;
+                Destroy(vfx, impactLifetime);
+            }
+
             Destroy(gameObject);
-            return true;
         }
 
         // Only the caster's own hierarchy is passed through.
