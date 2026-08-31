@@ -26,12 +26,16 @@ namespace Game.Core
         [SerializeField] private float targetRadius = 0.6f;
 
         [Header("Debug")]
-        [SerializeField] private bool logHits = true;
+        [SerializeField] private bool logHits;
 
         private float damage;
         private float speed;
         private GameObject caster;
         private Transform casterRoot;
+
+        private GameObject impactEffect;
+        private float impactScale = 1f;
+        private float impactLifetime = 3f;
 
         // Called by SpellCaster the moment the projectile is created.
         public void Launch(float damageAmount, float projectileSpeed,
@@ -43,6 +47,15 @@ namespace Game.Core
             casterRoot = source != null ? source.transform.root : null;
 
             if (lifetime > 0f) Destroy(gameObject, lifetime);
+        }
+
+        // Impact visuals are set separately so Launch keeps the same signature
+        // it had before the VFX existed.
+        public void SetImpact(GameObject effect, float scale, float lifetime)
+        {
+            impactEffect = effect;
+            impactScale = scale;
+            impactLifetime = lifetime;
         }
 
         private void Update()
@@ -84,7 +97,7 @@ namespace Game.Core
                     Debug.Log($"[SpellProjectile] Hit {col.transform.root.name} for {damage}");
 
                 target.TakeDamage(damage, DamageType.Magic, caster);
-                Destroy(gameObject);
+                Detonate(transform.position, -transform.forward);
                 return true;
             }
 
@@ -110,8 +123,26 @@ namespace Game.Core
             if (logHits)
                 Debug.Log($"[SpellProjectile] Stopped on {hit.collider.name}");
 
-            Destroy(gameObject);
+            // Face the effect out of the surface, so sparks fly away from the
+            // wall instead of into it.
+            Detonate(hit.point, hit.normal);
             return true;
+        }
+
+        // Spawn the impact effect and remove the projectile. The effect is a
+        // separate object so it can outlive the ball and finish its particles.
+        private void Detonate(Vector3 position, Vector3 normal)
+        {
+            if (impactEffect != null)
+            {
+                GameObject vfx = Instantiate(
+                    impactEffect, position, Quaternion.LookRotation(normal));
+
+                vfx.transform.localScale *= impactScale;
+                Destroy(vfx, impactLifetime);
+            }
+
+            Destroy(gameObject);
         }
 
         // Only the caster's own hierarchy is passed through.

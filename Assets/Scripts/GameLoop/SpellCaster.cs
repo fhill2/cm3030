@@ -136,6 +136,7 @@ namespace Game.Core
             SpellProjectile component = projectile.GetComponent<SpellProjectile>();
             if (component != null)
             {
+                component.SetImpact(spell.ImpactEffect, spell.ImpactScale, spell.ImpactLifetime);
                 component.Launch(spell.Damage, spell.ProjectileSpeed,
                                  spell.ProjectileLifetime, gameObject);
             }
