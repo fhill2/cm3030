@@ -8924,6 +8924,18 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 72b6a360bb40484bb8c2ecf78ed17d34, type: 2}
   - {fileID: 11400000, guid: 783d1bf408ce491ab9312a0ca1738ca0, type: 2}
   - {fileID: 11400000, guid: 5a49e8e5d196487cbba8295a19923a6a, type: 2}
+  - {fileID: 11400000, guid: fc23aef2c1a306a4ab25e9b7faaf5773, type: 2}
+  - {fileID: 11400000, guid: a3be6ded47db98a4483f6666c1ab525f, type: 2}
+  - {fileID: 11400000, guid: d0ad3a03b73eef44fbc2d2f418a39f96, type: 2}
+  - {fileID: 11400000, guid: 4ff56f2165940e94dbdcd447fef5b79a, type: 2}
+  - {fileID: 11400000, guid: 76c195577bb66114c9101b06d22d046f, type: 2}
+  - {fileID: 11400000, guid: 967ddc4265c6a5d488a5401043c25a0c, type: 2}
+  - {fileID: 11400000, guid: 999f322de39d8964b9871c2be2e7243b, type: 2}
+  - {fileID: 11400000, guid: 65fad2cd7daad2444861198b2b739874, type: 2}
+  - {fileID: 11400000, guid: a59480938f61d4542b4477449be81b31, type: 2}
+  - {fileID: 11400000, guid: c7dda16bf43a99b40bdcf98ee9ee50f9, type: 2}
+  - {fileID: 11400000, guid: f7468b1a90d3f7e4e9d97a2cc8acd68a, type: 2}
+  - {fileID: 11400000, guid: b2cbbf9fa22b0024eb38eb89561703b1, type: 2}
   spawnRadius: 2
   logRemaining: 1
   patrolPathsRoot: {fileID: 168517097}
@@ -9071,8 +9083,13 @@ MonoBehaviour:
   shop: {fileID: 404486889}
   wallet: {fileID: 404486888}
   stateMachine: {fileID: 404486885}
-  panelWidth: 420
-  rowHeight: 60
+  theme: {fileID: 0}
+  panelBorder:
+    spriteName: market_ui_panel_border_3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+  panelSizePercent: 0.25
+  contentInsetPercent: 0.15
 --- !u!114 &404486892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22663,6 +22680,7 @@ MonoBehaviour:
   attackCost: 25
   jumpCost: 20
   sprintDrainPerSecond: 25
+  blockDrainPerSecond: 1
   regenPerSecond: 18
   regenDelayAfterSwing: 1
   stunDuration: 2
@@ -52170,6 +52188,8 @@ MonoBehaviour:
   deathPitch: 75
   deathDistance: 50
   deathTransitionTime: 1.5
+  menuCameraAnchor: {fileID: 0}
+  introDuration: 2.5
 --- !u!4 &22464847560310531 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1227146858607074725, guid: b67a07d91f406584e8e9640ae1ecc591, type: 3}

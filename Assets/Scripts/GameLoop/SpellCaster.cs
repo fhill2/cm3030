@@ -132,6 +132,7 @@ namespace Game.Core
 
             GameObject projectile = Instantiate(
                 spell.ProjectilePrefab, origin, Quaternion.LookRotation(direction));
+                projectile.transform.localScale *= spell.ProjectileScale;
 
             SpellProjectile component = projectile.GetComponent<SpellProjectile>();
             if (component != null)

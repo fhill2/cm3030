@@ -15,10 +15,14 @@ MonoBehaviour:
   displayName: Greater Fireball
   school: 0
   level: 2
-  damage: 55
+  damage: 45
   staminaCost: 60
   cooldown: 4
-  projectilePrefab: {fileID: 3090489049677746401, guid: edc62b1e3e16c6042b0d65f6ad18dab5, type: 3}
+  projectilePrefab: {fileID: 3226506910322988314, guid: eccbc655050af0b4f81d8db39f84a58e, type: 3}
+  projectileScale: 1
   projectileSpeed: 50
   projectileLifetime: 6
+  impactEffect: {fileID: 358637981425055526, guid: 8eb503696b886e04faff8fc0f480d473, type: 3}
+  impactScale: 1
+  impactLifetime: 1
   dropWeight: 3

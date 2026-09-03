@@ -15,10 +15,14 @@ MonoBehaviour:
   displayName: Fireball
   school: 0
   level: 1
-  damage: 30
+  damage: 25
   staminaCost: 30
   cooldown: 2.5
-  projectilePrefab: {fileID: 3090489049677746401, guid: edc62b1e3e16c6042b0d65f6ad18dab5, type: 3}
+  projectilePrefab: {fileID: 3226506910322988314, guid: eccbc655050af0b4f81d8db39f84a58e, type: 3}
+  projectileScale: 0.7
   projectileSpeed: 30
   projectileLifetime: 4
+  impactEffect: {fileID: 358637981425055526, guid: 8eb503696b886e04faff8fc0f480d473, type: 3}
+  impactScale: 0.5
+  impactLifetime: 1
   dropWeight: 6

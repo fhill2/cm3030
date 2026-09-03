@@ -15,10 +15,14 @@ MonoBehaviour:
   displayName: Greater Frost Bolt
   school: 1
   level: 2
-  damage: 55
+  damage: 45
   staminaCost: 60
   cooldown: 4
   projectilePrefab: {fileID: 5616977154778203818, guid: 950f7f692ead8db4695f2fdb6e47c1fc, type: 3}
+  projectileScale: 1.4
   projectileSpeed: 50
   projectileLifetime: 6
+  impactEffect: {fileID: 4924508274929071776, guid: 0edef91621bb6b34384ccc9dbb98729c, type: 3}
+  impactScale: 1
+  impactLifetime: 1
   dropWeight: 3
