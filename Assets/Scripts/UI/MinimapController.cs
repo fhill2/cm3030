@@ -22,6 +22,10 @@ namespace Game.UI
         [Tooltip("Height above the player the camera sits at, looking straight down.")]
         [SerializeField] private float cameraHeight = 30f;
 
+        [Header("Render Throttle")]
+        [Tooltip("Seconds between minimap camera renders. 0.1 = 10 Hz; 0 renders every frame.")]
+        [SerializeField] private float renderInterval = 0.1f;
+
         [Header("Edge Clamping")]
         [Tooltip("Enemies outside the camera's view get pinned to the rim of the panel, this many pixels in from the actual edge, instead of being placed off the panel entirely.")]
         [SerializeField] private float edgePadding = 8f;
@@ -33,12 +37,17 @@ namespace Game.UI
 
         private Camera cam;
         private bool isVisible = true;
+        private float renderTimer;
         private readonly Dictionary<GameObject, RectTransform> dots = new Dictionary<GameObject, RectTransform>();
         private readonly List<GameObject> staleBuffer = new List<GameObject>();
 
         private void Awake()
         {
             cam = minimapCamera != null ? minimapCamera.GetComponent<Camera>() : null;
+
+            // The camera component stays disabled so Unity never auto-renders it
+            // every frame; RenderMinimap() forces a manual render on a timer.
+            if (cam != null) cam.enabled = false;
 
             // Hidden by default the instant the scene loads, before the game
             // state machine's first OnGameStateChanged has a chance to fire —
@@ -78,9 +87,21 @@ namespace Game.UI
             if (player == null || cam == null || mapRect == null) return;
             if (visibilityGroup != null && !isVisible) return;
 
-            FollowPlayer();
+            if (cam.enabled) cam.enabled = false;
+
             UpdatePlayerIcon();
             UpdateEnemyDots();
+            RenderMinimap();
+        }
+
+        private void RenderMinimap()
+        {
+            renderTimer += Time.unscaledDeltaTime;
+            if (renderInterval > 0f && renderTimer < renderInterval) return;
+            renderTimer = 0f;
+
+            FollowPlayer();
+            cam.Render();
         }
 
         private void FollowPlayer()

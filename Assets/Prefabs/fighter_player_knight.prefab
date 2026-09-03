@@ -2428,6 +2428,7 @@ GameObject:
   - component: {fileID: 7529361470281594603}
   - component: {fileID: 8416372592436905744}
   - component: {fileID: 7092839270391570973}
+  - component: {fileID: 7915320488123456789}
   m_Layer: 0
   m_Name: fighter_player_knight
   m_TagString: Player
@@ -11819,3 +11820,27 @@ Transform:
   - {fileID: 6372560552184889934}
   m_Father: {fileID: 8436204750677056310}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7915320488123456789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3300592954359289009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc5e811774190e843a556c1195a4ca6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spellBook: {fileID: 0}
+  aimSource: {fileID: 0}
+  hotkeySpells:
+  - {fileID: 11400000, guid: 5e6b5f468b129664abdb0311c421c23f, type: 2}
+  - {fileID: 11400000, guid: e9f19d2d544558f46803e055e91ba6ea, type: 2}
+  - {fileID: 11400000, guid: 6f7d8fe0fcd017a40895a2da8bc969b4, type: 2}
+  - {fileID: 11400000, guid: 08c628590b9fd254b894672a4bffe9ee, type: 2}
+  - {fileID: 11400000, guid: 756560591caea1f4e9a176bcbeb79dd9, type: 2}
+  - {fileID: 11400000, guid: 816473e48a60133468630cf6c458c7e9, type: 2}
+  castHeight: 1.4
+  castForward: 0.6
+  logCasts: 1

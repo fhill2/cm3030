@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Audio;
 using Game.Combat;
 using Game.Health;
 
@@ -46,12 +47,16 @@ namespace Game.Core
         [Header("Debug")]
         [SerializeField] private bool logCasts = true;
 
+        public System.Collections.Generic.IReadOnlyList<SpellDef> HotkeySpells => hotkeySpells;
+
         private StaminaSystem stamina;
         private bool isDead;
 
         // One cooldown per school, so casting fire doesn't lock out ice.
         private float fireReadyAt;
         private float iceReadyAt;
+        private float fireCooldownDuration;
+        private float iceCooldownDuration;
 
         private void Awake()
         {
@@ -110,7 +115,7 @@ namespace Game.Core
             if (stamina != null && !stamina.TrySpendSpell(spell.StaminaCost)) return;
 
             Fire(spell);
-            SetReadyTime(spell.School, Time.time + spell.Cooldown);
+            SetReadyTime(spell.School, Time.time + spell.Cooldown, spell.Cooldown);
         }
 
         private void Fire(SpellDef spell)
@@ -138,9 +143,16 @@ namespace Game.Core
             if (component != null)
             {
                 component.SetImpact(spell.ImpactEffect, spell.ImpactScale, spell.ImpactLifetime);
-                component.Launch(spell.Damage, spell.ProjectileSpeed,
+                component.Launch(spell, spell.Damage, spell.ProjectileSpeed,
                                  spell.ProjectileLifetime, gameObject);
             }
+
+            var castClips = spell.CastClip;
+            if (castClips != null)
+                foreach (var clip in castClips)
+                    OneShotAudio.Play2D(clip, origin);
+            else if (logCasts)
+                Debug.Log($"[SpellCaster] {spell.DisplayName} cast has no clips");
 
             if (logCasts) Debug.Log($"[SpellCaster] Cast {spell.DisplayName}");
         }
@@ -179,10 +191,28 @@ namespace Game.Core
             return school == SpellSchool.Fire ? fireReadyAt : iceReadyAt;
         }
 
-        private void SetReadyTime(SpellSchool school, float time)
+        public float CooldownRemaining(SpellSchool school)
         {
-            if (school == SpellSchool.Fire) fireReadyAt = time;
-            else iceReadyAt = time;
+            return Mathf.Max(0f, ReadyTimeFor(school) - Time.time);
+        }
+
+        public float CooldownDuration(SpellSchool school)
+        {
+            return school == SpellSchool.Fire ? fireCooldownDuration : iceCooldownDuration;
+        }
+
+        private void SetReadyTime(SpellSchool school, float time, float duration)
+        {
+            if (school == SpellSchool.Fire)
+            {
+                fireReadyAt = time;
+                fireCooldownDuration = duration;
+            }
+            else
+            {
+                iceReadyAt = time;
+                iceCooldownDuration = duration;
+            }
         }
     }
 }

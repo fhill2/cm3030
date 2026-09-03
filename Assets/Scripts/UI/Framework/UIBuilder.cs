@@ -10,7 +10,6 @@ namespace Game.UI
     public static class UIBuilder
     {
         private static Font s_font;
-        private static Sprite s_buttonUnderline;
         private static readonly Dictionary<string, Sprite> s_artCache = new Dictionary<string, Sprite>();
         private static readonly HashSet<string> s_missingArt = new HashSet<string>();
 
@@ -18,7 +17,6 @@ namespace Game.UI
         private static void ResetStatics()
         {
             s_font = null;
-            s_buttonUnderline = null;
             s_artCache.Clear();
             s_missingArt.Clear();
         }
@@ -144,8 +142,6 @@ namespace Game.UI
 
         public const float ButtonAspect = 1.55f;
         public const string ButtonResourceFolder = "UI/Buttons";
-        public const string ButtonUnderlineName = "button_underline_2";
-        public const float ButtonUnderlineHeight = 0.7f;
         public static readonly Color ButtonHoverText = new Color(0.761f, 0.663f, 0.439f);
         public const float ButtonHoverFontScale = 1.2f;
 
@@ -168,25 +164,26 @@ namespace Game.UI
             button.colors = colors;
             if (onClick != null) button.onClick.AddListener(() => onClick());
 
-            var underline = GetButtonUnderline();
-            if (underline != null)
-            {
-                var underlineRt = CreateRect(rt, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                    Vector2.zero, new Vector2(width, width / ButtonAspect * ButtonUnderlineHeight));
-                underlineRt.gameObject.name = "Underline";
-                var underlineImg = AttachImage(underlineRt, Color.white);
-                underlineImg.sprite = underline;
-                underlineImg.raycastTarget = false;
-                button.targetGraphic = underlineImg;
-            }
+            var underlineGo = new GameObject("Underline");
+            underlineGo.transform.SetParent(rt, false);
+            var underlineRt = underlineGo.AddComponent<RectTransform>();
+            underlineRt.anchorMin = new Vector2(0.5f, 0f);
+            underlineRt.anchorMax = new Vector2(0.5f, 0f);
+            underlineRt.pivot = new Vector2(0.5f, 0f);
+            underlineRt.anchoredPosition = Vector2.zero;
+            underlineRt.sizeDelta = new Vector2(0f, 4f);
+            var underlineImg = AttachImage(underlineRt, theme.accent);
+            underlineImg.raycastTarget = false;
+            var underline = underlineGo.AddComponent<ButtonUnderline>();
 
             var labelRt = CreateStretchChild(rt, "Text");
             var labelText = AttachText(labelRt, label, TextAnchor.MiddleCenter, fontSize, theme.text, GetFont(theme));
-            HookButtonHover(rt.gameObject, button, labelText, fontSize, theme);
+            HookButtonHover(rt.gameObject, button, labelText, fontSize, theme, underline, width);
             return button;
         }
 
-        static void HookButtonHover(GameObject go, Button button, Text label, int fontSize, UITheme theme)
+        static void HookButtonHover(GameObject go, Button button, Text label, int fontSize, UITheme theme,
+            ButtonUnderline underline, float width)
         {
             var trigger = go.AddComponent<EventTrigger>();
 
@@ -196,6 +193,7 @@ namespace Game.UI
                 if (!button.IsInteractable()) return;
                 label.fontSize = Mathf.Max(fontSize + 2, Mathf.RoundToInt(fontSize * ButtonHoverFontScale));
                 label.color = ButtonHoverText;
+                if (underline != null) underline.Show(width);
             });
             trigger.triggers.Add(enter);
 
@@ -204,15 +202,9 @@ namespace Game.UI
             {
                 label.fontSize = fontSize;
                 label.color = theme.text;
+                if (underline != null) underline.Hide();
             });
             trigger.triggers.Add(exit);
-        }
-
-        public static Sprite GetButtonUnderline()
-        {
-            if (s_buttonUnderline == null)
-                s_buttonUnderline = LoadTextureSprite(ButtonResourceFolder + "/" + ButtonUnderlineName);
-            return s_buttonUnderline;
         }
 
         public static float MeasureButtonWidth(string[] labels, float padding, int fontSize, UITheme theme)
