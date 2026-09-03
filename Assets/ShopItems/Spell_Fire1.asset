@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Fireball
   description: 
-  baseCost: 60
+  baseCost: 30
   costGrowth: 1
   effect: 2
   magnitude: 5

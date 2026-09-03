@@ -2178,6 +2178,7 @@ GameObject:
   - component: {fileID: 4827193650182745101}
   - component: {fileID: 6284159370214683542}
   - component: {fileID: 6870617048169348751}
+  - component: {fileID: -1985955567333141488}
   - component: {fileID: 7726666805875743412}
   - component: {fileID: 257850712554725512}
   - component: {fileID: 1810106068659331763}
@@ -2534,6 +2535,28 @@ MonoBehaviour:
   - {fileID: 6550804457596160986, guid: c2ff9a62d0009a64a81cc1a4bba59fd5, type: 3}
   - {fileID: 4055846304957825616, guid: 700b4d22453a6ef438be63e4c5c37167, type: 3}
   - {fileID: 4055846304957825616, guid: e855d12d7bfdb464b94ef1f1d20cf814, type: 3}
+--- !u!114 &-1985955567333141488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2759925646633051954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9b16ea211d50034795e9bc78bbe3ec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dropChance: 0.33
+  dropTable:
+  - {fileID: 11400000, guid: 5e6b5f468b129664abdb0311c421c23f, type: 2}
+  - {fileID: 11400000, guid: e9f19d2d544558f46803e055e91ba6ea, type: 2}
+  - {fileID: 11400000, guid: 6f7d8fe0fcd017a40895a2da8bc969b4, type: 2}
+  - {fileID: 11400000, guid: 08c628590b9fd254b894672a4bffe9ee, type: 2}
+  - {fileID: 11400000, guid: 756560591caea1f4e9a176bcbeb79dd9, type: 2}
+  - {fileID: 11400000, guid: 816473e48a60133468630cf6c458c7e9, type: 2}
+  tomePickupPrefab: {fileID: 0}
+  dropHeight: 1
 --- !u!114 &7726666805875743412
 MonoBehaviour:
   m_ObjectHideFlags: 0

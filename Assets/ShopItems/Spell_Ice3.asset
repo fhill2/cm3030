@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b7b59717b346b141ab61518d0957bbd, type: 3}
   m_Name: Spell_Ice3
   m_EditorClassIdentifier: 
-  displayName: Greater Frost Bolt
+  displayName: Glacial Lance
   description: 
-  baseCost: 120
+  baseCost: 220
   costGrowth: 1
   effect: 2
   magnitude: 5
   maxPurchases: 1
-  spell: {fileID: 11400000, guid: 756560591caea1f4e9a176bcbeb79dd9, type: 2}
+  spell: {fileID: 11400000, guid: 816473e48a60133468630cf6c458c7e9, type: 2}

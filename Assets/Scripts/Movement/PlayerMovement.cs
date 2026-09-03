@@ -116,6 +116,12 @@ namespace Game.Movement
             {
                 // Menu, shop or game over: no input, but gravity keeps running
                 // so the character rests on the ground instead of hovering.
+                //
+                // The animator has to be zeroed too, or a player who was running
+                // when the shop opened keeps running on the spot. Skipped when
+                // dead so the death clip plays out untouched.
+                if (!isDead) ClearLocomotion();
+
                 SettleUncontrolled();
                 return;
             }
@@ -125,26 +131,6 @@ namespace Game.Movement
                 // Dead players don't walk, sprint, jump or block. Gravity still
                 // runs so the body settles rather than hanging where it died.
                 SettleUncontrolled();
-                return;
-            }
-
-                        // Shop and menu states freeze the knight. Gravity still runs below
-            // so he settles on the ground rather than hanging mid-step.
-            if (PlayerInputLock.InputLocked)
-            {
-                IsSprintingNow = false;
-                IsBlocking = false;
-                if (animator != null)
-                {
-                    animator.SetBool(AnimParams.Sprint, false);
-                    animator.SetBool(AnimParams.Block, false);
-                }
-                if (shieldCollider != null) shieldCollider.IsBlocking = false;
-
-                SetMoveInput(0f, 0f);
-                ApplyGravity(controller.isGrounded);
-                MoveActor(Vector3.zero);
-                UpdateAnimator(0f, controller.isGrounded, false);
                 return;
             }
 
@@ -198,6 +184,26 @@ namespace Game.Movement
             IsBlocking = ResolveBlock();
             if (animator != null) animator.SetBool(AnimParams.Block, IsBlocking);
             if (shieldCollider != null) shieldCollider.IsBlocking = IsBlocking;
+        }
+
+        // Drops the character back to idle. The Set/Update calls damp toward
+        // zero rather than snapping, so the run blends out over a few frames
+        // instead of cutting mid-stride.
+        private void ClearLocomotion()
+        {
+            IsSprintingNow = false;
+            IsBlocking = false;
+
+            SetMoveInput(0f, 0f);
+            UpdateAnimator(0f, controller.isGrounded, false);
+
+            if (animator != null)
+            {
+                animator.SetBool(AnimParams.Sprint, false);
+                animator.SetBool(AnimParams.Block, false);
+            }
+
+            if (shieldCollider != null) shieldCollider.IsBlocking = false;
         }
 
         // Sprinting is held down, so it drains continuously. The drain returns

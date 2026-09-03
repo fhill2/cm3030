@@ -103,4 +103,4 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  logHits: 0
+  logHits: 1

@@ -15,10 +15,14 @@ MonoBehaviour:
   displayName: Frost Bolt
   school: 1
   level: 1
-  damage: 30
+  damage: 25
   staminaCost: 30
   cooldown: 2.5
   projectilePrefab: {fileID: 5616977154778203818, guid: 950f7f692ead8db4695f2fdb6e47c1fc, type: 3}
+  projectileScale: 1
   projectileSpeed: 30
   projectileLifetime: 4
+  impactEffect: {fileID: 4924508274929071776, guid: 0edef91621bb6b34384ccc9dbb98729c, type: 3}
+  impactScale: 0.5
+  impactLifetime: 1
   dropWeight: 6
