@@ -733,7 +733,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03002383fb0cb1d4a9dc722242c45294, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 75
   hitImmunityWindow: 0.1
   deathAnimationCount: 9
 --- !u!114 &9156169543439122334

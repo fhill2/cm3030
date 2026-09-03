@@ -22,7 +22,7 @@ MonoBehaviour:
     goldReward: 10
   - prefab: {fileID: 340618435387090213, guid: f137d454ab91a4e3c8009be614c99e8a, type: 3}
     count: 2
-    healthMultiplier: 0.6
+    healthMultiplier: 0.3
     blockChance: 0.4
     equipmentLevelMin: 1
     equipmentLevelMax: 1

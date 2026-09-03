@@ -29,6 +29,8 @@ namespace Game.Core
 
         [Header("Projectile")]
         [SerializeField] private GameObject projectilePrefab;
+        [Tooltip("Scale applied to the flying projectile. All three levels of a school share one prefab, so this is what tells them apart.")]
+        [SerializeField] private float projectileScale = 1f;
         [SerializeField] private float projectileSpeed = 25f;
         [Tooltip("Seconds before an unspent projectile removes itself.")]
         [SerializeField] private float projectileLifetime = 4f;
@@ -55,6 +57,7 @@ namespace Game.Core
         public float StaminaCost => staminaCost;
         public float Cooldown => cooldown;
         public GameObject ProjectilePrefab => projectilePrefab;
+        public float ProjectileScale => projectileScale;
         public float ProjectileSpeed => projectileSpeed;
         public float ProjectileLifetime => projectileLifetime;
         public GameObject ImpactEffect => impactEffect;

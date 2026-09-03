@@ -13,11 +13,16 @@ MonoBehaviour:
   m_Name: Wave15
   m_EditorClassIdentifier: 
   sets:
-  - prefab: {fileID: 340618435387090213, guid: f137d454ab91a4e3c8009be614c99e8a, type: 3}
-    count: 15
-    healthMultiplier: 1.9
-    blockChance: 0.7
-    equipmentLevelMin: 3
+  - prefab: {fileID: 2759925646633051954, guid: fa722fa2ff333e484ab9ae57f65d387d, type: 3}
+    count: 20
+    healthMultiplier: 0.5
+    blockChance: 0.4
+    equipmentLevelMin: 2
     equipmentLevelMax: 4
-    goldReward: 38
-  spawnInterval: 0.4
+  - prefab: {fileID: 340618435387090213, guid: f137d454ab91a4e3c8009be614c99e8a, type: 3}
+    count: 10
+    healthMultiplier: 1
+    blockChance: 0.8
+    equipmentLevelMin: 2
+    equipmentLevelMax: 4
+  spawnInterval: 0.5
