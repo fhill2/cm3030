@@ -1,4 +1,5 @@
 using UnityEngine;
+using Game.Core;
 
 namespace Game.Enemy
 {
@@ -43,8 +44,9 @@ namespace Game.Enemy
             {
                 npc.MoveToState(npc.s_Attack);
             }
-            // Player escaped beyond give-up range.
-            else if (dist > chaseQuitDistance)
+            // Player escaped beyond give-up range. Hunters (the wave's last
+            // few enemies) never drop back to patrol.
+            else if (dist > chaseQuitDistance && !WaveSpawner.HuntMode)
             {
                 npc.MoveToState(npc.s_Patrol);
             }

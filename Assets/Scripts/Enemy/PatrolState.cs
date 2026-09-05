@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using Game.Core;
 
 namespace Game.Enemy
 {
@@ -50,6 +51,16 @@ namespace Game.Enemy
         public override void UpdateState(NpcFSM npc)
         {
             if (player == null || agent == null) return;
+
+            // The wave is down to its last few enemies — hunt the player no
+            // matter how far away they are, so the wave doesn't end with the
+            // player chasing a lone patrol around the castle. The playerAlive
+            // guard stops a dead player flip-flopping us with ChaseState.
+            if (WaveSpawner.HuntMode && npc.playerAlive)
+            {
+                npc.MoveToState(npc.s_Chase);
+                return;
+            }
 
             // Poll on the checkTime interval instead of every frame.
             if (Time.time < nextCheckTime) return;
