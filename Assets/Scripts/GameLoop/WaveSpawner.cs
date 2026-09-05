@@ -118,7 +118,8 @@ namespace Game.Core
             foreach (EnemySet set in BuildSpawnQueue(config))
             {
                 SpawnOne(set);
-                yield return new WaitForSeconds(config.SpawnInterval);
+                if (config.SpawnInterval > 0f)
+                    yield return new WaitForSeconds(config.SpawnInterval);
             }
 
             spawningFinished = true;

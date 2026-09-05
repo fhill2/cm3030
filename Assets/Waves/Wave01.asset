@@ -20,4 +20,4 @@ MonoBehaviour:
     equipmentLevelMin: 1
     equipmentLevelMax: 1
     goldReward: 10
-  spawnInterval: 0.5
+  spawnInterval: 0

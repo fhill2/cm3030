@@ -52,7 +52,7 @@ namespace Game.Core
         [Tooltip("Enemy sets making up this wave. The spawner interleaves them: three from the first set, then one from each following set, repeating.")]
         [SerializeField] private EnemySet[] sets;
 
-        [Tooltip("Seconds between each individual spawn.")]
+        [Tooltip("Seconds between each individual spawn. 0 = spawn the whole wave at once.")]
         [SerializeField] private float spawnInterval = 0.5f;
 
         public EnemySet[] Sets => sets;
