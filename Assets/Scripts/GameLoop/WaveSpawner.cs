@@ -38,6 +38,10 @@ namespace Game.Core
         [Header("Spawning")]
         [SerializeField] private float spawnRadius = 2f;   // scatter around the point so they don't stack
 
+        [Header("Hunt")]
+        [Tooltip("Once at most this many enemies remain in the wave, every enemy hunts the player regardless of distance. Ends the player chasing a lone patrol around the castle at the tail end of a wave.")]
+        [SerializeField] private int huntRemainingCount = 3;
+
         [Header("Debug")]
         [SerializeField] private bool logRemaining = true;
 
@@ -59,6 +63,11 @@ namespace Game.Core
         // Read-only view for anything that just needs to know who's alive
         // right now (e.g. the minimap, to place enemy dots).
         public IReadOnlyList<GameObject> LiveEnemies => liveEnemies;
+
+        // True once the wave is down to its last few enemies: they abandon
+        // patrol and chase the player no matter the distance. Static so the
+        // enemy states can read it without a reference to this component.
+        public static bool HuntMode { get; private set; }
 
         // Wave number captured from the GameStateChanged payload (GSM owns it).
         private int currentWave;
@@ -107,6 +116,7 @@ namespace Game.Core
             patrolPathAssignCounts.Clear();
             spawningFinished = false;
             waveAlreadyCleared = false;
+            HuntMode = false;
 
             WaveConfig config = ConfigForWave(currentWave);
             if (config == null)
@@ -123,6 +133,7 @@ namespace Game.Core
             }
 
             spawningFinished = true;
+            UpdateHuntMode();
 
             // Covers the case where the player killed everything while we were
             // still spawning, or where the wave was configured with no enemies.
@@ -276,11 +287,24 @@ namespace Game.Core
             fsmType.GetField("blockChance")?.SetValue(fsm, blockChance);
         }
 
+        // The remaining count only changes when spawning finishes or an enemy
+        // dies, so those two events are the only places this needs running.
+        // The spawningFinished gate stops the count dipping below the
+        // threshold mid-spawn from triggering the hunt early.
+        private void UpdateHuntMode()
+        {
+            HuntMode = spawningFinished
+                       && liveEnemies.Count > 0
+                       && liveEnemies.Count <= huntRemainingCount;
+        }
+
         private void HandleDeath(DeathArgs e)
         {
             if (e.Entity == null) return;
 
             if (!RemoveFromWave(e.Entity)) return;   // not one of ours, ignore
+
+            UpdateHuntMode();
 
             if (logRemaining)
             {
