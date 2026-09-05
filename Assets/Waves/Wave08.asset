@@ -19,10 +19,12 @@ MonoBehaviour:
     blockChance: 0.2
     equipmentLevelMin: 2
     equipmentLevelMax: 3
+    goldReward: 18
   - prefab: {fileID: 340618435387090213, guid: f137d454ab91a4e3c8009be614c99e8a, type: 3}
     count: 4
     healthMultiplier: 0.6
     blockChance: 0.5
     equipmentLevelMin: 2
     equipmentLevelMax: 3
+    goldReward: 25
   spawnInterval: 0.5

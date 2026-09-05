@@ -13,12 +13,16 @@ namespace Game.Shared
 
         // ── Combat ─────────────────────────────────
         public static readonly int Attack      = Animator.StringToHash("Attack");
+        public static readonly int Knockback   = Animator.StringToHash("Knockback");
         public static readonly int ComboStep   = Animator.StringToHash("ComboStep");
         public static readonly int InCombat    = Animator.StringToHash("InCombat");
         public static readonly int Block       = Animator.StringToHash("Block");
         public static readonly int Sprint      = Animator.StringToHash("Sprint");
         public static readonly int Parry       = Animator.StringToHash("Parry");
         public static readonly int Buff        = Animator.StringToHash("Buff");
+        public static readonly int Drink       = Animator.StringToHash("Drink");
+        public static readonly int Throw       = Animator.StringToHash("Throw");
+        public static readonly int Collect     = Animator.StringToHash("Collect");
 
         // ── Health ─────────────────────────────────
         public static readonly int Hit         = Animator.StringToHash("Hit");

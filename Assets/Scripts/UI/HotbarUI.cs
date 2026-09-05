@@ -10,7 +10,7 @@ namespace Game.UI
     {
         public const string IconFolder = "UI/hotbar_icons";
 
-        private const int TotalSlots = 10;
+        private const int TotalSlots = 14;
         private const float SlotSize = 64f;
         private const float SlotGap = 0f;
         private const float AnchoredY = 0.04f;
@@ -27,6 +27,7 @@ namespace Game.UI
             public Image Sweep;
             public Outline Border;
             public Sprite Sprite;
+            public Text Count;
         }
 
         private class SpellSlot
@@ -43,13 +44,19 @@ namespace Game.UI
         private Slot attack;
         private Slot guard;
         private Slot tauntSlot;
+        private Slot knockbackSlot;
         private Slot throwSlot;
+        private Slot collectSlot;
+        private Slot healthPotion;
+        private Slot staminaPotion;
 
         private SpellBook spellBook;
         private SpellCaster caster;
         private Melee melee;
         private PlayerTaunt taunt;
         private PlayerMovement movement;
+        private PotionBelt belt;
+        private ArcStrikes strikes;
 
         private static readonly Color GuardActive = new Color(1f, 0.9f, 0.5f, 1f);
         private static readonly Color Dimmed = new Color(1f, 1f, 1f, 0.45f);
@@ -67,6 +74,8 @@ namespace Game.UI
             melee = GetComponent<Melee>();
             taunt = GetComponent<PlayerTaunt>();
             movement = GetComponent<PlayerMovement>();
+            belt = GetComponent<PotionBelt>();
+            strikes = GetComponent<ArcStrikes>();
         }
 
         private void OnEnable()
@@ -100,10 +109,14 @@ namespace Game.UI
             bar.gameObject.name = "Hotbar";
             root = bar.gameObject;
 
-            attack = CreateSlot(bar.transform, 0, "LClick", AttackIcon);
-            guard = CreateSlot(bar.transform, 1, "RClick", GuardIcon);
-            tauntSlot = CreateSlot(bar.transform, 2, "E", TauntIcon);
-            throwSlot = CreateSlot(bar.transform, 3, "R", ThrowIcon);
+            attack = CreateSlot(bar.transform, 1, "LClick", AttackIcon);
+            guard = CreateSlot(bar.transform, 2, "RClick", GuardIcon);
+            knockbackSlot = CreateSlot(bar.transform, 3, "Q", "knockback");
+            tauntSlot = CreateSlot(bar.transform, 4, "E", TauntIcon);
+            throwSlot = CreateSlot(bar.transform, 5, "R", ThrowIcon);
+            healthPotion = CreatePotionSlot(bar.transform, 6, "C", "health_potion");
+            staminaPotion = CreatePotionSlot(bar.transform, 7, "V", "stamina_potion");
+            collectSlot = CreateSlot(bar.transform, 0, "TAB", "collect");
 
             var hotkeys = caster != null ? caster.HotkeySpells : null;
 
@@ -113,13 +126,30 @@ namespace Game.UI
                 int level = i % 3 + 1;
                 string icon = (school == SpellSchool.Fire ? "fire_" : "ice_") + level;
 
-                Slot slot = CreateSlot(bar.transform, 4 + i, (i + 1).ToString(), icon);
+                Slot slot = CreateSlot(bar.transform, 8 + i, (i + 1).ToString(), icon);
 
                 SpellDef spell = null;
                 if (hotkeys != null && i < hotkeys.Count) spell = hotkeys[i];
 
                 spells.Add(new SpellSlot { School = school, Level = level, Slot = slot, Spell = spell });
             }
+        }
+
+        private Slot CreatePotionSlot(Transform parent, int index, string key, string iconName)
+        {
+            Slot slot = CreateSlot(parent, index, key, iconName);
+
+            var countRt = UIBuilder.CreateRect(slot.Icon.transform,
+                new Vector2(1f, 1f), new Vector2(1f, 1f),
+                new Vector2(-4f, -4f), new Vector2(40f, 20f));
+            countRt.gameObject.name = "Count";
+            var count = UIBuilder.AttachText(countRt, "0", TextAnchor.UpperRight, 16,
+                UITheme.Default.text, UIBuilder.GetFont(UITheme.Default));
+            count.horizontalOverflow = HorizontalWrapMode.Overflow;
+            count.raycastTarget = false;
+            slot.Count = count;
+
+            return slot;
         }
 
         private Slot CreateSlot(Transform parent, int index, string key, string iconName)
@@ -200,6 +230,8 @@ namespace Game.UI
 
         private void UpdateSlots()
         {
+            SetReady(collectSlot, Color.white);
+
             UpdateCooldown(attack,
                 melee != null ? melee.CooldownRemaining : 0f,
                 melee != null ? melee.CooldownDuration : 1f,
@@ -209,10 +241,24 @@ namespace Game.UI
             SetReady(guard, blocking ? GuardActive : Color.white);
             guard.Border.enabled = blocking;
 
+            UpdateCooldown(knockbackSlot,
+                strikes != null ? strikes.CooldownRemaining : 0f,
+                strikes != null ? strikes.CooldownDuration : 1f,
+                Color.white);
+
             UpdateCooldown(tauntSlot,
                 taunt != null ? taunt.CooldownRemaining : 0f,
                 taunt != null ? taunt.CooldownDuration : 1f,
                 Color.white);
+
+            UpdatePotion(healthPotion,
+                belt != null ? belt.HealthCooldownRemaining : 0f,
+                belt != null ? belt.CooldownDuration : 30f,
+                belt != null ? belt.HealthCount : 0);
+            UpdatePotion(staminaPotion,
+                belt != null ? belt.StaminaCooldownRemaining : 0f,
+                belt != null ? belt.CooldownDuration : 30f,
+                belt != null ? belt.StaminaCount : 0);
 
             foreach (SpellSlot s in spells)
             {
@@ -221,6 +267,27 @@ namespace Game.UI
                     caster != null ? caster.CooldownDuration(s.School) : 0f,
                     SpellSlotColor(s));
             }
+        }
+
+        private void UpdatePotion(Slot slot, float remaining, float duration, int count)
+        {
+            if (slot == null) return;
+
+            if (slot.Count != null) slot.Count.text = count.ToString();
+
+            if (count <= 0)
+            {
+                SetReady(slot, LockedDim);
+                if (slot.Recovery != null)
+                {
+                    slot.Recovery.fillAmount = 0f;
+                    slot.Recovery.enabled = false;
+                }
+                if (slot.Sweep != null) slot.Sweep.enabled = false;
+                return;
+            }
+
+            UpdateCooldown(slot, remaining, duration, Color.white);
         }
 
         private Color SpellSlotColor(SpellSlot s)

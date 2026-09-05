@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0740d4442ed4c499d01e4e745a657e, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: 
-  damage: 7
-  speed: 1.5
+  displayName: Training Sword
+  damage: 8
+  speed: 1.2
   level: 1
   cost: 50
   rotationOffset: {x: 0, y: -20, z: -40}

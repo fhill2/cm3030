@@ -93,7 +93,7 @@ namespace Game.UI
                     var source = gameObject.AddComponent<AudioSource>();
                     source.clip = clip;
                     source.loop = false;
-                    source.volume = 1f;
+                    source.volume = 0.9f;
                     source.Play();
                 }
                 else

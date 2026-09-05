@@ -9,7 +9,9 @@ namespace Game.Core
         WeaponSpeed,    // subtracts Magnitude from swing duration, so lower is faster
         Tome,           // teaches the spell in the Spell field
         WeaponSwap,     // placeholder
-        ShieldSwap      // placeholder
+        ShieldSwap,     // placeholder
+        HealthPotion,   // adds one health potion to the player's belt
+        StaminaPotion   // adds one stamina potion to the player's belt
     }
 
     // One purchasable item. Make these as assets:

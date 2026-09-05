@@ -127,6 +127,20 @@ namespace Game.Core
                 return;
             }
 
+            if (item.Effect == ShopEffect.HealthPotion || item.Effect == ShopEffect.StaminaPotion)
+            {
+                PotionBelt belt = FindFirstObjectByType<PotionBelt>();
+                if (belt == null)
+                {
+                    Debug.LogWarning("[Shop] No PotionBelt on the player, potion not granted.");
+                    return;
+                }
+
+                if (item.Effect == ShopEffect.HealthPotion) belt.AddHealth();
+                else belt.AddStamina();
+                return;
+            }
+
             if (loadout == null)
             {
                 Debug.LogWarning("[Shop] No loadout assigned, effect not applied.");

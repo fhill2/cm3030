@@ -49,6 +49,7 @@ namespace Game.UI
         [SerializeField] private Sprite speakerIcon;
 
         private const string SpeakerResourcePath = "UI/speaker";
+        private const string SpeakerOffResourcePath = "UI/speaker-off";
 
         [Header("Restart")]
         [Tooltip("Shown under the death message once restarting is allowed.")]
@@ -57,15 +58,12 @@ namespace Game.UI
 
         [Header("Volume")]
         [Tooltip("Master volume 0-1, applied to AudioListener.volume on startup and adjusted with the -/+ hotkeys.")]
-        [SerializeField, Range(0f, 1f)] private float volume = 0.6f;
+        [SerializeField, Range(0f, 1f)] private float volume = 0.5f;
         [Tooltip("How much each -/+ key press changes the volume.")]
         [SerializeField] private float volumeStep = 0.1f;
 
-        private const string VolumePrefKey = "playerui.volume";
-
         private const float StaminaBarHeight = 16f;
         private static readonly Color StaminaColor = new Color(0.95f, 0.8f, 0.25f, 1f);
-        private static readonly Color StunnedColor = new Color(0.8f, 0.25f, 0.2f, 1f);
 
         private HealthSystem health;
         private Image healthFill;
@@ -94,10 +92,12 @@ namespace Game.UI
         private GameStateMachine stateMachine;
 
         private Image volumeFill;
+        private Image speakerImage;
 
         private GameObject hudRoot;
 
         private static Sprite s_speaker;
+        private static Sprite s_speakerOff;
 
         private UITheme Theme => theme != null ? theme : UITheme.Default;
 
@@ -106,8 +106,8 @@ namespace Game.UI
             health = GetComponent<HealthSystem>();
             stamina = GetComponent<StaminaSystem>();
 
-            volume = PlayerPrefs.GetFloat(VolumePrefKey, volume);
-            AudioListener.volume = volume;
+            volume = 0.5f;
+            AudioListener.volume = Mathf.Pow(volume, 2f);
 
             BuildUI();
         }
@@ -256,15 +256,12 @@ namespace Game.UI
             if (staminaFill != null)
             {
                 staminaFill.rectTransform.anchorMax = new Vector2(ratio, 1f);
-                // Turn the bar red while stunned
-                staminaFill.color = stamina.IsStunned ? StunnedColor : StaminaColor;
+                staminaFill.color = StaminaColor;
             }
 
             if (staminaLabel != null)
             {
-                staminaLabel.text = stamina.IsStunned
-                    ? "STAMINA  EXHAUSTED"
-                    : $"STAMINA  {stamina.Current:0} / {stamina.Max:0}";
+                staminaLabel.text = $"STAMINA  {stamina.Current:0} / {stamina.Max:0}";
             }
         }
 
@@ -292,21 +289,25 @@ namespace Game.UI
         void ApplyVolume(float value)
         {
             volume = Mathf.Clamp01(value);
-            AudioListener.volume = volume;
+            AudioListener.volume = Mathf.Pow(volume, 2f);
 
             if (volumeFill != null)
                 volumeFill.rectTransform.anchorMax = new Vector2(volume, 1f);
 
-            PlayerPrefs.SetFloat(VolumePrefKey, volume);
-            PlayerPrefs.Save();
+            if (speakerImage != null)
+            {
+                Sprite current = volume > 0f ? GetSpeakerIcon() : GetSpeakerOffIcon();
+                if (current != null) speakerImage.sprite = current;
+            }
         }
 
         void BuildVolumeControl(Transform parent)
         {
-            Sprite speaker = GetSpeakerIcon();
+            Sprite speaker = volume > 0f ? GetSpeakerIcon() : GetSpeakerOffIcon();
             if (speaker != null)
-                UIBuilder.CreateIcon(parent, "SpeakerIcon", speaker,
+                speakerImage = UIBuilder.CreateIcon(parent, "SpeakerIcon", speaker,
                     new Vector2(0, 0), new Vector2(Margin, Margin), 32f);
+                if (speakerImage != null) speakerImage.color = new Color(0.72f, 0.72f, 0.72f, 1f);
 
             CreateGlyph(parent, "-", new Vector2(Margin + 38f, Margin + 2f));
             volumeFill = UIBuilder.CreateBar(parent, new Vector2(0, 0),
@@ -360,24 +361,32 @@ namespace Game.UI
             return s_speaker;
         }
 
+        Sprite GetSpeakerOffIcon()
+        {
+            if (s_speakerOff == null)
+                s_speakerOff = UIBuilder.LoadIcon(SpeakerOffResourcePath);
+            return s_speakerOff;
+        }
+
         void BuildUI()
         {
             var canvas = UIBuilder.CreateOverlayCanvas("PlayerUICanvas");
             hudRoot = canvas.gameObject;
             Transform t = canvas.transform;
 
-            healthFill = UIBuilder.CreateBar(t, new Vector2(0, 1), new Vector2(Margin, -Margin),
-                BarWidth, BarHeight, Color.white, Theme.panelBackground);
-            healthLabel = UIBuilder.CreateLabel(t, "PLAYER  --- / ---",
-                new Vector2(0, 1), new Vector2(Margin, -Margin - BarHeight - 4f),
-                BarWidth, TextAnchor.MiddleLeft, Theme);
-
-            float staminaY = -Margin - BarHeight - 4f - 28f - 6f;
-            staminaFill = UIBuilder.CreateBar(t, new Vector2(0, 1), new Vector2(Margin, staminaY),
-                BarWidth, StaminaBarHeight, StaminaColor, Theme.panelBackground);
+            float barsY = 1080f * 0.04f + 32f + 16f;
             staminaLabel = UIBuilder.CreateLabel(t, "STAMINA  --- / ---",
-                new Vector2(0, 1), new Vector2(Margin, staminaY - StaminaBarHeight - 4f),
-                BarWidth, TextAnchor.MiddleLeft, Theme);
+                new Vector2(0.5f, 0f), new Vector2(0f, barsY),
+                BarWidth, TextAnchor.MiddleCenter, Theme);
+            staminaFill = UIBuilder.CreateBar(t, new Vector2(0.5f, 0f), new Vector2(0f, barsY + RowStep),
+                BarWidth, StaminaBarHeight, StaminaColor, Theme.panelBackground);
+
+            float healthY = barsY + RowStep + StaminaBarHeight + 6f;
+            healthLabel = UIBuilder.CreateLabel(t, "PLAYER  --- / ---",
+                new Vector2(0.5f, 0f), new Vector2(0f, healthY),
+                BarWidth, TextAnchor.MiddleCenter, Theme);
+            healthFill = UIBuilder.CreateBar(t, new Vector2(0.5f, 0f), new Vector2(0f, healthY + RowStep),
+                BarWidth, BarHeight, Color.white, Theme.panelBackground);
 
             Vector2 topRight = new Vector2(1, 1);
             goldLabel = UIBuilder.CreateLabel(t, "GOLD  --",

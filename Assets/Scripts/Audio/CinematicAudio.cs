@@ -65,7 +65,7 @@ namespace Game.Audio
             {
                 if (cry == null) continue;
 
-                crySource.PlayOneShot(cry);
+                crySource.PlayOneShot(cry, 0.9f);
                 yield return new WaitForSeconds(BattlecryInterval);
             }
         }

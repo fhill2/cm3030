@@ -13,7 +13,7 @@ namespace Game.Audio
             var source = go.AddComponent<AudioSource>();
             source.clip = clip;
             source.spatialBlend = 0f;
-            source.volume = 1f;
+            source.volume = 0.9f;
             source.Play();
             Object.Destroy(go, clip.length);
         }

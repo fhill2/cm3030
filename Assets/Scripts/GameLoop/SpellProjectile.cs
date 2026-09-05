@@ -32,15 +32,14 @@ namespace Game.Core
         private float damage;
         private float speed;
         private GameObject caster;
-        private Transform casterRoot;
-
-        // Kept so the projectile can play the spell's hit audio when it lands.
         private SpellDef spell;
+        private Transform casterRoot;
 
         private GameObject impactEffect;
         private float impactScale = 1f;
         private float impactLifetime = 3f;
 
+        // Called by SpellCaster the moment the projectile is created.
         public void Launch(SpellDef spellDef, float damageAmount, float projectileSpeed,
                            float lifetime, GameObject source)
         {
@@ -133,10 +132,18 @@ namespace Game.Core
             return true;
         }
 
-        // Spawn the impact effect and remove the projectile. The effect is a
-        // separate object so it can outlive the ball and finish its particles.
+        // Spawn the impact effect, play the hit sound and remove the
+        // projectile. The effect is a separate object so it can outlive the
+        // ball and finish its particles.
         private void Detonate(Vector3 position, Vector3 normal)
         {
+            var hitClips = spell != null ? spell.HitClip : null;
+            if (hitClips != null)
+                foreach (var clip in hitClips)
+                    OneShotAudio.Play2D(clip, transform.position);
+            else if (logHits)
+                Debug.Log($"[SpellProjectile] {spell?.DisplayName} hit has no clips");
+
             if (impactEffect != null)
             {
                 GameObject vfx = Instantiate(
@@ -145,13 +152,6 @@ namespace Game.Core
                 vfx.transform.localScale *= impactScale;
                 Destroy(vfx, impactLifetime);
             }
-
-            var hitClips = spell != null ? spell.HitClip : null;
-            if (hitClips != null)
-                foreach (var clip in hitClips)
-                    OneShotAudio.Play2D(clip, transform.position);
-            else if (logHits)
-                Debug.Log($"[SpellProjectile] {spell?.DisplayName} hit has no clips");
 
             Destroy(gameObject);
         }

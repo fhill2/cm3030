@@ -47,6 +47,12 @@ namespace Game.Combat
         public GameObject WeaponInstance => weaponInstance;
         public GameObject ShieldInstance => shieldInstance;
 
+        public void Detach(GameObject instance)
+        {
+            if (weaponInstance == instance) weaponInstance = null;
+            if (shieldInstance == instance) shieldInstance = null;
+        }
+
         public void EquipWeapon(GameObject prefab)
         {
             if (prefab == null || weaponSocket == null) return;
@@ -54,6 +60,20 @@ namespace Game.Combat
             if (weaponInstance != null) Destroy(weaponInstance);
             weaponPrefab = prefab;
             weaponInstance = Instantiate(prefab, weaponSocket);
+            ApplyWeaponOffset();
+        }
+
+        public void TakeWeaponInstance(GameObject instance)
+        {
+            if (instance == null || weaponSocket == null) return;
+
+            if (weaponInstance != null) Destroy(weaponInstance);
+            weaponInstance = instance;
+            instance.transform.SetParent(weaponSocket, false);
+
+            foreach (var wc in instance.GetComponentsInChildren<WeaponCollider>())
+                wc.enabled = true;
+
             ApplyWeaponOffset();
         }
 

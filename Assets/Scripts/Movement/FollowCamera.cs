@@ -224,18 +224,20 @@ namespace Game.Movement
             if (firstPerson)
             {
                 position = target.position + Vector3.up * firstPersonHeight;
-                return;
             }
+            else
+            {
+                // Push the focus point out to the right and up, so the knight
+                // sits to the left of frame and the crosshair looks past him
+                // instead of through his head.
+                Vector3 focus = target.position
+                                + Vector3.up * (targetHeight + shoulderHeight)
+                                + rotation * Vector3.right * shoulderOffset;
 
-            // Push the focus point out to the right and up, so the knight sits
-            // to the left of frame and the crosshair looks past him instead of
-            // through his head.
-            Vector3 focus = target.position
-                            + Vector3.up * (targetHeight + shoulderHeight)
-                            + rotation * Vector3.right * shoulderOffset;
+                Vector3 back = rotation * Vector3.back;
 
-            Vector3 back = rotation * Vector3.back;
-            position = focus + back * ArmLength(focus, back);
+                position = focus + back * ArmLength(focus, back);
+            }
         }
 
         // Shortens the arm when a wall is in the way, so indoors the camera
@@ -298,10 +300,9 @@ namespace Game.Movement
 
             float t = Mathf.SmoothStep(0f, 1f, deathBlend);
 
-            // Recomputed each frame so the shot stays centred while the body
-            // finishes falling. No collision or shoulder offset here — the climb
-            // goes up through the roof rather than jamming against it, and the
-            // body should sit centre frame when you die.
+            // Same orbit maths as the live camera, just a steeper pitch. No
+            // shoulder offset either, since the body should sit centre frame
+            // when you die.
             Vector3 focus = target.position + Vector3.up * targetHeight;
             Quaternion rot = Quaternion.Euler(deathPitch, yaw, 0f);
             Vector3 pos = focus + rot * new Vector3(0f, 0f, -deathDistance);

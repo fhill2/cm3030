@@ -118,7 +118,8 @@ namespace Game.Core
             foreach (EnemySet set in BuildSpawnQueue(config))
             {
                 SpawnOne(set);
-                yield return new WaitForSeconds(config.SpawnInterval);
+                if (config.SpawnInterval > 0f)
+                    yield return new WaitForSeconds(config.SpawnInterval);
             }
 
             spawningFinished = true;
@@ -190,7 +191,11 @@ namespace Game.Core
 
             // Scale difficulty by bumping health above whatever the prefab has.
             EnemyHealth health = enemy.GetComponent<EnemyHealth>();
-            if (health != null) health.ApplyHealthMultiplier(set.HealthMultiplier);
+            if (health != null)
+            {
+                health.ApplyHealthMultiplier(set.HealthMultiplier);
+                if (set.GoldReward > 0) health.GoldReward = set.GoldReward;
+            }
 
             var equipment = enemy.GetComponent<Equipment>();
             if (equipment != null)

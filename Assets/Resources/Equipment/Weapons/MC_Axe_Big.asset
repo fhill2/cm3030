@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0740d4442ed4c499d01e4e745a657e, type: 3}
   m_Name: MC_Axe_Big
   m_EditorClassIdentifier: 
+  displayName: Great Axe
   damage: 15
-  speed: 2.5
+  speed: 2
   level: 2
-  rotationOffset: {x: 0, y: -20, z: -40}
   cost: 50
+  rotationOffset: {x: 0, y: -20, z: -40}

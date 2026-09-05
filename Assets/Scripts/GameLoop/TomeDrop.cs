@@ -58,7 +58,7 @@ namespace Game.Core
             GameObject pickup = Instantiate(
                 tomePickupPrefab,
                 transform.position + Vector3.up * dropHeight,
-                Quaternion.identity);
+                tomePickupPrefab.transform.rotation);
 
             TomePickup component = pickup.GetComponent<TomePickup>();
             if (component != null) component.Assign(spell);

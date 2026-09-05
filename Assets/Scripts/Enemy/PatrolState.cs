@@ -85,7 +85,8 @@ namespace Game.Enemy
                 if (target != null)
                 {
                     agent.isStopped = false;
-                    agent.SetDestination(target.position);
+                    if (agent.enabled)
+                        agent.SetDestination(target.position);
 
                     // Let the path finish computing before sizing the timeout,
                     // so remainingDistance reflects the real leg length rather

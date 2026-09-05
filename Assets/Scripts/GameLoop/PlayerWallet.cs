@@ -60,9 +60,10 @@ namespace Game.Core
 
             // Only enemies pay out. EnemyHealth is what marks something as an
             // enemy, so the player dying doesn't award gold.
-            if (e.Entity.GetComponentInParent<EnemyHealth>() == null) return;
+            EnemyHealth enemy = e.Entity.GetComponentInParent<EnemyHealth>();
+            if (enemy == null) return;
 
-            Add(goldPerKill);
+            Add(enemy.GoldReward > 0 ? enemy.GoldReward : goldPerKill);
         }
 
         private void HandleWaveCleared(WaveClearedArgs e)

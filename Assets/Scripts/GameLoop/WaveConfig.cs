@@ -27,12 +27,16 @@ namespace Game.Core
         [Tooltip("Highest equipment level these enemies can be equipped with. 0 = no cap.")]
         [SerializeField] private int equipmentLevelMax = 1;
 
+        [Tooltip("Gold paid when one of these enemies dies. 0 keeps the wallet's goldPerKill.")]
+        [SerializeField] private int goldReward = 0;
+
         public GameObject Prefab => prefab;
         public int Count => count;
         public float HealthMultiplier => healthMultiplier;
         public float BlockChance => blockChance;
         public int EquipmentLevelMin => equipmentLevelMin;
         public int EquipmentLevelMax => equipmentLevelMax;
+        public int GoldReward => goldReward;
     }
 
     // One asset per wave. Right-click in the Project window to make them:
@@ -48,7 +52,7 @@ namespace Game.Core
         [Tooltip("Enemy sets making up this wave. The spawner interleaves them: three from the first set, then one from each following set, repeating.")]
         [SerializeField] private EnemySet[] sets;
 
-        [Tooltip("Seconds between each individual spawn.")]
+        [Tooltip("Seconds between each individual spawn. 0 = spawn the whole wave at once.")]
         [SerializeField] private float spawnInterval = 0.5f;
 
         public EnemySet[] Sets => sets;

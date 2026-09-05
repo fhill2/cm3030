@@ -49,7 +49,7 @@ namespace Game.Combat
                 s_entries.Add(new EquipmentEntry
                 {
                     Prefab = prefab,
-                    Name = prefab.name,
+                    Name = def.DisplayName,
                     Kind = EquipmentKind.Weapon,
                     Level = def.Level,
                     Cost = def.Cost,
@@ -66,7 +66,7 @@ namespace Game.Combat
                 s_entries.Add(new EquipmentEntry
                 {
                     Prefab = prefab,
-                    Name = prefab.name,
+                    Name = def.DisplayName,
                     Kind = EquipmentKind.Shield,
                     Level = def.Level,
                     Cost = def.Cost,

@@ -6,6 +6,9 @@ namespace Game.Combat
     public class ShieldDef : ScriptableObject
     {
         [Header("Attributes")]
+        [Tooltip("Name shown in the Market UI. Falls back to the asset name when empty.")]
+        [SerializeField] private string displayName = "";
+
         [Tooltip("Power tier. EnemySets pick equipment by level range.")]
         [SerializeField] private int level = 1;
 
@@ -19,5 +22,6 @@ namespace Game.Combat
         public int Level => level;
         public int Cost => cost;
         public Vector3 RotationOffset => rotationOffset;
+        public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
     }
 }

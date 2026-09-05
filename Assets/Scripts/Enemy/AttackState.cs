@@ -182,7 +182,8 @@ namespace Game.Enemy
             float angle = AttackSlotManager.GetRingAngle(FSM);
             float radius = attackRange * 0.75f;
             Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
-            agent.SetDestination(player.transform.position + offset);
+            if (agent != null && agent.enabled)
+                agent.SetDestination(player.transform.position + offset);
         }
 
         private void FacePlayer()

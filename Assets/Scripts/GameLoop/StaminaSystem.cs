@@ -5,8 +5,7 @@ using Game.Health;
 namespace Game.Combat
 {
     // Player stamina. Attacking, sprinting, jumping and blocking all cost
-    // stamina, and running out stuns you for a fixed window where none of
-    // them work.
+    // stamina, and actions simply fail while the pool is short.
     //
     // Regeneration runs continuously; the only pause is a short wait after
     // each swing.
@@ -23,7 +22,7 @@ namespace Game.Combat
 
         [Header("One-off Costs")]
         [Tooltip("Stamina spent per swing.")]
-        [SerializeField] private float attackCost = 25f;
+        [SerializeField] private float attackCost = 10f;
 
         [Tooltip("Stamina spent per jump.")]
         [SerializeField] private float jumpCost = 20f;
@@ -40,15 +39,7 @@ namespace Game.Combat
         [SerializeField] private float regenPerSecond = 18f;
 
         [Tooltip("Seconds after a swing before regeneration resumes. Everything else regenerates immediately.")]
-        [SerializeField] private float regenDelayAfterSwing = 1f;
-
-        [Header("Stun")]
-        [Tooltip("Seconds of being unable to act after running out.")]
-        [SerializeField] private float stunDuration = 2f;
-
-        [Tooltip("Fraction of the pool that must refill before the stun lifts, even if the timer is up. 0 disables this.")]
-        [Range(0f, 1f)]
-        [SerializeField] private float stunRecoveryFraction = 0.3f;
+        [SerializeField] private float regenDelayAfterSwing = 0f;
 
         [Header("Debug")]
         [SerializeField] private bool logChanges;
@@ -56,16 +47,13 @@ namespace Game.Combat
         private float current;
         private float regenPausedUntil = float.NegativeInfinity;
         private int suppressRegenFrame = -1;
-        private float stunEndsAt;
-        private bool stunned;
         private bool isDead;
 
         public float Current => current;
         public float Max => maxStamina;
-        public bool IsStunned => stunned;
 
         // The one question the movement and attack code should ask before acting.
-        public bool CanAct => !stunned && !isDead;
+        public bool CanAct => !isDead;
 
         private void Awake()
         {
@@ -99,24 +87,7 @@ namespace Game.Combat
         {
             if (isDead) return;
 
-            TickStun();
             TickRegen();
-        }
-
-        private void TickStun()
-        {
-            if (!stunned) return;
-
-            // Both conditions have to be met: the timer has to expire AND enough
-            // stamina has to be back. Without the second the player leaves the
-            // stun with nothing in the tank and immediately re-stuns.
-            if (Time.time < stunEndsAt) return;
-            if (current < maxStamina * stunRecoveryFraction) return;
-
-            stunned = false;
-            if (logChanges) Debug.Log("[Stamina] Stun over");
-
-            EventManager.RaiseStun(new StunArgs(gameObject, false));
         }
 
         private void TickRegen()
@@ -130,7 +101,7 @@ namespace Game.Combat
         }
 
         // ── One-off costs ────────────────────────────────────────────────────
-        // Each returns false if stunned or short, and the caller refuses the action.
+        // Each returns false if short, and the caller refuses the action.
 
         public bool TrySpendAttack()
         {
@@ -172,7 +143,7 @@ namespace Game.Combat
 
             suppressRegenFrame = Time.frameCount;
             Spend(amount);
-            return !stunned;
+            return current > 0f;
         }
 
         private bool TrySpend(float amount)
@@ -184,7 +155,6 @@ namespace Game.Combat
             return true;
         }
 
-        // Takes stamina and triggers the stun if it empties the pool.
         private void Spend(float amount)
         {
             if (amount <= 0f) return;
@@ -192,31 +162,25 @@ namespace Game.Combat
             current = Mathf.Max(0f, current - amount);
 
             Announce();
-
-            if (current <= 0f && !stunned) BeginStun();
-        }
-
-        private void BeginStun()
-        {
-            stunned = true;
-            stunEndsAt = Time.time + stunDuration;
-
-            if (logChanges) Debug.Log("[Stamina] Out of stamina, stunned");
-
-            EventManager.RaiseStun(new StunArgs(gameObject, true));
         }
 
         // Back to full, for a new run.
         public void Refill()
         {
             current = maxStamina;
-            stunned = false;
             isDead = false;
             regenPausedUntil = float.NegativeInfinity;
             suppressRegenFrame = -1;
 
             Announce();
-            EventManager.RaiseStun(new StunArgs(gameObject, false));
+        }
+
+        public void Restore(float amount)
+        {
+            if (amount <= 0f) return;
+
+            current = Mathf.Min(maxStamina, current + amount);
+            Announce();
         }
 
         private void Announce()

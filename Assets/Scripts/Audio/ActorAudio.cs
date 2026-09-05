@@ -36,7 +36,7 @@ namespace Game.Audio
         private const float SwingDelay = 0.03f;
         private const float FleshDelay = 0.1f;
         private const float FleshVolume = 0.65f;
-        private const float TauntVolume = 1.5f;
+        private const float TauntVolume = 0.9f;
         private const float UnequipDelay = 0.5f;
 
         private static AudioClip[] s_effortClips;
@@ -153,7 +153,34 @@ namespace Game.Audio
         private IEnumerator UnequipRoutine()
         {
             yield return new WaitForSeconds(UnequipDelay);
-            Play(RandomClip(s_unequipClips));
+
+            AudioClip clip = RandomClip(s_unequipClips);
+            if (clip == null) yield break;
+
+            GameObject holder = new GameObject("UnequipSound");
+            holder.transform.SetParent(transform, false);
+            AudioSource unequip = holder.AddComponent<AudioSource>();
+            unequip.spatialBlend = source != null ? source.spatialBlend : 0f;
+            unequip.clip = clip;
+            unequip.volume = 1f;
+            unequip.Play();
+
+            const float Total = 2f;
+            const float FadeStart = 1.2f;
+
+            yield return new WaitForSeconds(FadeStart);
+
+            float fade = Total - FadeStart;
+            float elapsed = 0f;
+            while (elapsed < fade)
+            {
+                elapsed += Time.deltaTime;
+                unequip.volume = Mathf.Max(0f, 1f - elapsed / fade);
+                yield return null;
+            }
+
+            unequip.Stop();
+            Destroy(holder);
         }
 
         void HandleHit(HitArgs e)
@@ -196,6 +223,12 @@ namespace Game.Audio
 
         public void PlayTaunt() => Play(RandomClip(s_tauntClips), TauntVolume);
 
+        public void PlayHit() => Play(RandomVocal(s_damageClips, s_shortScreamClips));
+
+        public void PlayDrop() => Play(RandomClip(s_dropClips));
+
+        public void PlayUnequipDelayed() => StartCoroutine(UnequipRoutine());
+
         private IEnumerator SwingRoutine()
         {
             yield return new WaitForSeconds(SwingDelay);
@@ -219,7 +252,7 @@ namespace Game.Audio
             return roll < gruntCount ? grunts[roll] : screams[roll - gruntCount];
         }
 
-        private void Play(AudioClip clip, float volumeScale = 1f)
+        private void Play(AudioClip clip, float volumeScale = 0.9f)
         {
             if (clip != null && source != null)
                 source.PlayOneShot(clip, volumeScale);
