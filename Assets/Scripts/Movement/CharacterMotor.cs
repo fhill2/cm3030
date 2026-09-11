@@ -6,10 +6,7 @@ using Game.Audio;
 namespace Game.Movement
 {
     /// <summary>
-    /// Player movement foundation: gravity, ground detection, CharacterController
-    /// movement, and death handling. Inherits the animation driving
-    /// (<see cref="AnimationMotor.UpdateAnimator"/>) from <see cref="AnimationMotor"/>.
-    /// <see cref="PlayerMovement"/> inherits this and adds input-based control.
+    /// Player movement foundation: gravity, ground detection, CharacterController movement, and death handling
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class CharacterMotor : AnimationMotor
@@ -17,11 +14,11 @@ namespace Game.Movement
         [Header("Physics")]
         [SerializeField] protected float gravity = -20f;
         [Tooltip("Downward speed held while grounded. More negative keeps the controller pressed into the ground on descending stairs and slopes, so it stops losing contact between steps.")]
-        [SerializeField] protected float groundStickSpeed = -8f;
+        [SerializeField] protected float groundStickSpeed = -12f;
 
         [Header("Grounding")]
-        [Tooltip("Seconds the character still counts as grounded for ANIMATION after losing contact. Bridges the frame-long gaps that walking down stairs creates, which would otherwise trigger the fall animation on every step. Physics is unaffected.")]
-        [SerializeField] protected float groundedGrace = 0.15f;
+        [Tooltip("Seconds the character still counts as grounded for ANIMATION after losing contact. Bridges the frame-long gaps that walking down stairs creates, which would otherwise trigger the fall animation on every step")]
+        [SerializeField] protected float groundedGrace = 0.3f;
         [Tooltip("How far below the feet to look for ground before accepting the character is really falling. Only Raise it if the fall animation still flickers &lower it if short drops stop animating.")]
         [SerializeField] protected float groundProbeDistance = 0.6f;
 
@@ -107,8 +104,6 @@ namespace Game.Movement
         {
             if (jumped)
             {
-                // Launching: forget we were ever grounded, or the grace window
-                // would cut the jump animation off almost immediately.
                 lastGroundedTime = float.NegativeInfinity;
                 return false;
             }
@@ -119,8 +114,7 @@ namespace Game.Movement
                 return true;
             }
 
-            // Rising means a real jump, never a stair. Checked before the probe,
-            // which would otherwise report the ground we have just left.
+            // Rising means a real jump, never a stair. Checked before the probe
             if (velocity.y > 0f) return false;
 
             if (Time.time - lastGroundedTime <= groundedGrace) return true;
@@ -132,8 +126,7 @@ namespace Game.Movement
         }
 
         /// <summary>
-        /// True if there is ground within <see cref="groundProbeDistance"/> below
-        /// the capsule. Cast from the bottom sphere's centre and ignores anything
+        /// True if there is ground below the capsule. Cast from the bottom sphere's centre and ignores anything
         /// belonging to this character, so the player's own capsule, weapon and
         /// shield colliders can't register as floor.
         /// </summary>

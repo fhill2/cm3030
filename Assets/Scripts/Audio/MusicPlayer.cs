@@ -20,6 +20,8 @@ namespace Game.Audio
         [SerializeField, Range(0f, 1f)] private float volume = 0.35f;
         [Tooltip("Seconds to crossfade when the track changes.")]
         [SerializeField] private float crossfadeTime = 1.5f;
+        [Tooltip("Seconds to fade the music out when the player dies")]
+        [SerializeField] private float deathFadeTime = 3f;
 
         private AudioClip menuClip;
         private AudioClip gameplayClip;
@@ -53,7 +55,45 @@ namespace Game.Audio
 
         void HandleGameStateChanged(GameStateChangedArgs e)
         {
+            // RunController moves the game to GameOver when the player dies, fades rathr then cut
+            if (e.Current == GameStateId.GameOver)
+            {
+                StopMusic();
+                return;
+            }
+
             PlayTrack(e.Current == GameStateId.Menu ? menuClip : gameplayClip);
+        }
+
+        void StopMusic()
+        {
+            if (fadeRoutine != null) StopCoroutine(fadeRoutine);
+            fadeRoutine = StartCoroutine(FadeOutAll());
+        }
+
+
+        IEnumerator FadeOutAll()
+        {
+            float span = Mathf.Max(0.01f, deathFadeTime);
+            float startA = sourceA.volume;
+            float startB = sourceB.volume;
+            float elapsed = 0f;
+
+            while (elapsed < span)
+            {
+                // The fade still completes if time is paused on death
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / span);
+                sourceA.volume = Mathf.Lerp(startA, 0f, t);
+                sourceB.volume = Mathf.Lerp(startB, 0f, t);
+                yield return null;
+            }
+
+            sourceA.Stop();
+            sourceB.Stop();
+            sourceA.volume = 0f;
+            sourceB.volume = 0f;
+            fadeRoutine = null;
         }
 
         void PlayTrack(AudioClip next)

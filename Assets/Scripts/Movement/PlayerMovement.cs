@@ -9,9 +9,9 @@ namespace Game.Movement
 {
     /// <summary>
     /// Input-driven movement for the player. Inherits gravity, ground detection,
-    /// animation updates, and death handling from <see cref="CharacterMotor"/>.
+    /// animation updates, and death handling.
     ///
-    /// Control scheme: the <see cref="FollowCamera"/> handles mouse-look (orbit
+    /// Control scheme handles mouse-look (orbit
     /// + player aim). WASD strafes camera-relative (A/D strafe, W/S forward/back);
     /// Shift sprints; Space jumps. This class does NOT rotate the character —
     /// facing is driven by the camera.

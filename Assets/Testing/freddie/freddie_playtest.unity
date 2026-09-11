@@ -47088,6 +47088,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1637953152042674838, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: groundedGrace
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1637953152042674838, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: debugGrounding
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1637953152042674838, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
+      propertyPath: groundStickSpeed
+      value: -12
+      objectReference: {fileID: 0}
+    - target: {fileID: 1637953152042674838, guid: a7378a96833ab4eb39e5efae852e6a33, type: 3}
       propertyPath: groundProbeDistance
       value: 1
       objectReference: {fileID: 0}
@@ -64831,6 +64843,7 @@ MonoBehaviour:
   gameplayClipPath: Music/InGameMusic
   volume: 0.35
   crossfadeTime: 1.5
+  deathFadeTime: 3
 --- !u!1001 &7566531922115100534
 PrefabInstance:
   m_ObjectHideFlags: 0
