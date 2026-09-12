@@ -38,9 +38,8 @@ namespace Game.UI
         private const float ButtonPadding = 28f;
         private const float PageInset    = 64f;
 
-        // Catalogue rows are a fixed height. UIBuilder derives button height
-        // from width, which turns a long item name into a button hundreds of
-        // pixels tall and pushes the rest of the page off screen.
+        // Fixed row height. UIBuilder derives button height from width, which
+        // turns a long item name into a button hundreds of pixels tall.
         private const float RowHeight = 52f;
 
         private const float EquipPageWidth  = 1600f;
@@ -89,7 +88,7 @@ namespace Game.UI
         private float secondsLeft;
         private Equipment playerEquipment;
 
-        // Both catalogue pages share one row width so they line up and so a
+        // Both catalogue pages share one row width so they line up and a
         // refresh can't change the layout underneath them.
         private float rowWidth;
 
@@ -331,6 +330,8 @@ namespace Game.UI
                 EventSystem.current.SetSelectedGameObject(null);
         }
 
+        // A button hidden mid-hover keeps its highlight when it comes back, so
+        // send it a pointer-exit on the way out.
         private static void ClearPageHover(GameObject page)
         {
             if (page == null || !page.activeSelf) return;
@@ -363,6 +364,7 @@ namespace Game.UI
             root.SetActive(false);
         }
 
+        // One page failing shouldn't take the whole market down with it.
         private GameObject BuildSafely(string pageName, System.Func<GameObject> build)
         {
             try
@@ -390,8 +392,8 @@ namespace Game.UI
                 ShopItemDef item = shop.ItemAt(i);
                 if (item == null) continue;
 
-                // Measure the longest form the label can take, not its current
-                // one, or the row shrinks the moment a spell unlocks.
+                // The longest form the label can take, not its current one, or
+                // the row shrinks the moment a spell unlocks.
                 labels.Add($"{item.DisplayName} \u2014 tome not found");
                 labels.Add($"{item.DisplayName} \u2014 {item.CostAfter(0)}g");
             }
@@ -460,10 +462,8 @@ namespace Game.UI
 
         // Builds one of the two catalogue pages. They differ only in title and
         // which items they take: spells on one, everything else on the other.
-        //
-        // The panel is sized from its own row count so it fits exactly what it
-        // holds, rather than a fixed height that overflows once the catalogue
-        // grows.
+        // The panel is sized from its own row count, so it fits exactly what it
+        // holds rather than overflowing once the catalogue grows.
         private GameObject BuildItemListPage(string name, string title, bool spells)
         {
             var indices = new List<int>();
@@ -560,8 +560,7 @@ namespace Game.UI
             });
         }
 
-        // UIBuilder ties button height to width, so set both directly. The
-        // underline is anchored to the button's bottom edge and sizes itself.
+        // UIBuilder ties button height to width, so both are set directly here.
         private static void SetRowSize(Button button, float width, float height)
         {
             if (button == null) return;
@@ -598,6 +597,8 @@ namespace Game.UI
                 innerWidth * 0.5f - backRt.rect.width * 0.5f - Padding,
                 backRt.anchoredPosition.y);
 
+            // Cheapest tier first, then alphabetical, so the grid reads in a
+            // predictable order.
             var sorted = new System.Collections.Generic.List<EquipmentEntry>(EquipmentCatalog.Entries);
             sorted.Sort((a, b) => a.Level != b.Level ? a.Level.CompareTo(b.Level) : string.Compare(a.Name, b.Name, System.StringComparison.OrdinalIgnoreCase));
             IReadOnlyList<EquipmentEntry> entries = sorted;
@@ -678,6 +679,7 @@ namespace Game.UI
             });
         }
 
+        // Cached, since a miss also logs and the grid rebuilds on every open.
         private Sprite GetThumbnail(EquipmentEntry entry)
         {
             if (thumbnails.TryGetValue(entry.Prefab, out Sprite cached)) return cached;
@@ -689,7 +691,7 @@ namespace Game.UI
             {
                 warnedMissingThumbnail = true;
                 Debug.LogWarning("[MarketUI] Missing thumbnail for '" + entry.Prefab.name +
-                    "' \u2014 run Tools > Equipment > Generate Thumbnails.");
+                    "'. Run Tools > Equipment > Generate Thumbnails.");
             }
 
             thumbnails[entry.Prefab] = sprite;

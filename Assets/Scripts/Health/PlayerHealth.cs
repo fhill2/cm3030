@@ -1,14 +1,8 @@
-using UnityEngine;
-
 namespace Game.Health
 {
+    // Player version of HealthSystem. Death is handled by GameStates, which
+    // listens for the death event raised in the base class.
     public class PlayerHealth : HealthSystem
     {
-        protected override void OnDeath()
-        {
-            // Death event is already published by the base class.
-            // Add player-specific death logic here (disable input, show UI, etc.).
-            Debug.Log($"[PlayerHealth] Player died at {gameObject.name}");
-        }
     }
 }

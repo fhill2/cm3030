@@ -28,10 +28,10 @@ namespace Game.Audio
             public float lowest;
             public bool descending;
 
-            public void Reset(float y)
+            public void Reset(float height)
             {
-                peak = y;
-                lowest = y;
+                peak = height;
+                lowest = height;
                 descending = false;
             }
         }
@@ -55,7 +55,7 @@ namespace Game.Audio
 
             if (animator == null || !animator.isHuman)
             {
-                Debug.LogWarning($"[FootContactAudio] {gameObject.name} has no humanoid Animator — footstep audio disabled.");
+                Debug.LogWarning($"[FootContactAudio] {gameObject.name} has no humanoid Animator, footstep audio disabled.");
                 enabled = false;
                 return;
             }
@@ -101,15 +101,17 @@ namespace Game.Audio
             TrackFoot(rightFoot, ref right);
         }
 
+        // Watches each foot's height and fires a step at the bottom of its
+        // travel, so steps land with the animation whatever clip is playing.
         void TrackFoot(Transform foot, ref FootTracker tracker)
         {
-            float y = foot.position.y;
+            float footHeight = foot.position.y;
 
             if (tracker.descending)
             {
-                if (y <= tracker.lowest + RiseEpsilon)
+                if (footHeight <= tracker.lowest + RiseEpsilon)
                 {
-                    tracker.lowest = y;
+                    tracker.lowest = footHeight;
                     return;
                 }
 
@@ -117,19 +119,19 @@ namespace Game.Audio
                     FireStep();
 
                 tracker.descending = false;
-                tracker.peak = y;
-                tracker.lowest = y;
+                tracker.peak = footHeight;
+                tracker.lowest = footHeight;
             }
             else
             {
-                if (y > tracker.peak)
+                if (footHeight > tracker.peak)
                 {
-                    tracker.peak = y;
+                    tracker.peak = footHeight;
                 }
-                else if (tracker.peak - y >= minDescent * 0.5f)
+                else if (tracker.peak - footHeight >= minDescent * 0.5f)
                 {
                     tracker.descending = true;
-                    tracker.lowest = y;
+                    tracker.lowest = footHeight;
                 }
             }
         }

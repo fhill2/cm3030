@@ -1,16 +1,11 @@
 using UnityEngine;
-using Game.Core;
 
 namespace Game.Core
 {
-    // One place that answers "does the player control the knight right now".
-    // The camera, attack and movement scripts read this instead of each
-    // subscribing to the state machine themselves.
-    //
-    // Also frees the cursor while the shop is open so the market UI is
-    // clickable, and relocks it when the next wave starts.
-    //
-    // Goes on the GameManager object.
+    // Answers whether the player controls the knight right now. The camera,
+    // attack and movement scripts read this instead of each subscribing to
+    // the state machine. Also frees the cursor while the shop is open.
+    // Sits on the GameManager.
     public class PlayerInputLock : MonoBehaviour
     {
         [Tooltip("States in which the player cannot move, look, attack or block.")]
@@ -25,8 +20,7 @@ namespace Game.Core
         [Tooltip("Show the mouse cursor while input is locked.")]
         [SerializeField] private bool freeCursorWhenLocked = true;
 
-        // Static so the player scripts can ask without holding a reference to
-        // the GameManager. There is only ever one game loop.
+        // Static so player scripts can ask without a reference to the GameManager.
         public static bool InputLocked { get; private set; }
 
         void OnEnable()
@@ -62,8 +56,8 @@ namespace Game.Core
 
             if (!freeCursorWhenLocked) return;
 
-            // GameOver is left alone — PlayerMovement already frees the cursor
-            // on death and relocking it here would fight that.
+            // PlayerMovement already frees the cursor on death, so relocking
+            // here would fight it.
             if (e.Current == GameStateId.GameOver) return;
 
             Cursor.lockState = locked ? CursorLockMode.None : CursorLockMode.Locked;

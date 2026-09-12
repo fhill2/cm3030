@@ -12,7 +12,7 @@ namespace Game.Core
 
         private static readonly Color GlowColor = new Color(1f, 0.78f, 0.35f, 1f);
 
-        private static Texture2D s_ringTexture;
+        private static Texture2D ringTexture;
 
         private Transform ring;
         private Material ringMaterial;
@@ -21,7 +21,7 @@ namespace Game.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
-            s_ringTexture = null;
+            ringTexture = null;
         }
 
         public void Place(Vector3 floorPosition)
@@ -33,10 +33,10 @@ namespace Game.Core
             go.transform.localScale = baseScale;
             ring = go.transform;
 
-            var filter = go.AddComponent<MeshFilter>();
+            MeshFilter filter = go.AddComponent<MeshFilter>();
             filter.sharedMesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
 
-            var renderer = go.AddComponent<MeshRenderer>();
+            MeshRenderer renderer = go.AddComponent<MeshRenderer>();
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
 
@@ -46,6 +46,8 @@ namespace Game.Core
             ringMaterial.mainTexture = GetRingTexture();
             ringMaterial.color = GlowColor;
 
+            // Additive transparency has to be set up by hand, since the
+            // material is made in code rather than in the editor.
             if (ringMaterial.shader.name == "Universal Render Pipeline/Unlit")
             {
                 ringMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
@@ -72,9 +74,9 @@ namespace Game.Core
 
             if (ringMaterial != null)
             {
-                Color c = GlowColor;
-                c.a = Mathf.Clamp01(pulse);
-                ringMaterial.color = c;
+                Color glow = GlowColor;
+                glow.a = Mathf.Clamp01(pulse);
+                ringMaterial.color = glow;
             }
         }
 
@@ -84,37 +86,38 @@ namespace Game.Core
             if (ringMaterial != null) Destroy(ringMaterial);
         }
 
+        // Ring drawn in code rather than imported, so there's no art asset to manage
         private static Texture2D GetRingTexture()
         {
-            if (s_ringTexture != null) return s_ringTexture;
+            if (ringTexture != null) return ringTexture;
 
             const int size = 256;
-            s_ringTexture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            ringTexture = new Texture2D(size, size, TextureFormat.RGBA32, false)
             {
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Bilinear
             };
 
-            var pixels = new Color32[size * size];
+            Color32[] pixels = new Color32[size * size];
             float half = (size - 1) * 0.5f;
             for (int y = 0; y < size; y++)
             {
                 for (int x = 0; x < size; x++)
                 {
-                    float dx = (x - half) / half;
-                    float dy = (y - half) / half;
-                    float r = Mathf.Sqrt(dx * dx + dy * dy);
+                    float offsetX = (x - half) / half;
+                    float offsetY = (y - half) / half;
+                    float distance = Mathf.Sqrt(offsetX * offsetX + offsetY * offsetY);
 
-                    float innerEdge = Mathf.Clamp01((r - 0.52f) / 0.05f);
-                    float outerEdge = 1f - Mathf.Clamp01((r - 0.64f) / 0.14f);
+                    float innerEdge = Mathf.Clamp01((distance - 0.52f) / 0.05f);
+                    float outerEdge = 1f - Mathf.Clamp01((distance - 0.64f) / 0.14f);
 
                     pixels[y * size + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(Mathf.Min(innerEdge, outerEdge)));
                 }
             }
 
-            s_ringTexture.SetPixels32(pixels);
-            s_ringTexture.Apply(false, true);
-            return s_ringTexture;
+            ringTexture.SetPixels32(pixels);
+            ringTexture.Apply(false, true);
+            return ringTexture;
         }
     }
 }

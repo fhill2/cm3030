@@ -6,11 +6,17 @@ using Game.Health;
 
 namespace Game.Combat
 {
+    // Runs a swing: triggers the animation, arms the blade partway through,
+    // then disarms it. Shared by the player and the enemies.
     public class Melee : MonoBehaviour
     {
+        private const float Pullback = 0.2f;      // blade drawn back, not yet dangerous
+        private const float UnarmedSpeed = 0.8f;  // swing pace with fists
+
+        [SerializeField] private Animator animator;
+
         private Weapon equipped;
         private WeaponCollider weaponCollider;
-        [SerializeField] private Animator animator;
         private float lastAttackTime = float.NegativeInfinity;
 
         public event System.Action OnAttackStart;
@@ -21,11 +27,8 @@ namespace Game.Combat
             if (animator == null) animator = GetComponentInChildren<Animator>();
         }
 
-        private const float Pullback = 0.2f; // blade pulled back, not yet dangerous
-        private const float UnarmedSpeed = 0.8f; // swing pace with fists, when no weapon is equipped
-
-        // Whether a swing would actually start right now. Callers check this
-        // before spending stamina, so clicks during the cooldown cost nothing.
+        // Checked before spending stamina, so clicks during the cooldown
+        // cost nothing.
         public bool CanAttack
         {
             get
@@ -59,10 +62,9 @@ namespace Game.Combat
             }
         }
 
-        // The weapon is instantiated by Equipment in Start, so we can't cache
-        // these in Awake — they're resolved on first use instead. A cached
-        // reference that has left the hierarchy (thrown weapon, ejected gear)
-        // is re-resolved so a freshly collected weapon is picked up.
+        // Equipment spawns the weapon in Start, so these can't be cached in
+        // Awake. A reference that has left the hierarchy (thrown or ejected
+        // gear) is re-resolved, so a freshly collected weapon is picked up.
         private void ResolveReferences()
         {
             if (equipped == null || !equipped.transform.IsChildOf(transform))
@@ -73,18 +75,17 @@ namespace Game.Combat
 
         private IEnumerator SwingRoutine()
         {
-            float speed = SwingSpeed;
+            float swingDuration = SwingSpeed;
 
             if (animator != null) animator.SetTrigger(AnimParams.Attack);
             EventManager.RaiseHit(new HitArgs(gameObject));
             OnAttackStart?.Invoke();
 
-            // Pullback: blade drawn back, not yet dangerous.
             yield return new WaitForSeconds(Pullback);
 
-            // Active swing: arm the blade for the remaining duration.
+            // Blade is live for the rest of the swing.
             if (weaponCollider != null) weaponCollider.BeginSwing();
-            yield return new WaitForSeconds(speed - Pullback);
+            yield return new WaitForSeconds(swingDuration - Pullback);
             if (weaponCollider != null) weaponCollider.EndSwing();
 
             OnAttackEnd?.Invoke();

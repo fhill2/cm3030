@@ -5,6 +5,8 @@ using Game.Health;
 
 namespace Game.Combat
 {
+    // Throws the actor's weapon and shield clear when they die, so gear ends
+    // up on the ground and can be picked up.
     public class EquipmentEjector : MonoBehaviour
     {
         private const float EjectDelay = 0.5f;
@@ -39,6 +41,8 @@ namespace Game.Combat
             StartCoroutine(EjectRoutine());
         }
 
+        // Delayed so the gear flies off partway through the death animation
+        // rather than the instant the hit lands.
         private IEnumerator EjectRoutine()
         {
             yield return new WaitForSeconds(EjectDelay);
@@ -49,6 +53,7 @@ namespace Game.Combat
             Launch(equipment.ShieldInstance);
         }
 
+        // Called directly when the player swaps a weapon rather than dies.
         public void Eject(GameObject gear)
         {
             if (gear == null) return;
@@ -59,25 +64,25 @@ namespace Game.Combat
         {
             if (gear == null) return;
 
-            foreach (var wc in gear.GetComponentsInChildren<WeaponCollider>())
-                wc.enabled = false;
+            foreach (WeaponCollider weaponCollider in gear.GetComponentsInChildren<WeaponCollider>())
+                weaponCollider.enabled = false;
 
-            foreach (var sc in gear.GetComponentsInChildren<ShieldCollider>())
-                sc.enabled = false;
+            foreach (ShieldCollider shieldCollider in gear.GetComponentsInChildren<ShieldCollider>())
+                shieldCollider.enabled = false;
 
             Transform owner = gear.transform.root;
             gear.transform.SetParent(null);
             equipment.Detach(gear);
 
-            var gravity = gear.GetComponent<Gravity>();
-            if (gravity == null) gravity = gear.AddComponent<Gravity>();
-            gravity.SelfRighting = true;
+            Gravity fall = gear.GetComponent<Gravity>();
+            if (fall == null) fall = gear.AddComponent<Gravity>();
+            fall.SelfRighting = true;
 
             Vector3 lateral = Random.insideUnitSphere;
             lateral.y = 0f;
             lateral = lateral.sqrMagnitude > 0.001f ? lateral.normalized : Vector3.forward;
 
-            gravity.Launch(
+            fall.Launch(
                 Vector3.up * Random.Range(MinUpForce, MaxUpForce) + lateral * Random.Range(MinLateralForce, MaxLateralForce),
                 Random.insideUnitSphere * Random.Range(MinSpin, MaxSpin),
                 owner);
@@ -85,6 +90,8 @@ namespace Game.Combat
             StartCoroutine(HaloAfterDelay(gear));
         }
 
+        // Waits for the gear to land before marking it, so the halo sits on
+        // the ground and not in mid-air.
         private IEnumerator HaloAfterDelay(GameObject gear)
         {
             yield return new WaitForSeconds(HaloDelay);

@@ -8,6 +8,7 @@ using Game.Shared;
 
 namespace Game.Combat
 {
+    // Q knocks back enemies in an arc in front of the player.
     public class ArcStrikes : MonoBehaviour
     {
         [Tooltip("Reach of the knockback arc in metres.")]
@@ -62,8 +63,8 @@ namespace Game.Combat
 
         void Update()
         {
-            var kb = Keyboard.current;
-            if (kb == null) return;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return;
 
             ReleaseKnockbackLayer();
 
@@ -71,9 +72,11 @@ namespace Game.Combat
             if (movement != null && !movement.ControlEnabled) return;
             if (stamina != null && !stamina.CanAct) return;
 
-            if (kb.qKey.wasPressedThisFrame) KnockbackStrike();
+            if (keyboard.qKey.wasPressedThisFrame) KnockbackStrike();
         }
 
+        // Drops the layer back to zero once the animation is done, so it
+        // doesn't sit on top of normal movement.
         void ReleaseKnockbackLayer()
         {
             if (!knockbackLayerHot || knockbackLayer < 0 || animator == null) return;
@@ -125,6 +128,7 @@ namespace Game.Combat
             }
         }
 
+        // Ripple sits on the ground under the player, not at their waist.
         private Vector3 RippleOrigin()
         {
             Vector3 origin = transform.position + Vector3.up * 0.5f;

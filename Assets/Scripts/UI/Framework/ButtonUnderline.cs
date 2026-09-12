@@ -7,20 +7,20 @@ namespace Game.UI
         private const float Height = 4f;
         private const float Speed = 14f;
 
-        private RectTransform rt;
+        private RectTransform rect;
         private float currentWidth;
         private float targetWidth;
 
         private void Awake()
         {
-            rt = GetComponent<RectTransform>();
-            if (rt != null)
+            rect = GetComponent<RectTransform>();
+            if (rect != null)
             {
-                rt.anchorMin = new Vector2(0.5f, 0f);
-                rt.anchorMax = new Vector2(0.5f, 0f);
-                rt.pivot = new Vector2(0.5f, 0f);
-                rt.anchoredPosition = Vector2.zero;
-                rt.sizeDelta = new Vector2(0f, Height);
+                rect.anchorMin = new Vector2(0.5f, 0f);
+                rect.anchorMax = new Vector2(0.5f, 0f);
+                rect.pivot = new Vector2(0.5f, 0f);
+                rect.anchoredPosition = Vector2.zero;
+                rect.sizeDelta = new Vector2(0f, Height);
             }
             currentWidth = 0f;
             targetWidth = 0f;
@@ -31,10 +31,10 @@ namespace Game.UI
 
         private void Update()
         {
-            if (rt == null) return;
+            if (rect == null) return;
             currentWidth = Mathf.Lerp(currentWidth, targetWidth,
                 1f - Mathf.Exp(-Speed * Time.unscaledDeltaTime));
-            rt.sizeDelta = new Vector2(currentWidth, Height);
+            rect.sizeDelta = new Vector2(currentWidth, Height);
         }
     }
 }

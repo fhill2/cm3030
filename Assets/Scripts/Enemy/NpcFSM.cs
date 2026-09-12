@@ -9,26 +9,13 @@ using Game.Combat;
 
 namespace Game.Enemy
 {
-    /// <summary>
-    /// Finite State Machine context for enemy AI.
-    ///
-    /// Holds shared tuning fields and runtime references that every state reads
-    /// via <see cref="BaseState.EnterState(NpcFSM)"/>. State instances are plain
-    /// C# objects (they do NOT inherit from MonoBehaviour), so any coroutine work
-    /// must be started through this component via <c>StartCoroutine(...)</c>.
-    ///
-    /// Talks to the rest of the game exclusively through
-    /// <see cref="EventManager"/> events and the
-    /// <see cref="IDamageable"/> interface — it never references
-    /// <see cref="HealthSystem"/> or <see cref="Game.Audio.ActorAudio"/> directly.
-    /// </summary>
     public enum InitialEnemyState { Patrol, Chase, Attack, Death }
 
+    // State machine context for enemy AI. 
     public class NpcFSM : MonoBehaviour
     {
-        // ── State instances (plain C# objects) ───────────────────────
-        // NOTE: Unity cannot serialize references to plain C# classes, so these
-        // are created via field initializers (new ...) and read at runtime.
+        // Unity can't serialize plain C# classes, so these are created with
+        // field initializers and read at runtime.
         [Header("States")]
         public PatrolState s_Patrol = new PatrolState();
         public ChaseState  s_Chase  = new ChaseState();
@@ -39,33 +26,28 @@ namespace Game.Enemy
         [Tooltip("State the enemy enters on spawn. Defaults to Patrol.")]
         [SerializeField] private InitialEnemyState initialState = InitialEnemyState.Patrol;
 
-        // ── Patrol targets ───────────────────────────────────────────
         [Header("Patrol Targets")]
         [Tooltip("Waypoints cycled through while in PatrolState.")]
         public List<Transform> patrolTargets;
         public int targetIndex;
 
-        // ── Distances ────────────────────────────────────────────────
         [Header("Distances")]
-        [Tooltip("Player within this distance flips Patrol -> Chase.")]
+        [Tooltip("Player within this distance flips Patrol to Chase.")]
         public float chaseTriggerDistance = 8f;
-        [Tooltip("Player farther than this ends Chase -> Patrol.")]
+        [Tooltip("Player farther than this ends Chase and returns to Patrol.")]
         public float chaseQuitDistance = 12f;
         [Tooltip("Within this distance the enemy attacks instead of chasing.")]
         public float attackRange = 2f;
 
-        // ── Speeds ───────────────────────────────────────────────────
         [Header("Speeds")]
         [Tooltip("NavMeshAgent speed while patrolling.")]
         public float npcPatrolSpeed = 1.5f;
         [Tooltip("NavMeshAgent speed while chasing.")]
         public float npcChaseSpeed = 3.5f;
-        [Tooltip("NavMeshAgent speed while circling the player during Attack. Set to 0 to disable circling and stand still instead (old behavior).")]
+        [Tooltip("NavMeshAgent speed while circling the player during Attack. Set to 0 to stand still instead.")]
         public float npcCircleSpeed = 2f;
 
-        // ── Attack tuning ────────────────────────────────────────────
-        // Attack timing/damage now live on the equipped weapon (WeaponDef) and are
-        // executed by Melee. The FSM only keeps AI-side attack knobs here.
+        // Attack timing and damage live on the weapon and are run by Melee.
         [Header("Attack")]
         [Tooltip("Require an unobstructed ray to the player before applying damage.")]
         public bool requireLineOfSight = true;
@@ -81,7 +63,6 @@ namespace Game.Enemy
         [Tooltip("Seconds after hearing a taunt before the enemy breaks and flees.")]
         public float tauntReactionDelay = 1f;
 
-        // ── Timing ───────────────────────────────────────────────────
         [Header("Timers")]
         [Tooltip("Seconds between patrol/chase status checks.")]
         public float checkTime = 0.2f;
@@ -90,18 +71,17 @@ namespace Game.Enemy
         [Tooltip("Stop this close to a destination.")]
         public float distanceToTarget = 0.5f;
 
-        // ── Runtime references (assigned in Start, hidden from inspector) ──
+        // Assigned in Start.
         [HideInInspector] public NavMeshAgent agent;
         [HideInInspector] public GameObject player;
-        [HideInInspector] public WeaponCollider weaponCollider; // on the enemy's weapon/hand
-        [HideInInspector] public ShieldCollider shieldCollider; // on the enemy's shield, if equipped
-        [HideInInspector] public Animator animator; // drives the shared Block bool, same as PlayerMovement
+        [HideInInspector] public WeaponCollider weaponCollider;
+        [HideInInspector] public ShieldCollider shieldCollider;
+        [HideInInspector] public Animator animator;
 
-        // ── Runtime flags (set by event handlers, read by states) ────
+        // Set by the event handlers, read by the states.
         [HideInInspector] public bool playerAlive = true;
-        [HideInInspector] public bool wasHit; // extension hook for a future stagger state
+        [HideInInspector] public bool wasHit;
 
-        /// <summary>Currently active state.</summary>
         public BaseState CurrentState { get; private set; }
 
         void Start()
@@ -144,22 +124,19 @@ namespace Game.Enemy
             EventManager.OnTaunt  -= HandleTaunt;
         }
 
-        // ── EventManager handlers ────────────────────────────────────
-
         void HandleDeath(DeathArgs e)
         {
             if (e.Entity == gameObject)
             {
-                // A corpse mid-BlockRoutine would otherwise keep its shield raised
-                // and the Block animator bool stuck true forever — same guard
-                // PlayerMovement applies on death.
+                // A corpse caught mid-BlockRoutine would keep its shield up and
+                // the Block bool stuck true.
                 StopCoroutine(nameof(BlockRoutine));
                 StopCoroutine(nameof(TauntReactionRoutine));
                 if (shieldCollider != null) shieldCollider.IsBlocking = false;
                 if (animator != null) animator.SetBool(AnimParams.Block, false);
                 MoveToState(s_Death);
             }
-            else if (e.Entity == player)      playerAlive = false;
+            else if (e.Entity == player) playerAlive = false;
         }
 
         void HandleDamage(DamageArgs e)
@@ -167,21 +144,16 @@ namespace Game.Enemy
             if (e.Target == gameObject) wasHit = true;
         }
 
-        // Reacts to the PLAYER starting a swing (Melee/AttackState both raise
-        // OnHit at the start of windup, before the blade goes active) by rolling
-        // blockChance and, on success, raising the shield for blockHoldDuration.
-        // Reuses WeaponCollider's existing "Shield" tag + IsBlocking check, so
-        // this doesn't need any new hit-detection — just toggles the same
-        // collider the player's own blocking uses.
+        // OnHit fires at the start of the player's windup, before the blade
+        // goes live, so the enemy has time to raise its shield.
         void HandleHit(HitArgs e)
         {
             if (e.Entity != player || shieldCollider == null) return;
             if (!playerAlive || CurrentState == s_Death) return;
 
-            // Only bother if the player is actually close enough for this swing
-            // to plausibly reach us.
-            float dist = Vector3.Distance(transform.position, player.transform.position);
-            if (dist > attackRange * 1.5f) return;
+            // Only bother if the swing could plausibly reach us.
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+            if (distance > attackRange * 1.5f) return;
 
             if (Random.value <= blockChance)
             {
@@ -218,13 +190,6 @@ namespace Game.Enemy
             MoveToState(s_Flee);
         }
 
-        // ── State transitions ────────────────────────────────────────
-
-        /// <summary>
-        /// Transition to a new state. Calls <see cref="BaseState.ExitState"/> on
-        /// the outgoing state, swaps the reference, then calls
-        /// <see cref="BaseState.EnterState"/> on the incoming state.
-        /// </summary>
         public void MoveToState(BaseState state)
         {
             CurrentState?.ExitState(this);

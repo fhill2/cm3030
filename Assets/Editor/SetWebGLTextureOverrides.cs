@@ -24,25 +24,25 @@ public static class SetWebGLTextureOverrides
         for (int i = 0; i < guids.Length; i++)
         {
             string path = AssetDatabase.GUIDToAssetPath(guids[i]);
-            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
             if (importer == null) { skipped++; continue; }
 
-            var format = importer.DoesSourceTextureHaveAlpha()
+            TextureImporterFormat format = importer.DoesSourceTextureHaveAlpha()
                 ? TextureImporterFormat.ETC2_RGBA8
                 : TextureImporterFormat.ETC_RGB4;
 
-            var s = importer.GetPlatformTextureSettings("WebGL");
-            bool wasOverridden = s.overridden;
-            s.name = "WebGL";
-            s.overridden = true;
-            s.maxTextureSize = MaxSize;
-            s.format = format;
-            s.textureCompression = TextureImporterCompression.Compressed;
-            s.compressionQuality = 50;
-            s.crunchedCompression = false;
-            s.allowsAlphaSplitting = false;
+            TextureImporterPlatformSettings settings = importer.GetPlatformTextureSettings("WebGL");
+            bool wasOverridden = settings.overridden;
+            settings.name = "WebGL";
+            settings.overridden = true;
+            settings.maxTextureSize = MaxSize;
+            settings.format = format;
+            settings.textureCompression = TextureImporterCompression.Compressed;
+            settings.compressionQuality = 50;
+            settings.crunchedCompression = false;
+            settings.allowsAlphaSplitting = false;
 
-            importer.SetPlatformTextureSettings(s);
+            importer.SetPlatformTextureSettings(settings);
             importer.SaveAndReimport();
             if (!wasOverridden) newlyOverridden++;
 

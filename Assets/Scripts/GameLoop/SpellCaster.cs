@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Audio;
@@ -7,16 +8,10 @@ using Game.Health;
 namespace Game.Core
 {
     // Reads the spell hotkeys and launches projectiles.
-    //
     // Keys 1-3 cast fire at levels 1-3, keys 4-6 cast ice at levels 1-3.
-    // A key does nothing until that spell has been bought in the market, so
-    // the player can also choose a weaker, cheaper spell rather than always
-    // firing their strongest.
-    //
-    // Spells fly at whatever sits under the crosshair, not parallel to the
-    // camera, so what you see at screen centre is what you hit.
-    //
-    // Goes on the player.
+    // A key does nothing until that spell has been bought, so the player can
+    // pick a cheaper spell rather than always firing their strongest.
+    // Sits on the player.
     public class SpellCaster : MonoBehaviour
     {
         [Header("References")]
@@ -47,7 +42,7 @@ namespace Game.Core
         [Header("Debug")]
         [SerializeField] private bool logCasts = true;
 
-        public System.Collections.Generic.IReadOnlyList<SpellDef> HotkeySpells => hotkeySpells;
+        public IReadOnlyList<SpellDef> HotkeySpells => hotkeySpells;
 
         private StaminaSystem stamina;
         private bool isDead;
@@ -87,15 +82,15 @@ namespace Game.Core
             if (isDead) return;
             if (PlayerInputLock.InputLocked) return;
 
-            Keyboard kb = Keyboard.current;
-            if (kb == null) return;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return;
 
-            if (kb.digit1Key.wasPressedThisFrame) TryCast(0);
-            if (kb.digit2Key.wasPressedThisFrame) TryCast(1);
-            if (kb.digit3Key.wasPressedThisFrame) TryCast(2);
-            if (kb.digit4Key.wasPressedThisFrame) TryCast(3);
-            if (kb.digit5Key.wasPressedThisFrame) TryCast(4);
-            if (kb.digit6Key.wasPressedThisFrame) TryCast(5);
+            if (keyboard.digit1Key.wasPressedThisFrame) TryCast(0);
+            if (keyboard.digit2Key.wasPressedThisFrame) TryCast(1);
+            if (keyboard.digit3Key.wasPressedThisFrame) TryCast(2);
+            if (keyboard.digit4Key.wasPressedThisFrame) TryCast(3);
+            if (keyboard.digit5Key.wasPressedThisFrame) TryCast(4);
+            if (keyboard.digit6Key.wasPressedThisFrame) TryCast(5);
         }
 
         private void TryCast(int slot)
@@ -129,27 +124,26 @@ namespace Game.Core
             Vector3 aimPoint = AimPoint();
             Vector3 origin = CastOrigin();
 
-            // Aim from the projectile's own start position to the point under
-            // the crosshair. Firing parallel to the camera instead would land
-            // off to one side, since the spell leaves the chest and not the lens.
+            // Aimed from the projectile's own start position, not parallel to
+            // the camera, since the spell leaves the chest and not the lens.
             Vector3 direction = (aimPoint - origin).normalized;
             if (direction.sqrMagnitude < 0.001f) direction = transform.forward;
 
             GameObject projectile = Instantiate(
                 spell.ProjectilePrefab, origin, Quaternion.LookRotation(direction));
-                projectile.transform.localScale *= spell.ProjectileScale;
+            projectile.transform.localScale *= spell.ProjectileScale;
 
-            SpellProjectile component = projectile.GetComponent<SpellProjectile>();
-            if (component != null)
+            SpellProjectile spellProjectile = projectile.GetComponent<SpellProjectile>();
+            if (spellProjectile != null)
             {
-                component.SetImpact(spell.ImpactEffect, spell.ImpactScale, spell.ImpactLifetime);
-                component.Launch(spell, spell.Damage, spell.ProjectileSpeed,
-                                 spell.ProjectileLifetime, gameObject);
+                spellProjectile.SetImpact(spell.ImpactEffect, spell.ImpactScale, spell.ImpactLifetime);
+                spellProjectile.Launch(spell, spell.Damage, spell.ProjectileSpeed,
+                                       spell.ProjectileLifetime, gameObject);
             }
 
-            var castClips = spell.CastClip;
+            AudioClip[] castClips = spell.CastClip;
             if (castClips != null)
-                foreach (var clip in castClips)
+                foreach (AudioClip clip in castClips)
                     OneShotAudio.Play2D(clip, origin);
             else if (logCasts)
                 Debug.Log($"[SpellCaster] {spell.DisplayName} cast has no clips");
@@ -157,8 +151,8 @@ namespace Game.Core
             if (logCasts) Debug.Log($"[SpellCaster] Cast {spell.DisplayName}");
         }
 
-        // Whatever the crosshair is pointing at. Falls back to a point far
-        // down the view when the player is aiming at open sky.
+        // Whatever the crosshair points at, or a point far down the view when
+        // the player is aiming at open sky.
         private Vector3 AimPoint()
         {
             if (aimCamera == null) return transform.position + transform.forward * maxAimDistance;

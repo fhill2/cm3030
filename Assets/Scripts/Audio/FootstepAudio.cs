@@ -2,15 +2,7 @@ using UnityEngine;
 
 namespace Game.Audio
 {
-    /// <summary>
-    /// Drives footstep, jump and land SFX from <see cref="CharacterController"/>
-    /// motion via <see cref="ActorAudio"/>.
-    ///
-    /// Steps are spaced by distance travelled rather than by a timer or by
-    /// animation events. That keeps them in sync across the whole walk/run
-    /// blend — running covers ground faster, so steps land faster — without
-    /// needing an event marker on every locomotion clip.
-    /// </summary>
+    // Footstep, jump and land SFX driven by the CharacterController. 
     [RequireComponent(typeof(CharacterController))]
     public class FootstepAudio : MonoBehaviour
     {
@@ -21,7 +13,7 @@ namespace Game.Audio
         [Header("Stride")]
         [Tooltip("Metres between steps at walking pace.")]
         [SerializeField] private float walkStride = 0.75f;
-        [Tooltip("Metres between steps at full sprint. Longer: you cover more ground per stride when running.")]
+        [Tooltip("Metres between steps at full sprint. Longer, since you cover more ground per stride when running.")]
         [SerializeField] private float runStride = 1.5f;
         [Tooltip("Speed treated as a full sprint. Match this to PlayerMovement's sprintSpeed.")]
         [SerializeField] private float sprintSpeed = 5f;
@@ -66,7 +58,7 @@ namespace Game.Audio
 
             if (!playFootsteps || !grounded) return;
 
-            // Horizontal only: settling onto the ground shouldn't read as walking.
+            // Horizontal only, so settling onto the ground doesn't read as walking.
             Vector3 velocity = controller.velocity;
             velocity.y = 0f;
             float speed = velocity.magnitude;
@@ -77,8 +69,8 @@ namespace Game.Audio
                 return;
             }
 
-            // A runner's stride is longer than a walker's, so scale it with speed.
-            // A fixed stride makes sprinting sound frantic or walking sound sparse.
+            // A fixed stride makes sprinting sound frantic or walking sparse,
+            // so it scales with speed.
             float stride = Mathf.Lerp(walkStride, runStride,
                                       Mathf.InverseLerp(minSpeed, sprintSpeed, speed));
 

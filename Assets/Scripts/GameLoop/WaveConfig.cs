@@ -3,9 +3,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    // One entry in a wave's horde: a prefab, how many of it spawn, and how
-    // tough it is. Waves mix sets to intersperse elites with grunts — the
-    // spawner weaves them together.
+    // One group of enemies within a wave: which prefab, how many, and how tough.
     [Serializable]
     public class EnemySet
     {
@@ -39,12 +37,8 @@ namespace Game.Core
         public int GoldReward => goldReward;
     }
 
-    // One asset per wave. Right-click in the Project window to make them:
+    // One asset per wave, so difficulty can be tuned in the Inspector.
     // Create > Fall of Camelot > Wave Config
-    //
-    // Kept as a ScriptableObject so we can tune horde size and difficulty
-    // in the Inspector without recompiling, and so waves can be swapped
-    // around without touching the spawner.
     [CreateAssetMenu(fileName = "Wave", menuName = "Fall of Camelot/Wave Config")]
     public class WaveConfig : ScriptableObject
     {

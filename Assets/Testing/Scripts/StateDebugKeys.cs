@@ -3,14 +3,13 @@ using UnityEngine.InputSystem;
 
 namespace Game.Core
 {
-    // Temporary. Drives the game loop from the keyboard while there's no
-    // menu or shop UI. Delete once the real triggers exist.
+    // Drives the game loop from the keyboard for testing.
     //
     // F1  next wave        F4  buy shop item 0
-    // F2  open shop        F5  close shop (the Done button)
+    // F2  open shop        F5  close shop
     // F3  back to menu     F6  print gold and shop prices
     //
-    // Goes on the GameManager object.
+    // Goes on the GameManager.
     public class StateDebugKeys : MonoBehaviour
     {
         [SerializeField] private GameStateMachine stateMachine;
@@ -19,24 +18,25 @@ namespace Game.Core
 
         private void Update()
         {
-            if (Keyboard.current == null) return;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return;
 
-            if (Keyboard.current.f1Key.wasPressedThisFrame)
+            if (keyboard.f1Key.wasPressedThisFrame)
                 stateMachine.MoveToState(GameStateId.WaveActive);
 
-            if (Keyboard.current.f2Key.wasPressedThisFrame)
+            if (keyboard.f2Key.wasPressedThisFrame)
                 stateMachine.MoveToState(GameStateId.Shop);
 
-            if (Keyboard.current.f3Key.wasPressedThisFrame)
+            if (keyboard.f3Key.wasPressedThisFrame)
                 stateMachine.MoveToState(GameStateId.Menu);
 
-            if (Keyboard.current.f4Key.wasPressedThisFrame)
+            if (keyboard.f4Key.wasPressedThisFrame)
                 Buy(0);
 
-            if (Keyboard.current.f5Key.wasPressedThisFrame)
+            if (keyboard.f5Key.wasPressedThisFrame)
                 shop.Close();
 
-            if (Keyboard.current.f6Key.wasPressedThisFrame)
+            if (keyboard.f6Key.wasPressedThisFrame)
                 PrintShop();
         }
 
@@ -46,7 +46,7 @@ namespace Game.Core
 
             if (!shop.TryBuy(index))
             {
-                Debug.Log($"[Debug] Can't buy item {index} — too expensive or unavailable.");
+                Debug.Log($"[Debug] Can't buy item {index}, too expensive or unavailable.");
             }
         }
 
@@ -61,7 +61,7 @@ namespace Game.Core
                 ShopItemDef item = shop.ItemAt(i);
                 if (item == null) continue;
 
-                Debug.Log($"[Debug] {i}: {item.DisplayName} — {shop.CostOf(i)} gold, bought {shop.TimesBought(i)}x");
+                Debug.Log($"[Debug] {i}: {item.DisplayName}, {shop.CostOf(i)} gold, bought {shop.TimesBought(i)}x");
             }
         }
     }

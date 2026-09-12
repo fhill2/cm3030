@@ -7,15 +7,8 @@ using Game.Combat;
 
 namespace Game.Movement
 {
-    /// <summary>
-    /// Input-driven movement for the player. Inherits gravity, ground detection,
-    /// animation updates, and death handling.
-    ///
-    /// Control scheme handles mouse-look (orbit
-    /// + player aim). WASD strafes camera-relative (A/D strafe, W/S forward/back);
-    /// Shift sprints; Space jumps. This class does NOT rotate the character —
-    /// facing is driven by the camera.
-    /// </summary>
+    // Input-driven movement for the player. Gravity, ground detection,
+    // animation and death handling are inherited. 
     public class PlayerMovement : CharacterMotor
     {
         [Header("Movement")]
@@ -39,22 +32,17 @@ namespace Game.Movement
         [Tooltip("ShieldCollider component on the shield. Leave empty to auto-find.")]
         [SerializeField] private ShieldCollider shieldCollider;
 
-        // Stamina gate. Optional — without it everything behaves as before.
         private StaminaSystem stamina;
 
-        /// <summary>True while the player is holding block. Exposed so other
-        /// systems (stamina, animation) read one source instead of each
-        /// polling the mouse themselves.</summary>
+        // Exposed so stamina and animation read one source instead of each
+        // polling the mouse.
         public bool IsBlocking { get; private set; }
 
-        /// <summary>True while the player is actually sprinting, i.e. holding
-        /// Shift AND able to pay for it.</summary>
+        // Holding Shift and able to pay for it.
         public bool IsSprintingNow { get; private set; }
 
-        /// <summary>
-        /// False while the game loop is in a state the player shouldn't be
-        /// driving the character — the start menu, the shop
-        /// </summary>
+        // False in the states the player shouldn't be driving the character:
+        // the start menu, the shop, game over.
         public bool ControlEnabled { get; private set; } = true;
 
         protected override void Awake()
@@ -74,14 +62,13 @@ namespace Game.Movement
 
         protected void Start()
         {
-            // Resolve the ShieldCollider AFTER Equipment.Start() has loaded the shield.
-            // If we do this in Awake, the shield doesn't exist yet (Equipment loads it in Start).
+            // In Start, not Awake, because Equipment loads the shield in Start.
             if (shieldCollider == null)
                 shieldCollider = GetComponentInChildren<ShieldCollider>();
         }
 
-        // base.OnEnable must be called: CharacterMotor subscribes OnDeath there,
-        // and losing it would stop the player dying at all.
+        // base.OnEnable must be called: CharacterMotor subscribes OnDeath
+        // there, and losing it would stop the player dying at all.
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -98,13 +85,13 @@ namespace Game.Movement
         {
             ControlEnabled = AllowsControl(e.Current);
 
-            // One owner for the cursor. Locked only while the player is actually
-            // driving the character; free in the menu, the shop and after death
+            // One owner for the cursor. Locked only while the player is driving
+            // the character, free in the menu, the shop and after death.
             SetCursorLocked(ControlEnabled);
         }
 
-        // Movement stays live through WaveComplete — that's the brief lull
-        // between waves, and freezing the player there feels like a hitch.
+        // Movement stays live through WaveComplete, the brief lull between
+        // waves, since freezing the player there feels like a hitch.
         private static bool AllowsControl(GameStateId state)
         {
             return state == GameStateId.WaveActive || state == GameStateId.WaveComplete;
@@ -114,12 +101,7 @@ namespace Game.Movement
         {
             if (!ControlEnabled)
             {
-                // Menu, shop or game over: no input, but gravity keeps running
-                // so the character rests on the ground instead of hovering.
-                //
-                // The animator has to be zeroed too, or a player who was running
-                // when the shop opened keeps running on the spot. Skipped when
-                // dead so the death clip plays out untouched.
+                // No input, but gravity keeps running so the character rests on the ground. 
                 if (!isDead) ClearLocomotion();
 
                 SettleUncontrolled();
@@ -128,20 +110,18 @@ namespace Game.Movement
 
             if (isDead)
             {
-                // Dead players don't walk, sprint, jump or block. Gravity still
-                // runs so the body settles rather than hanging where it died.
                 SettleUncontrolled();
                 return;
             }
 
             bool grounded = controller.isGrounded;
 
-            // Work out sprint first, since Move() needs to know the speed and
-            // sprinting costs stamina every frame it's held.
+            // Sprint first, since Move needs the speed and sprinting costs
+            // stamina every frame it's held.
             IsSprintingNow = ResolveSprint();
 
             Vector2 input = ReadMoveInput();
-            Vector3 horizontal = Move(input);      // strafe movement (no turning)
+            Vector3 horizontal = Move(input);
             ApplyGravity(grounded);
 
             // Jump costs a chunk up front, so a stunned or exhausted player
@@ -154,41 +134,36 @@ namespace Game.Movement
 
             MoveActor(horizontal);
 
-            float speed01 = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
-            // Grace-filtered so descending stairs doesn't fire the fall animation
-            // on every step. Physics above still uses the raw `grounded`.
-            UpdateAnimator(speed01, GroundedForAnimation(grounded, jumped), jumped);
+            float normalisedSpeed = sprintSpeed > 0f ? horizontal.magnitude / sprintSpeed : 0f;
+            // Grace-filtered so descending stairs doesn't fire the fall
+            // animation on every step. 
+            UpdateAnimator(normalisedSpeed, GroundedForAnimation(grounded, jumped), jumped);
 
-            // Feed the directional locomotion blend.
-            // Sprinting: forward/backward wins — W+A/D plays forward/backward while the
-            // camera turns the character slightly (FollowCamera diagonalTurnAngle).
-            // Walking: strafe wins — W+A/D plays RunLeft/RunRight only.
-            Vector2 animInput;
+            // Sprinting, forward and backward win, so W+A plays forward while
+            // the camera turns the character slightly. 
+            Vector2 blendInput;
             if (IsSprintingNow)
             {
                 if (Mathf.Abs(input.y) > 0.1f)
-                    animInput = new Vector2(0f, input.y);
+                    blendInput = new Vector2(0f, input.y);
                 else
-                    animInput = new Vector2(input.x, 0f);
+                    blendInput = new Vector2(input.x, 0f);
             }
             else if (Mathf.Abs(input.x) > 0.1f)
-                animInput = new Vector2(input.x, 0f);
+                blendInput = new Vector2(input.x, 0f);
             else
-                animInput = new Vector2(0f, input.y);
-            SetMoveInput(animInput.x, animInput.y);
+                blendInput = new Vector2(0f, input.y);
+            SetMoveInput(blendInput.x, blendInput.y);
 
-            // Sprint: Shift toggles between walk and run animations.
             if (animator != null) animator.SetBool(AnimParams.Sprint, IsSprintingNow);
 
-            // Block stance: hold right-click to raise the shield.
             IsBlocking = ResolveBlock();
             if (animator != null) animator.SetBool(AnimParams.Block, IsBlocking);
             if (shieldCollider != null) shieldCollider.IsBlocking = IsBlocking;
         }
 
-        // Drops the character back to idle. The Set/Update calls damp toward
-        // zero rather than snapping, so the run blends out over a few frames
-        // instead of cutting mid-stride.
+        // The Set and Update calls damp toward zero rather than snapping, so
+        // the run blends out over a few frames instead of cutting mid-stride.
         private void ClearLocomotion()
         {
             IsSprintingNow = false;
@@ -206,20 +181,18 @@ namespace Game.Movement
             if (shieldCollider != null) shieldCollider.IsBlocking = false;
         }
 
-        // Sprinting is held down, so it drains continuously. The drain returns
-        // false the moment stamina runs out, which drops us back to a walk in
-        // the same frame.
+        // Held down, so it drains continuously. The drain returns false the
+        // moment stamina runs out, dropping back to a walk in the same frame.
         private bool ResolveSprint()
         {
             if (!SprintHeld()) return false;
-            if (!MovingOnFoot()) return false;   // no drain while standing still
+            if (!MovingOnFoot()) return false;
             if (stamina == null) return true;
 
             return stamina.DrainSprint(Time.deltaTime);
         }
 
-        // Blocking is held down, so — like sprinting — it drains continuously.
-        // Runs out of stamina and the shield drops, same frame.
+        // Same as sprinting: run out of stamina and the shield drops.
         private bool ResolveBlock()
         {
             if (Mouse.current == null) return false;
@@ -235,18 +208,17 @@ namespace Game.Movement
             return stamina.TrySpendJump();
         }
 
-        // Camera-relative strafe movement. Does NOT rotate the character —
-        // facing is driven by the FollowCamera (aim follows the view).
+        // Camera-relative strafe. Doesn't rotate the character.
         Vector3 Move(Vector2 input)
         {
-            Vector3 camForward = cameraTransform != null ? cameraTransform.forward : Vector3.forward;
-            Vector3 camRight   = cameraTransform != null ? cameraTransform.right   : Vector3.right;
-            camForward.y = 0f;
-            camRight.y = 0f;
-            camForward.Normalize();
-            camRight.Normalize();
+            Vector3 cameraForward = cameraTransform != null ? cameraTransform.forward : Vector3.forward;
+            Vector3 cameraRight = cameraTransform != null ? cameraTransform.right : Vector3.right;
+            cameraForward.y = 0f;
+            cameraRight.y = 0f;
+            cameraForward.Normalize();
+            cameraRight.Normalize();
 
-            Vector3 direction = camForward * input.y + camRight * input.x;
+            Vector3 direction = cameraForward * input.y + cameraRight * input.x;
             if (direction.sqrMagnitude > 1f) direction.Normalize();
 
             float speed = (IsSprintingNow ? sprintSpeed : walkSpeed) * speedScale;
@@ -256,13 +228,13 @@ namespace Game.Movement
         Vector2 ReadMoveInput()
         {
             Vector2 input = Vector2.zero;
-            Keyboard kb = Keyboard.current;
-            if (kb == null) return input;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return input;
 
-            if (kb.wKey.isPressed || kb.upArrowKey.isPressed) input.y += 1f;
-            if (kb.sKey.isPressed || kb.downArrowKey.isPressed) input.y -= 1f;
-            if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) input.x += 1f;
-            if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) input.x -= 1f;
+            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) input.y += 1f;
+            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) input.y -= 1f;
+            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) input.x += 1f;
+            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) input.x -= 1f;
 
             return input;
         }
@@ -272,8 +244,7 @@ namespace Game.Movement
             return Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
         }
 
-        // Sprinting only counts when there's actual movement input, so standing
-        // on the spot holding Shift doesn't burn the bar.
+        // Standing on the spot holding Shift shouldn't burn the bar.
         bool MovingOnFoot()
         {
             return ReadMoveInput().sqrMagnitude > 0.01f;
@@ -297,9 +268,8 @@ namespace Game.Movement
 
             SetCursorLocked(false);
 
-            // Clear the guard explicitly. Update stops running from here, so a
-            // player who died holding right-click would otherwise keep the block
-            // animation and an armed shield collider on the corpse forever.
+            // Update stops running from here, so a player who died holding
+            // right-click would otherwise keep the block animation and an armed shield collider on the corpse forever.
             IsBlocking = false;
             IsSprintingNow = false;
             if (animator != null) animator.SetBool(AnimParams.Block, false);

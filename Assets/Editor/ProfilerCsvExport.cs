@@ -34,18 +34,18 @@ public static class ProfilerCsvExport
         if (last - first + 1 > MaxFrames)
             first = last - MaxFrames + 1;
 
-        var totals = new Dictionary<string, Entry>();
-        var frames = new StringBuilder("FrameIndex,MainThreadMs\n");
+        Dictionary<string, Entry> totals = new Dictionary<string, Entry>();
+        StringBuilder frames = new StringBuilder("FrameIndex,MainThreadMs\n");
         int processed = 0;
 
-        for (int f = first; f <= last; f++)
+        for (int frame = first; frame <= last; frame++)
         {
-            var view = GetMainThreadView(f);
+            HierarchyFrameDataView view = GetMainThreadView(frame);
             if (view == null) continue;
 
             int root = view.GetRootItemID();
             double frameMs = view.GetItemColumnDataAsDouble(root, HierarchyFrameDataView.columnTotalTime);
-            frames.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0},{1:0.000}", f, frameMs));
+            frames.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0},{1:0.000}", frame, frameMs));
 
             Walk(view, root, totals);
             processed++;
@@ -57,21 +57,21 @@ public static class ProfilerCsvExport
             return;
         }
 
-        var rows = new List<Entry>(totals.Values);
+        List<Entry> rows = new List<Entry>(totals.Values);
         rows.Sort((a, b) => b.SelfMs.CompareTo(a.SelfMs));
 
-        var sb = new StringBuilder("MarkerName,SelfMsSum,TotalMsSum,MaxSelfMsInOneFrame,GcAllocBytesSum,CallsSum\n");
-        foreach (var e in rows)
+        StringBuilder summary = new StringBuilder("MarkerName,SelfMsSum,TotalMsSum,MaxSelfMsInOneFrame,GcAllocBytesSum,CallsSum\n");
+        foreach (Entry entry in rows)
         {
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0},{1:0.000},{2:0.000},{3:0.000},{4:0},{5:0}",
-                Escape(e.Name), e.SelfMs, e.TotalMs, e.MaxFrameSelfMs, e.GcBytes, e.Calls));
+            summary.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0},{1:0.000},{2:0.000},{3:0.000},{4:0},{5:0}",
+                Escape(entry.Name), entry.SelfMs, entry.TotalMs, entry.MaxFrameSelfMs, entry.GcBytes, entry.Calls));
         }
 
-        string dir = Directory.GetParent(Application.dataPath).FullName;
+        string outputFolder = Directory.GetParent(Application.dataPath).FullName;
         string stamp = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
-        string summaryPath = Path.Combine(dir, "profiler-summary-" + stamp + ".csv");
-        string framesPath = Path.Combine(dir, "profiler-frames-" + stamp + ".csv");
-        File.WriteAllText(summaryPath, sb.ToString());
+        string summaryPath = Path.Combine(outputFolder, "profiler-summary-" + stamp + ".csv");
+        string framesPath = Path.Combine(outputFolder, "profiler-frames-" + stamp + ".csv");
+        File.WriteAllText(summaryPath, summary.ToString());
         File.WriteAllText(framesPath, frames.ToString());
 
         Debug.Log("[ProfilerCsvExport] Exported " + processed + " frames (range " + first + "-" + last + ").\n" +
@@ -79,44 +79,52 @@ public static class ProfilerCsvExport
                   "Per-frame main thread ms: " + framesPath);
     }
 
+    // Thread index isn't fixed, so this scans until it finds the main one.
     private static HierarchyFrameDataView GetMainThreadView(int frame)
     {
-        for (int t = 0; t < 8; t++)
+        for (int threadIndex = 0; threadIndex < 8; threadIndex++)
         {
-            var v = ProfilerDriver.GetHierarchyFrameDataView(frame, t, HierarchyFrameDataView.ViewModes.MergeSamplesWithTheSameName, HierarchyFrameDataView.columnDontSort, false);
-            if (!v.valid) break;
-            if (v.threadName == "Main Thread") return v;
+            HierarchyFrameDataView view = ProfilerDriver.GetHierarchyFrameDataView(
+                frame, threadIndex, HierarchyFrameDataView.ViewModes.MergeSamplesWithTheSameName,
+                HierarchyFrameDataView.columnDontSort, false);
+            if (!view.valid) break;
+            if (view.threadName == "Main Thread") return view;
         }
         return null;
     }
 
-    private static void Walk(HierarchyFrameDataView view, int id, Dictionary<string, Entry> acc)
+    // Walks the whole marker tree, summing each marker's times by name across
+    // every frame.
+    private static void Walk(HierarchyFrameDataView view, int id, Dictionary<string, Entry> totals)
     {
         string name = view.GetItemName(id);
         double self = view.GetItemColumnDataAsDouble(id, HierarchyFrameDataView.columnSelfTime);
         double total = view.GetItemColumnDataAsDouble(id, HierarchyFrameDataView.columnTotalTime);
-        double gc = view.GetItemColumnDataAsDouble(id, HierarchyFrameDataView.columnGcMemory);
+        double gcBytes = view.GetItemColumnDataAsDouble(id, HierarchyFrameDataView.columnGcMemory);
         double calls = view.GetItemColumnDataAsDouble(id, HierarchyFrameDataView.columnCalls);
 
-        if (!acc.TryGetValue(name, out var e))
+        if (!totals.TryGetValue(name, out Entry entry))
         {
-            e = new Entry { Name = name };
-            acc[name] = e;
+            entry = new Entry { Name = name };
+            totals[name] = entry;
         }
-        e.TotalMs += total;
-        e.SelfMs += self;
-        e.GcBytes += gc;
-        e.Calls += calls;
-        if (self > e.MaxFrameSelfMs) e.MaxFrameSelfMs = self;
+        entry.TotalMs += total;
+        entry.SelfMs += self;
+        entry.GcBytes += gcBytes;
+        entry.Calls += calls;
+        if (self > entry.MaxFrameSelfMs) entry.MaxFrameSelfMs = self;
 
-        var children = new List<int>(16);
+        List<int> children = new List<int>(16);
         view.GetItemChildren(id, children);
         for (int i = 0; i < children.Count; i++)
-            Walk(view, children[i], acc);
+            Walk(view, children[i], totals);
     }
 
-    private static string Escape(string s)
+    // Marker names can contain commas, which would break the CSV columns.
+    private static string Escape(string value)
     {
-        return s.IndexOfAny(new[] { ',', '"', '\n' }) < 0 ? s : "\"" + s.Replace("\"", "\"\"") + "\"";
+        return value.IndexOfAny(new[] { ',', '"', '\n' }) < 0
+            ? value
+            : "\"" + value.Replace("\"", "\"\"") + "\"";
     }
 }

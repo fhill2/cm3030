@@ -4,9 +4,8 @@ using Game.Core;
 
 namespace Game.Audio
 {
-    /// <summary>
-    /// Looping background music that follows the game loop, two AudioSiources are kept so tracks can crossfade
-    /// </summary>
+    // Background music that follows the game loop. Two AudioSources are kept
+    // so tracks can crossfade.
     public class MusicPlayer : MonoBehaviour
     {
         [Header("Tracks")]
@@ -16,17 +15,17 @@ namespace Game.Audio
         [SerializeField] private string gameplayClipPath = "Music/InGameMusic";
 
         [Header("Mix")]
-        [Tooltip("Music loudness")]
+        [Tooltip("Music loudness.")]
         [SerializeField, Range(0f, 1f)] private float volume = 0.35f;
         [Tooltip("Seconds to crossfade when the track changes.")]
         [SerializeField] private float crossfadeTime = 1.5f;
-        [Tooltip("Seconds to fade the music out when the player dies")]
+        [Tooltip("Seconds to fade the music out when the player dies.")]
         [SerializeField] private float deathFadeTime = 3f;
 
         private AudioClip menuClip;
         private AudioClip gameplayClip;
 
-        // Two sources so one can fade down while the other fades up
+        // Two sources so one can fade down while the other fades up.
         private AudioSource sourceA;
         private AudioSource sourceB;
         private AudioSource active;
@@ -35,12 +34,12 @@ namespace Game.Audio
 
         void Awake()
         {
-            menuClip     = Load(menuClipPath);
+            menuClip = Load(menuClipPath);
             gameplayClip = Load(gameplayClipPath);
 
             sourceA = CreateSource();
             sourceB = CreateSource();
-            active  = sourceA;
+            active = sourceA;
         }
 
         void OnEnable()
@@ -55,7 +54,8 @@ namespace Game.Audio
 
         void HandleGameStateChanged(GameStateChangedArgs e)
         {
-            // RunController moves the game to GameOver when the player dies, fades rathr then cut
+            // RunController moves to GameOver when the player dies. Fade rather
+            // than cut.
             if (e.Current == GameStateId.GameOver)
             {
                 StopMusic();
@@ -71,21 +71,20 @@ namespace Game.Audio
             fadeRoutine = StartCoroutine(FadeOutAll());
         }
 
-
         IEnumerator FadeOutAll()
         {
-            float span = Mathf.Max(0.01f, deathFadeTime);
+            float duration = Mathf.Max(0.01f, deathFadeTime);
             float startA = sourceA.volume;
             float startB = sourceB.volume;
             float elapsed = 0f;
 
-            while (elapsed < span)
+            while (elapsed < duration)
             {
-                // The fade still completes if time is paused on death
+                // Unscaled, so the fade still completes if time is paused.
                 elapsed += Time.unscaledDeltaTime;
-                float t = Mathf.Clamp01(elapsed / span);
-                sourceA.volume = Mathf.Lerp(startA, 0f, t);
-                sourceB.volume = Mathf.Lerp(startB, 0f, t);
+                float progress = Mathf.Clamp01(elapsed / duration);
+                sourceA.volume = Mathf.Lerp(startA, 0f, progress);
+                sourceB.volume = Mathf.Lerp(startB, 0f, progress);
                 yield return null;
             }
 
@@ -102,7 +101,7 @@ namespace Game.Audio
             if (active != null && active.clip == next && active.isPlaying) return;
 
             AudioSource from = active;
-            AudioSource to   = active == sourceA ? sourceB : sourceA;
+            AudioSource to = active == sourceA ? sourceB : sourceA;
 
             to.clip = next;
             to.volume = 0f;
@@ -115,17 +114,17 @@ namespace Game.Audio
 
         IEnumerator Crossfade(AudioSource from, AudioSource to)
         {
-            float span = Mathf.Max(0.01f, crossfadeTime);
+            float duration = Mathf.Max(0.01f, crossfadeTime);
             float fromStart = from != null ? from.volume : 0f;
             float elapsed = 0f;
 
-            while (elapsed < span)
+            while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
-                float t = Mathf.Clamp01(elapsed / span);
+                float progress = Mathf.Clamp01(elapsed / duration);
 
-                if (from != null) from.volume = Mathf.Lerp(fromStart, 0f, t);
-                to.volume = Mathf.Lerp(0f, volume, t);
+                if (from != null) from.volume = Mathf.Lerp(fromStart, 0f, progress);
+                to.volume = Mathf.Lerp(0f, volume, progress);
                 yield return null;
             }
 
@@ -140,7 +139,7 @@ namespace Game.Audio
 
         AudioSource CreateSource()
         {
-            var source = gameObject.AddComponent<AudioSource>();
+            AudioSource source = gameObject.AddComponent<AudioSource>();
             source.loop = true;
             source.playOnAwake = false;
             source.volume = 0f;
@@ -150,7 +149,7 @@ namespace Game.Audio
 
         AudioClip Load(string path)
         {
-            var clip = Resources.Load<AudioClip>(path);
+            AudioClip clip = Resources.Load<AudioClip>(path);
             if (clip == null)
                 Debug.LogWarning($"[MusicPlayer] No clip at Resources/{path}");
             return clip;

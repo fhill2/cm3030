@@ -3,17 +3,8 @@ using Game.Movement;
 
 namespace Game.Health
 {
-    /// <summary>
-    /// PLACEHOLDER stamina model for the UI stamina bar (design sheet row 18).
-    /// Drains while the player holds block and regenerates otherwise, with a
-    /// short lockout after hitting empty so it doesn't flicker straight back up.
-    ///
-    /// This is a stand-in for Alessio's real stamina/stun system (row 10:
-    /// "Stamina for hits and blocks: implement stun status when stamina = 0").
-    /// PlayerUI only reads CurrentStamina/MaxStamina, so once row 10 lands this
-    /// component can be replaced (or extended with the stun behavior) without
-    /// touching the UI code.
-    /// </summary>
+    // Drains stamina while the player blocks and regenerates it otherwise,
+    // with a short pause after hitting empty so the bar doesn't flicker.
     [RequireComponent(typeof(PlayerMovement))]
     public class PlayerStamina : MonoBehaviour
     {

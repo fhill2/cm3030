@@ -6,50 +6,56 @@ using Game.Health;
 
 namespace Game.Combat
 {
+    // Sits on the blade. While a swing is live it checks what it overlaps and
+    // deals the weapon's damage to the first valid target, or reports a block
+    // if a raised shield is in the way.
     [RequireComponent(typeof(Collider))]
     public class WeaponCollider : MonoBehaviour
     {
-        private readonly HashSet<IDamageable> m_hitTargets = new();
-        private readonly HashSet<Transform> m_blockedRoots = new();
-        private bool m_swinging;
-        private bool m_resultRegistered;
+        private readonly HashSet<IDamageable> hitTargets = new();
+        private readonly HashSet<Transform> blockedRoots = new();
+        private bool swinging;
+
+        // One hit or block per swing, so a single slash can't chew through a
+        // crowd or land twice on the same enemy.
+        private bool resultRegistered;
 
         private WeaponDef ResolveDef() => GetComponentInParent<Weapon>()?.Def;
 
         public void BeginSwing()
         {
-            m_hitTargets.Clear();
-            m_blockedRoots.Clear();
-            m_swinging = true;
-            m_resultRegistered = false;
+            hitTargets.Clear();
+            blockedRoots.Clear();
+            swinging = true;
+            resultRegistered = false;
         }
 
-        public void EndSwing() => m_swinging = false;
+        public void EndSwing() => swinging = false;
 
         void Update()
         {
-            if (!m_swinging || m_resultRegistered) return;
+            if (!swinging || resultRegistered) return;
 
-            var col = GetComponent<Collider>();
-            var overlaps = Physics.OverlapBox(col.bounds.center, col.bounds.extents, transform.rotation);
+            Collider bladeCollider = GetComponent<Collider>();
+            Collider[] overlaps = Physics.OverlapBox(
+                bladeCollider.bounds.center, bladeCollider.bounds.extents, transform.rotation);
 
-            foreach (var other in overlaps)
+            foreach (Collider other in overlaps)
             {
                 TryHit(other);
-                if (m_resultRegistered) break;
+                if (resultRegistered) break;
             }
         }
 
         private void TryHit(Collider other)
         {
-            if (!m_swinging) return;
-            if (m_resultRegistered) return;
+            if (!swinging) return;
+            if (resultRegistered) return;
             if (other.transform.root == transform.root) return;
 
-            // Friendly fire guard: skip anything on the same team as whoever
-            // owns this weapon (e.g. an enemy's swing landing on another
-            // enemy). Player and Enemy are tags on each character's root
-            // GameObject, same convention as the self-hit check above.
+            // Skip anything on the same team as whoever owns this weapon, so
+            // an orc's swing can't land on another orc. Player and Enemy are
+            // tags on each character's root.
             if (other.transform.root.CompareTag(transform.root.tag)) return;
 
             if (other.CompareTag("Shield"))
@@ -59,10 +65,10 @@ namespace Game.Combat
                 return;
             }
 
-            var damageable = other.GetComponentInParent<IDamageable>();
+            IDamageable damageable = other.GetComponentInParent<IDamageable>();
             if (damageable != null && damageable.IsAlive)
             {
-                if (m_blockedRoots.Contains(other.transform.root)) return;
+                if (blockedRoots.Contains(other.transform.root)) return;
 
                 if (IsBlockedByShield(other.transform.root))
                 {
@@ -70,35 +76,37 @@ namespace Game.Combat
                     return;
                 }
 
-                if (!m_hitTargets.Add(damageable)) return;
+                if (!hitTargets.Add(damageable)) return;
 
-                var def = ResolveDef();
-                float dmg = def != null ? def.Damage : 0f;
-                damageable.TakeDamage(dmg, DamageType.Melee, gameObject);
-                m_resultRegistered = true;
+                WeaponDef def = ResolveDef();
+                float damage = def != null ? def.Damage : 0f;
+                damageable.TakeDamage(damage, DamageType.Melee, gameObject);
+                resultRegistered = true;
             }
         }
 
         private void RegisterBlock(Transform root)
         {
-            if (m_blockedRoots.Add(root))
+            if (blockedRoots.Add(root))
             {
                 EventManager.RaiseBlock(new BlockArgs(root.gameObject, gameObject));
-                m_resultRegistered = true;
+                resultRegistered = true;
             }
         }
 
+        // Catches the case where the blade reaches the body and the shield at
+        // the same time, so a raised shield still wins.
         private bool IsBlockedByShield(Transform targetRoot)
         {
-            var bladeCol = GetComponent<Collider>();
-            if (bladeCol == null) return false;
+            Collider bladeCollider = GetComponent<Collider>();
+            if (bladeCollider == null) return false;
 
-            foreach (var col in targetRoot.GetComponentsInChildren<Collider>())
+            foreach (Collider collider in targetRoot.GetComponentsInChildren<Collider>())
             {
-                if (!col.CompareTag("Shield")) continue;
-                if (!col.enabled) continue;
+                if (!collider.CompareTag("Shield")) continue;
+                if (!collider.enabled) continue;
 
-                if (bladeCol.bounds.Intersects(col.bounds))
+                if (bladeCollider.bounds.Intersects(collider.bounds))
                     return true;
             }
             return false;

@@ -7,10 +7,7 @@ using Game.Health;
 
 namespace Game.Movement
 {
-    // Player attack input + combo bookkeeping. The actual swing (rate, windup,
-    // damage window, blade arming) is delegated to Melee so the timing is shared
-    // with the enemy. This class only decides WHEN (left click + the combo/
-    // grounded rules) and feeds the combo step to the animator.
+    // Attack input and combo bookkeeping.
     public class PlayerAttack : MonoBehaviour
     {
         [Header("References")]
@@ -34,7 +31,6 @@ namespace Game.Movement
         private CharacterController controller;
         private Melee melee;
         private StaminaSystem stamina;
-        // Read only for its ControlEnabled flag, so menu/shop states stops attacking 
         private PlayerMovement movement;
         private int comboStep;
         private float lastAttackTime = -999f;
@@ -71,11 +67,10 @@ namespace Game.Movement
             if (isDead || animator == null) return;
             if (PlayerInputLock.InputLocked) return;
 
-            // PlayerMovement owns the "is the player driving the character"
-            // decision, so menu/shop states disable attacking
+            // PlayerMovement owns whether the player is driving the character.
             if (movement != null && !movement.ControlEnabled) return;
 
-            // Relax the combat stance once the player hasn't attacked for a while.
+            // Relax the combat stance after a while without attacking.
             if (inCombat && Time.time - lastAttackTime > idleTimeout)
             {
                 inCombat = false;
@@ -89,24 +84,20 @@ namespace Game.Movement
             if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame) return;
             if (requireGrounded && controller != null && !controller.isGrounded) return;
 
-            // Ask Melee whether a swing would actually start before paying for
-            // it. Clicking during the weapon's cooldown then costs nothing,
-            // rather than draining stamina on attacks that never happen.
+            // Ask Melee whether a swing would start before paying for it, so
+            // clicking during the cooldown costs no stamina.
             if (melee == null || !melee.CanAttack) return;
 
-            // Stamina gate. Spending happens here rather than inside Melee so the
-            // enemy, which shares Melee, isn't affected. If there isn't enough,
-            // or we're stunned, the swing never starts.
+            // Spent here rather than inside Melee, so the enemies sharing Melee
+            // aren't affected.
             if (stamina != null && !stamina.TrySpendAttack()) return;
 
-            // Feed the combo step to the animator, then ask Melee to swing.
             animator.SetInteger(AnimParams.ComboStep, comboStep);
             if (melee.TryAttack())
             {
                 lastAttackTime = Time.time;
                 comboStep = (comboStep + 1) % Mathf.Max(1, comboLength);
 
-                // Entering/refreshing combat raises the idle stance to Idle_Battle.
                 if (!inCombat)
                 {
                     inCombat = true;

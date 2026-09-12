@@ -2,12 +2,7 @@ using UnityEngine;
 
 namespace Game.Combat
 {
-    /// <summary>
-    /// Sockets equipment prefabs (weapon, shield) onto the actor's hand bones
-    /// at startup. All equipment prefabs are canonically oriented (weapons:
-    /// blade on +Y; shields: face normal on +Z), so a single grip per kind
-    /// positions them correctly in the hand.
-    /// </summary>
+    // Spawns the weapon and shield prefabs onto the actor's hand bones at startup. 
     public class Equipment : MonoBehaviour
     {
         [Header("Weapon")]
@@ -39,8 +34,7 @@ namespace Game.Combat
         private GameObject weaponInstance;
         private GameObject shieldInstance;
 
-        // Allow external code (e.g. WaveSpawner) to override the prefabs
-        // before Start() loads them.
+        // Settable so WaveSpawner can override the prefabs before Start.
         public GameObject WeaponPrefab { get => weaponPrefab; set => weaponPrefab = value; }
         public GameObject ShieldPrefab { get => shieldPrefab; set => shieldPrefab = value; }
 
@@ -63,6 +57,8 @@ namespace Game.Combat
             ApplyWeaponOffset();
         }
 
+        // Used when picking a weapon up off the ground, so the existing object
+        // is kept rather than a fresh copy spawned.
         public void TakeWeaponInstance(GameObject instance)
         {
             if (instance == null || weaponSocket == null) return;
@@ -71,8 +67,8 @@ namespace Game.Combat
             weaponInstance = instance;
             instance.transform.SetParent(weaponSocket, false);
 
-            foreach (var wc in instance.GetComponentsInChildren<WeaponCollider>())
-                wc.enabled = true;
+            foreach (WeaponCollider collider in instance.GetComponentsInChildren<WeaponCollider>())
+                collider.enabled = true;
 
             ApplyWeaponOffset();
         }
@@ -109,40 +105,42 @@ namespace Game.Combat
             if (shieldInstance != null) ApplyShieldOffset();
         }
 
+        // Position works back from the anchor point on the weapon, so the grip
+        // lands in the hand whatever the model's own origin is.
         private void ApplyWeaponOffset()
         {
             Vector3 anchor = Vector3.zero;
-            Vector3 tweakRot = Vector3.zero;
+            Vector3 rotationTweak = Vector3.zero;
 
             Weapon weapon = weaponInstance.GetComponent<Weapon>();
             if (weapon != null)
             {
                 if (weapon.Anchor != null) anchor = weapon.Anchor.localPosition;
-                if (weapon.Def != null) tweakRot = weapon.Def.RotationOffset;
+                if (weapon.Def != null) rotationTweak = weapon.Def.RotationOffset;
             }
 
-            Quaternion rot = Quaternion.Euler(WeaponGripRotation + tweakRot);
-            weaponInstance.transform.localRotation = rot;
+            Quaternion gripRotation = Quaternion.Euler(WeaponGripRotation + rotationTweak);
+            weaponInstance.transform.localRotation = gripRotation;
             Vector3 weaponHand = weaponHandAnchor != null ? weaponHandAnchor.localPosition : Vector3.zero;
-            weaponInstance.transform.localPosition = weaponHand - (rot * anchor);
+            weaponInstance.transform.localPosition = weaponHand - (gripRotation * anchor);
         }
 
         private void ApplyShieldOffset()
         {
             Vector3 anchor = Vector3.zero;
-            Vector3 tweakRot = Vector3.zero;
+            Vector3 rotationTweak = Vector3.zero;
 
             Shield shield = shieldInstance.GetComponent<Shield>();
             if (shield != null)
             {
                 if (shield.Anchor != null) anchor = shield.Anchor.localPosition;
-                if (shield.Def != null) tweakRot = shield.Def.RotationOffset;
+                if (shield.Def != null) rotationTweak = shield.Def.RotationOffset;
             }
 
-            Quaternion rot = Quaternion.Euler(ShieldGripRotation + tweakRot);
-            shieldInstance.transform.localRotation = rot;
+            Quaternion gripRotation = Quaternion.Euler(ShieldGripRotation + rotationTweak);
+            shieldInstance.transform.localRotation = gripRotation;
             Vector3 shieldHand = shieldHandAnchor != null ? shieldHandAnchor.localPosition : Vector3.zero;
-            shieldInstance.transform.localPosition = shieldHand - (rot * anchor);
+            shieldInstance.transform.localPosition = shieldHand - (gripRotation * anchor);
         }
     }
 }

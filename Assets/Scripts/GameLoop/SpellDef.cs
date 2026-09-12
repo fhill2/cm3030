@@ -29,22 +29,22 @@ namespace Game.Core
 
         [Header("Projectile")]
         [SerializeField] private GameObject projectilePrefab;
-        [Tooltip("Scale applied to the flying projectile. All three levels of a school share one prefab, so this is what tells them apart.")]
+        [Tooltip("All three levels of a school share one prefab, so scale is what tells them apart.")]
         [SerializeField] private float projectileScale = 1f;
         [SerializeField] private float projectileSpeed = 25f;
         [Tooltip("Seconds before an unspent projectile removes itself.")]
         [SerializeField] private float projectileLifetime = 4f;
 
         [Header("Impact")]
-        [Tooltip("Effect spawned where the spell lands. The same prefab is used for every level of a school; the size below is what separates them.")]
+        [Tooltip("Effect spawned where the spell lands.")]
         [SerializeField] private GameObject impactEffect;
-        [Tooltip("Scale applied to the impact effect. Raise it for higher-level spells.")]
+        [Tooltip("Raise it for higher-level spells.")]
         [SerializeField] private float impactScale = 1f;
-        [Tooltip("Seconds before the spent effect removes itself. Long enough for the particles to finish.")]
+        [Tooltip("Seconds before the spent effect removes itself.")]
         [SerializeField] private float impactLifetime = 3f;
 
         [Header("Drop")]
-        [Tooltip("Relative chance of this tome being the one that drops. A weight of 6 is picked twice as often as a weight of 3. Set 0 to stop it dropping at all.")]
+        [Tooltip("Relative chance of this tome dropping. Weight 6 is picked twice as often as weight 3. Set 0 to stop it dropping.")]
         [SerializeField] private float dropWeight = 1f;
 
         private AudioClip[] castClip;
@@ -83,21 +83,18 @@ namespace Game.Core
             }
         }
 
-        private AudioClip[] LoadClips(string sub)
+        // Clips are pulled from Resources/Spells/<asset name>/cast or /hit,
+        // so new spells only need the folder, not an Inspector reference.
+        private AudioClip[] LoadClips(string subfolder)
         {
-            string path = "Spells/" + name + "/" + sub;
-            var loaded = Resources.LoadAll(path);
-            if (loaded == null)
-            {
-                Debug.Log($"[SpellDef] {name}: no clips at Resources/{path}");
-                return null;
-            }
+            string path = "Spells/" + name + "/" + subfolder;
+            Object[] loadedAssets = Resources.LoadAll(path);
+            if (loadedAssets == null) return null;
 
-            var clips = new List<AudioClip>();
-            foreach (var obj in loaded)
-                if (obj is AudioClip clip) clips.Add(clip);
+            List<AudioClip> clips = new List<AudioClip>();
+            foreach (Object asset in loadedAssets)
+                if (asset is AudioClip clip) clips.Add(clip);
 
-            Debug.Log($"[SpellDef] {name}: {clips.Count} clip(s) at Resources/{path}");
             return clips.Count > 0 ? clips.ToArray() : null;
         }
     }

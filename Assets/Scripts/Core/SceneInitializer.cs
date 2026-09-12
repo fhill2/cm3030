@@ -2,11 +2,9 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    /// <summary>
-    /// Ensures EventManager events (and other static, scene-lifetime state)
-    /// start clean when a scene loads. Place on any GameObject in the scene
-    /// (runs before other Awake calls).
-    /// </summary>
+    // Resets static state when the scene loads, otherwise old subscribers
+    // survive between play sessions in the editor.
+    // Runs before other Awake calls.
     [DefaultExecutionOrder(-100)]
     public class SceneInitializer : MonoBehaviour
     {
@@ -16,13 +14,12 @@ namespace Game.Core
             ClearAttackSlots();
         }
 
-        // Same reflection approach WaveSpawner uses to reach into Game.Enemy —
-        // keeps Core from taking a hard dependency on Enemy across the
-        // (currently informal) assembly boundary.
+        // Found by name instead of called directly, so Core doesn't have to
+        // reference Game.Enemy. WaveSpawner does the same.
         private static void ClearAttackSlots()
         {
-            var type = System.Type.GetType("Game.Enemy.AttackSlotManager, Assembly-CSharp");
-            type?.GetMethod("ClearAll")?.Invoke(null, null);
+            System.Type slotManagerType = System.Type.GetType("Game.Enemy.AttackSlotManager, Assembly-CSharp");
+            slotManagerType?.GetMethod("ClearAll")?.Invoke(null, null);
         }
     }
 }

@@ -41,10 +41,8 @@ namespace Game.UI
 
         void LateUpdate()
         {
-            // Belt-and-suspenders: HandleDeath (below) should already remove
-            // the bar the instant OnDeath fires, but checking IsAlive directly
-            // here too means the bar can never end up permanently stuck even
-            // if the event-based path somehow gets missed for a given enemy.
+            // HandleDeath should already have removed the bar, but checking
+            // IsAlive here too means it can't end up stuck over a corpse.
             if (health != null && !health.IsAlive)
             {
                 HandleDeath(new DeathArgs(gameObject));
@@ -64,16 +62,10 @@ namespace Game.UI
         {
             if (e.Entity != gameObject) return;
 
-            // Destroyed outright rather than just deactivated — the corpse
-            // itself is a scene-lifetime object (see EnemyHealth.OnDeath), but
-            // the health bar above it has no reason to stick around, and a
-            // hard Destroy leaves nothing that could end up visible again.
-            //
-            // Looked up fresh via GetComponentsInChildren instead of relying
-            // on the cached canvasTransform field, so every Canvas under this
-            // enemy gets destroyed, not just the one Awake happened to build.
-            foreach (Canvas c in GetComponentsInChildren<Canvas>(true))
-                Destroy(c.gameObject);
+            // Looked up fresh rather than using the cached field, so every
+            // Canvas under this enemy goes, not just the one Awake built.
+            foreach (Canvas canvas in GetComponentsInChildren<Canvas>(true))
+                Destroy(canvas.gameObject);
 
             enabled = false;
         }
@@ -92,33 +84,32 @@ namespace Game.UI
 
         void BuildUI()
         {
-            var canvasGo = new GameObject("EnemyUICanvas");
+            GameObject canvasGo = new GameObject("EnemyUICanvas");
             canvasGo.transform.SetParent(transform, false);
             canvasGo.transform.localPosition = new Vector3(0, HeightOffset, 0);
             canvasTransform = canvasGo.transform;
 
-            var canvas = canvasGo.AddComponent<Canvas>();
+            Canvas canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
             canvasGo.AddComponent<CanvasScaler>();
             canvasGo.AddComponent<GraphicRaycaster>();
 
-            var canvasRt = canvasGo.GetComponent<RectTransform>();
-            canvasRt.sizeDelta = new Vector2(BarWorldWidth * PixelsPerUnit,
-                                             BarWorldHeight * PixelsPerUnit);
-            canvasRt.localScale = Vector3.one / PixelsPerUnit;
+            RectTransform canvasRect = canvasGo.GetComponent<RectTransform>();
+            canvasRect.sizeDelta = new Vector2(BarWorldWidth * PixelsPerUnit,
+                                               BarWorldHeight * PixelsPerUnit);
+            canvasRect.localScale = Vector3.one / PixelsPerUnit;
 
-            Transform t = canvasGo.transform;
-            healthFill = CreateHealthBar(t);
+            healthFill = CreateHealthBar(canvasGo.transform);
         }
 
         Image CreateHealthBar(Transform parent)
         {
-            var bgRt = UIBuilder.CreateStretchChild(parent, "HealthBar_BG");
-            UIBuilder.AttachImage(bgRt, new Color(0.1f, 0.1f, 0.1f, 0.8f));
+            RectTransform background = UIBuilder.CreateStretchChild(parent, "HealthBar_BG");
+            UIBuilder.AttachImage(background, new Color(0.1f, 0.1f, 0.1f, 0.8f));
 
-            var fillImg = UIBuilder.CreateBarFill(bgRt, new Color(0.8f, 0.15f, 0.15f, 1f));
-            fillImg.raycastTarget = false;
-            return fillImg;
+            Image fill = UIBuilder.CreateBarFill(background, new Color(0.8f, 0.15f, 0.15f, 1f));
+            fill.raycastTarget = false;
+            return fill;
         }
     }
 }

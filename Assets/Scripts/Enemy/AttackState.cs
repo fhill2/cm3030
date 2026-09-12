@@ -4,33 +4,24 @@ using Game.Combat;
 
 namespace Game.Enemy
 {
+    // In range of the player. Only the enemy holding the attack slot actually
+    // swings; the rest circle at a spaced-out spot on the shared ring and wait their turn.
     public class AttackState : BaseState
     {
-        private const float FaceSpeed = 540f; // degrees per second
-        private const float CircleRetargetInterval = 0.2f; // seconds between destination updates
+        private const float FaceSpeed = 540f;               // degrees per second
+        private const float CircleRetargetInterval = 0.2f;  // seconds between destination updates
 
-        // How long an enemy holds its attack slot before voluntarily backing
-        // off and giving a waiting enemy a turn. Randomised per-engagement so
-        // a group doesn't rotate attackers in lockstep.
+        // Randomised per engagement so a group doesn't rotate attackers in
+        // lockstep.
         private const float MinEngagementTime = 3f;
         private const float MaxEngagementTime = 6f;
 
         private Melee melee;
         private Coroutine driverRoutine;
 
-        // Attack-phase movement: an enemy WITHOUT the attack slot orbits the
-        // player at a fraction of attackRange instead of standing rooted. The
-        // actual angle comes from AttackSlotManager's shared ring so waiting
-        // enemies space themselves out evenly around the player instead of
-        // each picking an independent random angle and clumping together.
         private float nextCircleRetargetTime;
         private bool circlingEnabled;
 
-        // Attack-slot state: only an enemy holding the slot (see
-        // AttackSlotManager) actually presses the attack. Everyone else in
-        // this state circles and waits — the "one attacks while the rest
-        // surround and watch for an opening" read from group fights like The
-        // Witcher 3, instead of every enemy swinging at once.
         private bool hasSlot;
         private float slotReleaseTime;
 
@@ -43,8 +34,8 @@ namespace Game.Enemy
 
             if (agent != null)
             {
-                agent.isStopped = !circlingEnabled; // stand still if circling is disabled (old behavior)
-                agent.updateRotation = false; // we face the player manually
+                agent.isStopped = !circlingEnabled;
+                agent.updateRotation = false;   // we face the player manually
                 agent.speed = circleSpeed;
             }
 
@@ -57,7 +48,6 @@ namespace Game.Enemy
 
         public override void UpdateState(NpcFSM npc)
         {
-            // Keep facing the player smoothly between swings.
             FacePlayer();
             UpdateAttackSlot(npc);
 
@@ -86,16 +76,14 @@ namespace Game.Enemy
             }
         }
 
-        // Polls the Melee component each tick; it gates the rate internally so the
-        // enemy swings as soon as the cooldown allows. No timing lives here.
-        // Only actually swings while holding the attack slot — an enemy still
-        // waiting its turn stays in range but never calls TryAttack().
+        // Melee gates its own rate, so this just polls it. An enemy waiting
+        // its turn stays in range but never calls TryAttack.
         private IEnumerator AttackDriver()
         {
             while (true)
             {
-                // Player slipped out of range, died, or is no longer visible —
-                // hand back to Chase so the enemy repositions.
+                // Player out of range, dead, or behind cover. Hand back to
+                // Chase so the enemy repositions.
                 if (!WithinAttackRange() || !FSM.playerAlive || !HasLineOfSight())
                 {
                     FSM.MoveToState(FSM.s_Chase);
@@ -108,13 +96,7 @@ namespace Game.Enemy
             }
         }
 
-        // ── Helpers ──────────────────────────────────────────────────
-
-        // Tries to claim the attack slot while waiting, and gives it up again
-        // after a randomised engagement window so someone else gets a turn.
-        // A solo enemy just keeps re-claiming the slot immediately since
-        // nothing else is competing for it, so single-enemy fights still feel
-        // as responsive as before.
+        // Claims the slot while waiting, then gives it up after a randomised window. 
         private void UpdateAttackSlot(NpcFSM npc)
         {
             if (!hasSlot)
@@ -123,7 +105,7 @@ namespace Game.Enemy
 
                 hasSlot = true;
                 slotReleaseTime = Time.time + Random.Range(MinEngagementTime, MaxEngagementTime);
-                if (agent != null) agent.isStopped = true; // plant and fight
+                if (agent != null) agent.isStopped = true;   // plant and fight
                 return;
             }
 
@@ -131,18 +113,20 @@ namespace Game.Enemy
             {
                 AttackSlotManager.ReleaseSlot(npc);
                 hasSlot = false;
-                if (agent != null) agent.isStopped = !circlingEnabled; // back to waiting/circling
+                if (agent != null) agent.isStopped = !circlingEnabled;
             }
         }
 
         private bool WithinAttackRange()
         {
             if (player == null || FSM == null) return false;
-            Vector3 a = FSM.transform.position;
-            Vector3 b = player.transform.position;
-            a.y = 0f;
-            b.y = 0f;
-            return Vector3.Distance(a, b) <= attackRange;
+
+            Vector3 enemyPosition = FSM.transform.position;
+            Vector3 playerPosition = player.transform.position;
+            enemyPosition.y = 0f;
+            playerPosition.y = 0f;
+
+            return Vector3.Distance(enemyPosition, playerPosition) <= attackRange;
         }
 
         private bool HasLineOfSight()
@@ -150,14 +134,15 @@ namespace Game.Enemy
             if (!requireLineOfSight) return true;
             if (player == null || FSM == null) return false;
 
-            Vector3 from  = FSM.transform.position + Vector3.up * 1.2f;
-            Vector3 to    = player.transform.position + Vector3.up * 1.2f;
+            Vector3 from = FSM.transform.position + Vector3.up * 1.2f;
+            Vector3 to = player.transform.position + Vector3.up * 1.2f;
             Vector3 delta = to - from;
-            float dist = delta.magnitude;
-            if (dist < 0.01f) return true;
+            float distance = delta.magnitude;
+            if (distance < 0.01f) return true;
 
-            Vector3 dir = delta / dist;
-            if (Physics.Raycast(from, dir, out RaycastHit hit, dist, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            Vector3 direction = delta / distance;
+            if (Physics.Raycast(from, direction, out RaycastHit hit, distance,
+                    Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                 return hit.transform == player.transform
                     || hit.transform.IsChildOf(player.transform)
                     || hit.transform == FSM.transform
@@ -166,13 +151,8 @@ namespace Game.Enemy
             return true;
         }
 
-        /// <summary>
-        /// Moves the destination to this enemy's evenly-spaced spot on
-        /// AttackSlotManager's shared ring, staying inside attackRange so the
-        /// swing loop's WithinAttackRange() check keeps passing. Only runs
-        /// while waiting for the attack slot — no-op when circleSpeed is 0
-        /// (agent stays isStopped).
-        /// </summary>
+        // Moves to this enemy's spot on the shared ring, kept inside
+        // attackRange so the swing loop's range check keeps passing.
         private void UpdateCircling()
         {
             if (agent == null || player == null || circleSpeed <= 0f) return;
@@ -182,7 +162,8 @@ namespace Game.Enemy
             float angle = AttackSlotManager.GetRingAngle(FSM);
             float radius = attackRange * 0.75f;
             Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
-            if (agent != null && agent.enabled)
+
+            if (agent.enabled)
                 agent.SetDestination(player.transform.position + offset);
         }
 

@@ -58,10 +58,10 @@ namespace Game.Enemy
         private Vector3 FleeDestination()
         {
             float yaw = Random.Range(0f, 360f);
-            var dir = new Vector3(Mathf.Sin(yaw * Mathf.Deg2Rad), 0f, Mathf.Cos(yaw * Mathf.Deg2Rad));
-            Vector3 target = FSM.transform.position + dir * Random.Range(MinFleeDistance, MaxFleeDistance);
+            Vector3 direction = new Vector3(Mathf.Sin(yaw * Mathf.Deg2Rad), 0f, Mathf.Cos(yaw * Mathf.Deg2Rad));
+            Vector3 target = FSM.transform.position + direction * Random.Range(MinFleeDistance, MaxFleeDistance);
 
-            if (NavMesh.SamplePosition(target, out var hit, SampleRadius, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(target, out NavMeshHit hit, SampleRadius, NavMesh.AllAreas))
                 return hit.position;
 
             return target;

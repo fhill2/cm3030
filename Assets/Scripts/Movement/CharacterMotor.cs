@@ -5,9 +5,8 @@ using Game.Audio;
 
 namespace Game.Movement
 {
-    /// <summary>
-    /// Player movement foundation: gravity, ground detection, CharacterController movement, and death handling
-    /// </summary>
+    // Movement foundation for the player: gravity, ground detection,
+    // CharacterController movement, death handling.
     [RequireComponent(typeof(CharacterController))]
     public class CharacterMotor : AnimationMotor
     {
@@ -17,12 +16,13 @@ namespace Game.Movement
         [SerializeField] protected float groundStickSpeed = -12f;
 
         [Header("Grounding")]
-        [Tooltip("Seconds the character still counts as grounded for ANIMATION after losing contact. Bridges the frame-long gaps that walking down stairs creates, which would otherwise trigger the fall animation on every step")]
+        [Tooltip("Seconds the character still counts as grounded for animation after losing contact. Bridges the frame-long gaps that walking down stairs creates, which would otherwise trigger the fall animation on every step.")]
         [SerializeField] protected float groundedGrace = 0.3f;
-        [Tooltip("How far below the feet to look for ground before accepting the character is really falling. Only Raise it if the fall animation still flickers &lower it if short drops stop animating.")]
+        [Tooltip("How far below the feet to look for ground before accepting the character is really falling. Raise it if the fall animation still flickers, lower it if short drops stop animating.")]
         [SerializeField] protected float groundProbeDistance = 0.6f;
 
         private float lastGroundedTime = float.NegativeInfinity;
+
         // Reused so the per-frame probe doesn't allocate.
         private readonly RaycastHit[] groundHits = new RaycastHit[8];
 
@@ -33,18 +33,17 @@ namespace Game.Movement
         protected Vector3 velocity;
         protected bool wasGrounded = true;
 
-        /// <summary>True once this character's death event has fired. Subclasses
-        /// must check it before reading input.</summary>
+        // Subclasses must check this before reading input.
         protected bool isDead;
 
         protected override void Awake()
         {
-            base.Awake(); // AnimationMotor caches the animator
+            base.Awake();
             controller = GetComponent<CharacterController>();
             if (actorAudio == null) actorAudio = GetComponent<ActorAudio>();
         }
 
-        // Virtual so subclasses can add their own subscriptions. 
+        // Virtual so subclasses can add their own subscriptions.
         protected virtual void OnEnable()
         {
             EventManager.OnDeath += HandleDeath;
@@ -70,13 +69,8 @@ namespace Game.Movement
             UpdateAnimator(0f, GroundedForAnimation(grounded, false), false);
         }
 
-        /// <summary>
-        /// Per-frame update for a character nobody is driving — dead, or the game
-        /// loop is in a menu/shop state. Gravity keeps running so a body that died
-        /// mid-air still falls and lands instead of freezing in place, but no
-        /// input is read and no locomotion parameters are pushed, leaving the
-        /// animator free to play the death clip out uninterrupted.
-        /// </summary>
+        // For a character nobody is driving: dead, or the game is in a menu or
+        // shop state. Gravity keeps running so a body that died mid-air still lands
         protected void SettleUncontrolled()
         {
             bool grounded = controller.isGrounded;
@@ -85,7 +79,7 @@ namespace Game.Movement
             MoveActor(Vector3.zero);
         }
 
-        /// <summary>Accumulate downward velocity. Call before MoveActor.</summary>
+        // Call before MoveActor.
         protected void ApplyGravity(bool grounded)
         {
             if (grounded && velocity.y < 0f)
@@ -93,13 +87,8 @@ namespace Game.Movement
             velocity.y += gravity * Time.deltaTime;
         }
 
-        /// <summary>      
-        /// Walking down stairs or off a lip makes isGrounded drop for a frame or
-        /// two between steps, which flips the animator into the fall state on
-        /// every single step. This keeps the character reading as grounded for a
-        /// moment after contact is lost, which is long enough to bridge those
-        /// gaps but far shorter than a real fall
-        /// </summary>
+        // Walking down stairs makes isGrounded drop for a frame or two between
+        // steps, which flips the animator into the fall state on every step.
         protected bool GroundedForAnimation(bool grounded, bool jumped)
         {
             if (jumped)
@@ -114,22 +103,18 @@ namespace Game.Movement
                 return true;
             }
 
-            // Rising means a real jump, never a stair. Checked before the probe
+            // Rising means a real jump, never a stair. Checked before the probe.
             if (velocity.y > 0f) return false;
 
             if (Time.time - lastGroundedTime <= groundedGrace) return true;
 
-            // Sprinting clears a longer gap per step than any fixed time window
-            // covers, so fall back to a distance test: if there is ground just
-            // beneath the feet we are on stairs, however fast we crossed the gap.
+            // Sprinting clears a longer gap per step than a fixed time window
+            // covers, so fall back to a distance test.
             return ProbeGround();
         }
 
-        /// <summary>
-        /// True if there is ground below the capsule. Cast from the bottom sphere's centre and ignores anything
-        /// belonging to this character, so the player's own capsule, weapon and
-        /// shield colliders can't register as floor.
-        /// </summary>
+        // Cast from the bottom sphere's centre, ignoring anything belonging to
+        // this character so its own capsule and gear can't register as floor.
         private bool ProbeGround()
         {
             float radius = Mathf.Max(0.01f, controller.radius - controller.skinWidth);
@@ -141,15 +126,14 @@ namespace Game.Movement
 
             for (int i = 0; i < count; i++)
             {
-                var hit = groundHits[i].collider;
+                Collider hit = groundHits[i].collider;
                 if (hit == null) continue;
-                if (hit.transform.IsChildOf(transform)) continue;   // ourselves
+                if (hit.transform.IsChildOf(transform)) continue;
                 return true;
             }
             return false;
         }
 
-        /// <summary>Move the character with combined horizontal + vertical motion.</summary>
         protected void MoveActor(Vector3 horizontal)
         {
             Vector3 motion = horizontal + Vector3.up * velocity.y;
@@ -158,8 +142,8 @@ namespace Game.Movement
 
         protected virtual void HandleDeath(DeathArgs e)
         {
-            // Flag rather than `enabled = false`: disabling the component would
-            // also stop gravity, leaving anyone who died in mid-air hanging there.
+            // A flag rather than disabling the component, which would also stop
+            // gravity and leave anyone who died mid-air hanging there.
             if (e.Entity == gameObject)
                 isDead = true;
         }

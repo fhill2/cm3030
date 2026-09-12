@@ -32,25 +32,22 @@ namespace Game.Core
     {
         public override GameStateId Id => GameStateId.WaveComplete;
 
-        private Coroutine wait;
+        private Coroutine waitRoutine;
 
         public override void EnterState(GameStateMachine machine)
         {
             base.EnterState(machine);
-
-            // States aren't MonoBehaviours so they can't run coroutines
-            // themselves — the machine runs it for us.
-            wait = fsm.StartCoroutine(WaitThenShop());
+            waitRoutine = fsm.StartCoroutine(WaitThenShop());
         }
 
         public override void ExitState()
         {
-            // Stop the timer if something else moved us on first, e.g. the
+            // Stop the timer if something else moved us on first, like the
             // player dying during the gap.
-            if (wait != null)
+            if (waitRoutine != null)
             {
-                fsm.StopCoroutine(wait);
-                wait = null;
+                fsm.StopCoroutine(waitRoutine);
+                waitRoutine = null;
             }
         }
 
@@ -58,13 +55,13 @@ namespace Game.Core
         {
             yield return new WaitForSeconds(fsm.WaveCompleteDelay);
 
-            wait = null;
+            waitRoutine = null;
             fsm.MoveToState(GameStateId.Shop);
         }
     }
 
-    // Shop is open. Player has a fixed window to spend, or can press Done
-    // to skip the rest of it. Either way the next wave follows.
+    // Shop is open. Fixed window to spend, or press Done to skip the rest.
+    // Either way the next wave follows.
     public class ShopState : GameState
     {
         public override GameStateId Id => GameStateId.Shop;
@@ -93,14 +90,14 @@ namespace Game.Core
 
         private IEnumerator RunTimer()
         {
-            float total = fsm.ShopDuration;
-            float left = total;
+            float totalSeconds = fsm.ShopDuration;
+            float secondsLeft = totalSeconds;
 
-            while (left > 0f)
+            while (secondsLeft > 0f)
             {
-                EventManager.RaiseShopTime(new ShopTimeArgs(left, total));
+                EventManager.RaiseShopTime(new ShopTimeArgs(secondsLeft, totalSeconds));
                 yield return null;
-                left -= Time.deltaTime;
+                secondsLeft -= Time.deltaTime;
             }
 
             timer = null;

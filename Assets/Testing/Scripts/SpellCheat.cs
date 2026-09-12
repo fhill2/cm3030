@@ -4,8 +4,7 @@ namespace Game.Core
 {
     // Test helper. Unlocks and grants every spell in the list on start, so
     // hotkeys 1-6 can be tested without picking up tomes first.
-    //
-    // Goes on the GameManager object.
+    // Goes on the GameManager.
     public class SpellCheat : MonoBehaviour
     {
         [SerializeField] private SpellBook spellBook;

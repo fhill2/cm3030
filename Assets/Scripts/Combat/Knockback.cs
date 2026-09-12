@@ -7,6 +7,9 @@ using Game.Health;
 
 namespace Game.Combat
 {
+    // Added to an enemy when the arc strike lands, launching them into the
+    // air. Removes itself once they land, so nothing carries the component
+    // around permanently.
     public class Knockback : MonoBehaviour
     {
         [Tooltip("Upward launch speed in m/s.")]
@@ -48,18 +51,21 @@ namespace Game.Combat
             ActorAudio audio = GetComponentInChildren<ActorAudio>();
             if (audio != null) audio.PlayHit();
 
+            // The agent would fight us for control of the position, so it goes
+            // off for the duration of the flight.
             if (agent != null && agent.enabled)
             {
                 agent.velocity = Vector3.zero;
                 agent.enabled = false;
             }
 
-            foreach (WeaponCollider wc in weaponColliders)
-                if (wc != null) wc.enabled = false;
+            foreach (WeaponCollider weaponCollider in weaponColliders)
+                if (weaponCollider != null) weaponCollider.enabled = false;
 
             pendingLaunch = StartCoroutine(LaunchRoutine(fromPosition));
         }
 
+        // Short freeze before the launch, so the impact reads before they fly.
         private IEnumerator LaunchRoutine(Vector3 fromPosition)
         {
             yield return new WaitForSeconds(launchDelay);
@@ -82,24 +88,25 @@ namespace Game.Combat
             TryLand();
         }
 
+        // Slides along walls rather than passing through them.
         private void MoveWithCollisions()
         {
-            Vector3 move = velocity * Time.deltaTime;
-            float dist = move.magnitude;
-            if (dist < 0.0001f) return;
+            Vector3 movement = velocity * Time.deltaTime;
+            float distance = movement.magnitude;
+            if (distance < 0.0001f) return;
 
             Vector3 origin = transform.position + Vector3.up * 0.5f;
-            if (Physics.SphereCast(origin, wallRadius, move.normalized, out RaycastHit hit,
-                    dist + skinWidth, ~0, QueryTriggerInteraction.Ignore) &&
+            if (Physics.SphereCast(origin, wallRadius, movement.normalized, out RaycastHit hit,
+                    distance + skinWidth, ~0, QueryTriggerInteraction.Ignore) &&
                 !CombatProbe.IsIgnored(hit.transform, transform))
             {
                 float travel = Mathf.Max(0f, hit.distance - skinWidth);
-                transform.position += move.normalized * travel;
+                transform.position += movement.normalized * travel;
                 velocity = Vector3.ProjectOnPlane(velocity, hit.normal);
             }
             else
             {
-                transform.position += move;
+                transform.position += movement;
             }
         }
 
@@ -128,6 +135,8 @@ namespace Game.Combat
             EventManager.OnDeath -= HandleDeath;
         }
 
+        // Dying mid-flight stops the launch, so the corpse doesn't keep
+        // sailing through the air.
         void HandleDeath(DeathArgs e)
         {
             if (e.Entity != gameObject) return;
@@ -148,8 +157,8 @@ namespace Game.Combat
             if (agent != null && !agent.isActiveAndEnabled)
                 agent.enabled = true;
 
-            foreach (WeaponCollider wc in weaponColliders)
-                if (wc != null) wc.enabled = true;
+            foreach (WeaponCollider weaponCollider in weaponColliders)
+                if (weaponCollider != null) weaponCollider.enabled = true;
 
             Destroy(this);
         }

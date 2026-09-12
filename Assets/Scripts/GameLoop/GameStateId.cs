@@ -12,13 +12,12 @@ namespace Game.Core
         GameOver
     }
 
-    // Data sent with the state changed event, so subscribers know
-    // where we came from as well as where we are now.
+    // Sent on every state change.
     public struct GameStateChangedArgs
     {
         public GameStateId Previous;
         public GameStateId Current;
-        // Wave number at the moment of the transition; only meaningful for WaveActive.
+        // Only meaningful for WaveActive.
         public int Wave;
 
         public GameStateChangedArgs(GameStateId previous, GameStateId current, int wave)
@@ -28,9 +27,9 @@ namespace Game.Core
             Wave = wave;
         }
     }
-    
-    // Sent when lightning flashes. Delay is how long the audio should wait
-    // before the thunder clap, since sound lags light over distance.
+
+    // Sent when lightning flashes. ThunderDelay is how long audio waits
+    // before the thunder clap.
     public readonly struct LightningArgs
     {
         public readonly float ThunderDelay;
@@ -40,7 +39,8 @@ namespace Game.Core
             ThunderDelay = thunderDelay;
         }
     }
-    // Sent when a wave is cleared; Wave is the number that was just finished.
+
+    // Sent when a wave is cleared. Wave is the one just finished.
     public struct WaveClearedArgs
     {
         public readonly int Wave;
@@ -51,8 +51,7 @@ namespace Game.Core
         }
     }
 
-    // Sent when a tome drops into the player's hands, so the UI can announce
-    // that a new spell is available in the market.
+    // Sent when the player picks up a tome.
     public readonly struct TomeFoundArgs
     {
         public readonly SpellDef Spell;
@@ -63,8 +62,7 @@ namespace Game.Core
         }
     }
 
-    // Sent whenever the player's gold changes. Change is how much was added
-    // or removed, so the UI can show a "+10" popup as well as the new total.
+    // Sent when the player's gold changes. Change is the amount added or removed.
     public readonly struct GoldChangedArgs
     {
         public readonly int Total;
@@ -77,7 +75,7 @@ namespace Game.Core
         }
     }
 
-    // Counts down while the shop is open, so the UI can show a timer.
+    // Shop countdown, for the timer in the UI.
     public readonly struct ShopTimeArgs
     {
         public readonly float SecondsLeft;
@@ -90,8 +88,7 @@ namespace Game.Core
         }
     }
 
-    // Sent whenever an entity's stamina changes. Entity is included so a bar
-    // can ignore anyone but its own owner.
+    // Sent when an entity's stamina changes.
     public readonly struct StaminaChangedArgs
     {
         public readonly GameObject Entity;
@@ -106,8 +103,7 @@ namespace Game.Core
         }
     }
 
-    // Sent when an entity is stunned by running out of stamina, and again
-    // when the stun lifts.
+    // Sent when an entity is stunned, and again when the stun lifts.
     public readonly struct StunArgs
     {
         public readonly GameObject Entity;

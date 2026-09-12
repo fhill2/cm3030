@@ -7,18 +7,25 @@ namespace Game.Editor
     {
         private const int WasmCodeOptimizationRuntimeSpeedLto = 1;
 
+        // BuildTarget.WebGL
+        private const int WebGLBuildTarget = 20;
+
         [InitializeOnLoadMethod]
         private static void Enforce()
         {
-            foreach (var profile in Resources.FindObjectsOfTypeAll<UnityEditor.Build.Profile.BuildProfile>())
+            foreach (UnityEditor.Build.Profile.BuildProfile profile in
+                     Resources.FindObjectsOfTypeAll<UnityEditor.Build.Profile.BuildProfile>())
             {
-                var so = new SerializedObject(profile);
-                var target = so.FindProperty("m_BuildTarget");
-                if (target == null || target.intValue != 20) continue;
-                var opt = so.FindProperty("m_PlatformBuildProfile.m_CodeOptimization");
-                if (opt == null || opt.intValue == WasmCodeOptimizationRuntimeSpeedLto) continue;
-                opt.intValue = WasmCodeOptimizationRuntimeSpeedLto;
-                so.ApplyModifiedProperties();
+                SerializedObject serialized = new SerializedObject(profile);
+
+                SerializedProperty target = serialized.FindProperty("m_BuildTarget");
+                if (target == null || target.intValue != WebGLBuildTarget) continue;
+
+                SerializedProperty optimization = serialized.FindProperty("m_PlatformBuildProfile.m_CodeOptimization");
+                if (optimization == null || optimization.intValue == WasmCodeOptimizationRuntimeSpeedLto) continue;
+
+                optimization.intValue = WasmCodeOptimizationRuntimeSpeedLto;
+                serialized.ApplyModifiedProperties();
                 EditorUtility.SetDirty(profile);
                 Debug.Log("[EnforceWebGLBuildSettings] WebGL Code Optimization set to Runtime Speed with LTO");
             }

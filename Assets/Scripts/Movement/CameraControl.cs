@@ -43,16 +43,16 @@ namespace Game.Movement
         void CamOrbit()
         {
             if (Mouse.current == null) return;
-            if (Mouse.current.leftButton.isPressed || Mouse.current.rightButton.isPressed) {
-                Vector2 delta = Mouse.current.delta.ReadValue();
-                if (delta.sqrMagnitude < 0.0001f) return;
+            if (!Mouse.current.leftButton.isPressed && !Mouse.current.rightButton.isPressed) return;
 
-                float verticalInput = delta.y * rotationSpeed * Time.deltaTime;
-                float horizontalInput = delta.x * rotationSpeed * Time.deltaTime;
+            Vector2 delta = Mouse.current.delta.ReadValue();
+            if (delta.sqrMagnitude < 0.0001f) return;
 
-                transform.Rotate(Vector3.right, -verticalInput, Space.Self);
-                transform.Rotate(Vector3.up, horizontalInput, Space.World);
-            };
+            float verticalInput = delta.y * rotationSpeed * Time.deltaTime;
+            float horizontalInput = delta.x * rotationSpeed * Time.deltaTime;
+
+            transform.Rotate(Vector3.right, -verticalInput, Space.Self);
+            transform.Rotate(Vector3.up, horizontalInput, Space.World);
         }
 
         void Zoom()

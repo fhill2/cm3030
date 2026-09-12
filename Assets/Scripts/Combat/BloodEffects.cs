@@ -4,6 +4,8 @@ using Game.Health;
 
 namespace Game.Combat
 {
+    // Spawns a blood splash on this object when it takes damage, facing away
+    // from whoever hit it.
     public class BloodEffects : MonoBehaviour
     {
         [Tooltip("RVFX splash prefabs; one is picked at random per hit.")]
@@ -30,6 +32,7 @@ namespace Game.Combat
                 ? e.Source.transform.position
                 : transform.position + Vector3.forward;
 
+            // Splash lands on the surface nearest the attacker.
             Bounds bounds = WorldBounds();
             Vector3 point = bounds.ClosestPoint(source);
             Vector3 direction = point - source;
@@ -43,15 +46,17 @@ namespace Game.Combat
 
         private Bounds WorldBounds()
         {
-            var renderers = GetComponentsInChildren<Renderer>();
+            Renderer[] renderers = GetComponentsInChildren<Renderer>();
             Bounds bounds = new Bounds(transform.position, Vector3.zero);
-            bool any = false;
-            foreach (var r in renderers)
+            bool hasBounds = false;
+
+            foreach (Renderer renderer in renderers)
             {
-                if (!any) { bounds = r.bounds; any = true; }
-                else bounds.Encapsulate(r.bounds);
+                if (!hasBounds) { bounds = renderer.bounds; hasBounds = true; }
+                else bounds.Encapsulate(renderer.bounds);
             }
-            return any ? bounds : new Bounds(transform.position, Vector3.one);
+
+            return hasBounds ? bounds : new Bounds(transform.position, Vector3.one);
         }
     }
 }

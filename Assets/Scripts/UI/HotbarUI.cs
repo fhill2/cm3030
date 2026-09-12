@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Combat;
@@ -38,7 +39,7 @@ namespace Game.UI
             public SpellDef Spell;
         }
 
-        private readonly System.Collections.Generic.List<SpellSlot> spells = new System.Collections.Generic.List<SpellSlot>();
+        private readonly List<SpellSlot> spells = new List<SpellSlot>();
 
         private GameObject root;
         private Slot attack;
@@ -102,7 +103,7 @@ namespace Game.UI
 
         public void BuildInto(Transform parent)
         {
-            var bar = UIBuilder.CreateRect(parent,
+            RectTransform bar = UIBuilder.CreateRect(parent,
                 new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                 new Vector2(0f, 1080f * AnchoredY),
                 Vector2.zero);
@@ -118,7 +119,7 @@ namespace Game.UI
             staminaPotion = CreatePotionSlot(bar.transform, 7, "V", "stamina_potion");
             collectSlot = CreateSlot(bar.transform, 0, "TAB", "collect");
 
-            var hotkeys = caster != null ? caster.HotkeySpells : null;
+            IReadOnlyList<SpellDef> hotkeys = caster != null ? caster.HotkeySpells : null;
 
             for (int i = 0; i < 6; i++)
             {
@@ -139,11 +140,12 @@ namespace Game.UI
         {
             Slot slot = CreateSlot(parent, index, key, iconName);
 
-            var countRt = UIBuilder.CreateRect(slot.Icon.transform,
+            RectTransform countRect = UIBuilder.CreateRect(slot.Icon.transform,
                 new Vector2(1f, 1f), new Vector2(1f, 1f),
                 new Vector2(-4f, -4f), new Vector2(40f, 20f));
-            countRt.gameObject.name = "Count";
-            var count = UIBuilder.AttachText(countRt, "0", TextAnchor.UpperRight, 16,
+            countRect.gameObject.name = "Count";
+
+            Text count = UIBuilder.AttachText(countRect, "0", TextAnchor.UpperRight, 16,
                 UITheme.Default.text, UIBuilder.GetFont(UITheme.Default));
             count.horizontalOverflow = HorizontalWrapMode.Overflow;
             count.raycastTarget = false;
@@ -154,23 +156,25 @@ namespace Game.UI
 
         private Slot CreateSlot(Transform parent, int index, string key, string iconName)
         {
-            float x = (index - (TotalSlots - 1) * 0.5f) * (SlotSize + SlotGap);
+            float offsetX = (index - (TotalSlots - 1) * 0.5f) * (SlotSize + SlotGap);
 
-            var bgRt = UIBuilder.CreateRect(parent, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(x, 0f), new Vector2(SlotSize, SlotSize));
-            bgRt.gameObject.name = "Slot_" + key;
-            UIBuilder.AttachImage(bgRt, SlotBackground);
+            RectTransform background = UIBuilder.CreateRect(parent,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(offsetX, 0f), new Vector2(SlotSize, SlotSize));
+            background.gameObject.name = "Slot_" + key;
+            UIBuilder.AttachImage(background, SlotBackground);
 
-            var border = bgRt.gameObject.AddComponent<Outline>();
+            Outline border = background.gameObject.AddComponent<Outline>();
             border.effectColor = GoldBorder;
             border.effectDistance = new Vector2(2f, 2f);
             border.useGraphicAlpha = false;
             border.enabled = false;
 
-            var iconRt = UIBuilder.CreateRect(bgRt, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+            RectTransform iconRect = UIBuilder.CreateRect(background,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                 Vector2.zero, new Vector2(SlotSize, SlotSize));
-            iconRt.gameObject.name = "Icon";
-            var icon = UIBuilder.AttachImage(iconRt, Color.white);
+            iconRect.gameObject.name = "Icon";
+            Image icon = UIBuilder.AttachImage(iconRect, Color.white);
             icon.raycastTarget = false;
 
             Sprite sprite = UIBuilder.LoadTextureSprite(IconFolder + "/" + iconName);
@@ -184,10 +188,12 @@ namespace Game.UI
                 icon.color = new Color(0.2f, 0.2f, 0.24f, 1f);
             }
 
-            var recoveryRt = UIBuilder.CreateRect(bgRt, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+            // Radial fill over the icon, wiping back in as the cooldown recovers.
+            RectTransform recoveryRect = UIBuilder.CreateRect(background,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                 Vector2.zero, new Vector2(SlotSize, SlotSize));
-            recoveryRt.gameObject.name = "Recovery";
-            var recovery = UIBuilder.AttachImage(recoveryRt, Color.white);
+            recoveryRect.gameObject.name = "Recovery";
+            Image recovery = UIBuilder.AttachImage(recoveryRect, Color.white);
             recovery.sprite = sprite;
             recovery.type = Image.Type.Filled;
             recovery.fillMethod = Image.FillMethod.Radial360;
@@ -197,23 +203,24 @@ namespace Game.UI
             recovery.raycastTarget = false;
             recovery.enabled = sprite != null;
 
-            var sweepGo = new GameObject("Sweep");
-            sweepGo.transform.SetParent(bgRt, false);
-            var sweepRt = sweepGo.AddComponent<RectTransform>();
-            sweepRt.anchorMin = new Vector2(0.5f, 0.5f);
-            sweepRt.anchorMax = new Vector2(0.5f, 0.5f);
-            sweepRt.pivot = new Vector2(0.5f, 0f);
-            sweepRt.anchoredPosition = Vector2.zero;
-            sweepRt.sizeDelta = new Vector2(1f, SlotSize * 0.5f);
-            var sweep = sweepGo.AddComponent<Image>();
+            GameObject sweepGo = new GameObject("Sweep");
+            sweepGo.transform.SetParent(background, false);
+            RectTransform sweepRect = sweepGo.AddComponent<RectTransform>();
+            sweepRect.anchorMin = new Vector2(0.5f, 0.5f);
+            sweepRect.anchorMax = new Vector2(0.5f, 0.5f);
+            sweepRect.pivot = new Vector2(0.5f, 0f);
+            sweepRect.anchoredPosition = Vector2.zero;
+            sweepRect.sizeDelta = new Vector2(1f, SlotSize * 0.5f);
+            Image sweep = sweepGo.AddComponent<Image>();
             sweep.color = SweepColor;
             sweep.raycastTarget = false;
             sweep.enabled = false;
 
-            var keyRt = UIBuilder.CreateRect(bgRt, new Vector2(0f, 0f), new Vector2(0f, 0f),
+            RectTransform keyRect = UIBuilder.CreateRect(background,
+                new Vector2(0f, 0f), new Vector2(0f, 0f),
                 new Vector2(4f, 2f), new Vector2(44f, 16f));
-            keyRt.gameObject.name = "Key";
-            var keyLabel = UIBuilder.AttachText(keyRt, key, TextAnchor.LowerLeft, 12,
+            keyRect.gameObject.name = "Key";
+            Text keyLabel = UIBuilder.AttachText(keyRect, key, TextAnchor.LowerLeft, 12,
                 UITheme.Default.dimText, UIBuilder.GetFont(UITheme.Default));
             keyLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
             keyLabel.raycastTarget = false;
@@ -260,12 +267,12 @@ namespace Game.UI
                 belt != null ? belt.CooldownDuration : 30f,
                 belt != null ? belt.StaminaCount : 0);
 
-            foreach (SpellSlot s in spells)
+            foreach (SpellSlot spellSlot in spells)
             {
-                UpdateCooldown(s.Slot,
-                    caster != null ? caster.CooldownRemaining(s.School) : 0f,
-                    caster != null ? caster.CooldownDuration(s.School) : 0f,
-                    SpellSlotColor(s));
+                UpdateCooldown(spellSlot.Slot,
+                    caster != null ? caster.CooldownRemaining(spellSlot.School) : 0f,
+                    caster != null ? caster.CooldownDuration(spellSlot.School) : 0f,
+                    SpellSlotColor(spellSlot));
             }
         }
 
@@ -290,18 +297,20 @@ namespace Game.UI
             UpdateCooldown(slot, remaining, duration, Color.white);
         }
 
-        private Color SpellSlotColor(SpellSlot s)
+        // Full colour once bought, dimmed once the tome has dropped, barely
+        // visible before that.
+        private Color SpellSlotColor(SpellSlot spellSlot)
         {
             if (spellBook == null) return Color.white;
 
-            if (s.Spell != null)
+            if (spellSlot.Spell != null)
             {
-                if (spellBook.IsOwned(s.Spell)) return Color.white;
-                return spellBook.IsUnlocked(s.Spell) ? Dimmed : LockedDim;
+                if (spellBook.IsOwned(spellSlot.Spell)) return Color.white;
+                return spellBook.IsUnlocked(spellSlot.Spell) ? Dimmed : LockedDim;
             }
 
-            SpellDef best = spellBook.BestOwned(s.School);
-            return best != null && s.Level <= best.Level ? Color.white : LockedDim;
+            SpellDef best = spellBook.BestOwned(spellSlot.School);
+            return best != null && spellSlot.Level <= best.Level ? Color.white : LockedDim;
         }
 
         private void UpdateCooldown(Slot slot, float remaining, float duration, Color readyColor)

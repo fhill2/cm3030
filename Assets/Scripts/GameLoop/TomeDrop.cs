@@ -4,11 +4,10 @@ using Game.Health;
 
 namespace Game.Core
 {
-    // Rolls for a tome when this enemy dies, and spawns the pickup where
-    // the body fell.
-    //
-    // Goes on the enemy prefab. Spells whose tome is already held are
-    // skipped, so late waves stop dropping duplicates.
+    // Rolls for a tome when this enemy dies and spawns the pickup where the
+    // body fell. Spells already held are skipped, so late waves stop
+    // dropping duplicates.
+    // Goes on the enemy prefab.
     public class TomeDrop : MonoBehaviour
     {
         [Header("Drop")]
@@ -60,21 +59,16 @@ namespace Game.Core
                 transform.position + Vector3.up * dropHeight,
                 tomePickupPrefab.transform.rotation);
 
-            TomePickup component = pickup.GetComponent<TomePickup>();
-            if (component != null) component.Assign(spell);
+            TomePickup pickupComponent = pickup.GetComponent<TomePickup>();
+            if (pickupComponent != null) pickupComponent.Assign(spell);
         }
 
-        // Picks one spell, weighted by each spell's DropWeight. Spells the
-        // player already holds are left out, so late drops aren't wasted.
-        //
-        // The roll works by laying every candidate's weight end to end on a
-        // line, picking a random point on it, and taking whichever one the
-        // point lands in. Bigger weight, bigger stretch of the line.
+        // Weighted by DropWeight, skipping spells the player already holds.
         private SpellDef PickWeighted()
         {
             SpellBook book = FindFirstObjectByType<SpellBook>();
 
-            var candidates = new List<SpellDef>();
+            List<SpellDef> candidates = new List<SpellDef>();
             float totalWeight = 0f;
 
             foreach (SpellDef spell in dropTable)

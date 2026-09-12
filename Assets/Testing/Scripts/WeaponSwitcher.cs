@@ -3,6 +3,7 @@ using Game.Combat;
 
 namespace Game.Core
 {
+
     public class WeaponSwitcher : MonoBehaviour
     {
         private Equipment player;
@@ -16,10 +17,12 @@ namespace Game.Core
         {
             if (player == null)
             {
-                GameObject go = GameObject.FindGameObjectWithTag("Player");
-                if (go != null)
+                GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+                if (playerObject != null)
                 {
-                    player = go.GetComponent<Equipment>();
+                    player = playerObject.GetComponent<Equipment>();
+
+
                     if (player != null && playerDefaultWeapon == null)
                     {
                         playerDefaultWeapon = player.WeaponPrefab;
@@ -34,10 +37,10 @@ namespace Game.Core
         {
             if (enemy == null)
             {
-                GameObject go = GameObject.FindGameObjectWithTag("Enemy");
-                if (go != null)
+                GameObject enemyObject = GameObject.FindGameObjectWithTag("Enemy");
+                if (enemyObject != null)
                 {
-                    enemy = go.GetComponent<Equipment>();
+                    enemy = enemyObject.GetComponent<Equipment>();
                     if (enemy != null && enemyDefaultWeapon == null)
                     {
                         enemyDefaultWeapon = enemy.WeaponPrefab;

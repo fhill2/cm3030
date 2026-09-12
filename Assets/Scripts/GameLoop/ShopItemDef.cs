@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    // What an item actually does when bought.
+    // What an item does when bought.
     public enum ShopEffect
     {
         WeaponDamage,   // adds Magnitude to the weapon's damage
@@ -14,7 +14,7 @@ namespace Game.Core
         StaminaPotion   // adds one stamina potion to the player's belt
     }
 
-    // One purchasable item. Make these as assets:
+    // One purchasable item.
     // Create > Fall of Camelot > Shop Item
     [CreateAssetMenu(fileName = "ShopItem", menuName = "Fall of Camelot/Shop Item")]
     public class ShopItemDef : ScriptableObject
@@ -44,8 +44,6 @@ namespace Game.Core
         public int MaxPurchases => maxPurchases;
         public SpellDef Spell => spell;
 
-        // Price rises each time it's bought, so the first upgrade is cheap
-        // and later ones cost real gold.
         public int CostAfter(int timesBought)
         {
             return Mathf.RoundToInt(baseCost * Mathf.Pow(costGrowth, timesBought));

@@ -4,14 +4,7 @@ using Game.Combat;
 namespace Game.Core
 {
     // Applies shop upgrades to the player's gear.
-    //
-    // The weapon's WeaponDef is a shared asset — writing to it directly would
-    // upgrade every enemy holding the same sword and would dirty the file in
-    // git. So the first time an upgrade lands we swap the weapon over to a
-    // runtime copy made with Instantiate(), and only ever edit that copy.
-    // The copy dies with play mode, so upgrades last a run, not forever.
-    //
-    // Goes on the GameManager object.
+    // Sits on the GameManager.
     public class PlayerLoadout : MonoBehaviour
     {
         [Header("References")]
@@ -24,7 +17,7 @@ namespace Game.Core
 
         public Equipment PlayerEquipment => player != null ? player.GetComponent<Equipment>() : null;
 
-        // The runtime copy we're allowed to modify. Null until the first upgrade.
+        // Null until the first upgrade.
         private WeaponDef weaponCopy;
 
         public void AddWeaponDamage(float amount)
@@ -41,7 +34,7 @@ namespace Game.Core
             WeaponDef def = EditableWeaponDef();
             if (def == null) return;
 
-            // Speed is a duration, so a faster weapon is a smaller number.
+            // Speed is a duration, so faster is a smaller number.
             def.Speed = Mathf.Max(minimumSwingDuration, def.Speed - amount);
             Debug.Log($"[Loadout] Swing duration now {def.Speed}");
         }
@@ -63,7 +56,7 @@ namespace Game.Core
                 return null;
             }
 
-            // Already swapped to our copy, and the weapon still holds it.
+            // Already swapped, and the weapon still holds our copy.
             if (weaponCopy != null && weapon.Def == weaponCopy) return weaponCopy;
 
             if (weapon.Def == null)

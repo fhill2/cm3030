@@ -6,13 +6,8 @@ namespace Game.Core
 {
     // Flies forward until it hits something, damages the first damageable
     // thing it meets, then removes itself.
-    //
-    // Targets are found with an overlap check rather than a cast, because a
-    // sphere cast ignores colliders it is already touching when the sweep
-    // begins. The frame's movement is broken into sub-steps so a fast
-    // projectile can't jump past a target between checks on a slow frame.
-    //
-    // Goes on the projectile prefab. No collider or rigidbody needed.
+    // Movement is broken into sub-steps so a fast projectile can't jump past a target.
+    // Goes on the projectile prefab. 
     public class SpellProjectile : MonoBehaviour
     {
         [Header("Environment")]
@@ -39,7 +34,7 @@ namespace Game.Core
         private float impactScale = 1f;
         private float impactLifetime = 3f;
 
-        // Called by SpellCaster the moment the projectile is created.
+        // Called by SpellCaster as soon as the projectile is created.
         public void Launch(SpellDef spellDef, float damageAmount, float projectileSpeed,
                            float lifetime, GameObject source)
         {
@@ -52,8 +47,6 @@ namespace Game.Core
             if (lifetime > 0f) Destroy(gameObject, lifetime);
         }
 
-        // Impact visuals are set separately so Launch keeps the same signature
-        // it had before the VFX existed.
         public void SetImpact(GameObject effect, float scale, float lifetime)
         {
             impactEffect = effect;
@@ -74,8 +67,8 @@ namespace Game.Core
                 float step = Mathf.Min(maxStep, remaining);
                 remaining -= step;
 
-                // Targets first. An enemy standing against a wall should take
-                // the hit rather than the stonework behind them.
+                // Targets first, so an enemy standing against a wall takes the
+                // hit rather than the stonework behind them.
                 if (TryHitTarget()) return;
                 if (TryHitEnvironment(step)) return;
 
@@ -83,13 +76,12 @@ namespace Game.Core
             }
         }
 
-        // Anything damageable within reach of where the projectile is now.
         private bool TryHitTarget()
         {
-            Collider[] near = Physics.OverlapSphere(
+            Collider[] nearby = Physics.OverlapSphere(
                 transform.position, targetRadius, hitMask, QueryTriggerInteraction.Ignore);
 
-            foreach (Collider col in near)
+            foreach (Collider col in nearby)
             {
                 if (IsCaster(col.transform)) continue;
 
@@ -107,7 +99,6 @@ namespace Game.Core
             return false;
         }
 
-        // Nothing damageable in range, so stop against scenery if we met any.
         private bool TryHitEnvironment(float step)
         {
             if (!Physics.SphereCast(transform.position, radius, transform.forward,
@@ -126,20 +117,19 @@ namespace Game.Core
             if (logHits)
                 Debug.Log($"[SpellProjectile] Stopped on {hit.collider.name}");
 
-            // Face the effect out of the surface, so sparks fly away from the
-            // wall instead of into it.
+            // Face the effect out of the surface so sparks fly away from the
+            // wall, not into it.
             Detonate(hit.point, hit.normal);
             return true;
         }
 
-        // Spawn the impact effect, play the hit sound and remove the
-        // projectile. The effect is a separate object so it can outlive the
-        // ball and finish its particles.
+        // The effect is a separate object so it can outlive the ball and
+        // finish its particles.
         private void Detonate(Vector3 position, Vector3 normal)
         {
-            var hitClips = spell != null ? spell.HitClip : null;
+            AudioClip[] hitClips = spell != null ? spell.HitClip : null;
             if (hitClips != null)
-                foreach (var clip in hitClips)
+                foreach (AudioClip clip in hitClips)
                     OneShotAudio.Play2D(clip, transform.position);
             else if (logHits)
                 Debug.Log($"[SpellProjectile] {spell?.DisplayName} hit has no clips");
@@ -156,7 +146,6 @@ namespace Game.Core
             Destroy(gameObject);
         }
 
-        // Only the caster's own hierarchy is passed through.
         private bool IsCaster(Transform other)
         {
             if (casterRoot == null || other == null) return false;

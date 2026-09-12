@@ -4,8 +4,12 @@ using Game.Shared;
 
 namespace Game.Combat
 {
+    // Shared hit-detection helpers, so melee, spells and thrown weapons all
+    // find targets the same way.
     public static class CombatProbe
     {
+        // True for anything in the attacker's own hierarchy, so nobody hits
+        // themselves or their own gear.
         public static bool IsIgnored(Transform other, Transform ignoreRoot)
         {
             if (other == null) return true;
@@ -23,6 +27,7 @@ namespace Game.Combat
             return collider.GetComponentInParent<IDamageable>();
         }
 
+        // First living thing along a line, for thrown weapons.
         public static IDamageable Sweep(Vector3 origin, Vector3 direction, float distance,
             float radius, Transform ignoreRoot)
         {
@@ -36,11 +41,13 @@ namespace Game.Combat
             return null;
         }
 
+        // Everything living inside a wedge in front of the attacker. Height is
+        // ignored so an enemy on a step still counts.
         public static List<IDamageable> Arc(Vector3 origin, Vector3 forward, float range,
             float halfAngle, Transform ignoreRoot)
         {
-            var hits = Physics.OverlapSphere(origin, range, ~0, QueryTriggerInteraction.Ignore);
-            var targets = new List<IDamageable>();
+            Collider[] hits = Physics.OverlapSphere(origin, range, ~0, QueryTriggerInteraction.Ignore);
+            List<IDamageable> targets = new List<IDamageable>();
 
             foreach (Collider collider in hits)
             {

@@ -2,11 +2,7 @@ using UnityEngine;
 
 namespace Game.Enemy
 {
-    /// <summary>
-    /// Terminal state entered when the enemy dies (driven by the
-    /// <see cref="Game.Core.EventManager.OnDeath"/> subscription on NpcFSM).
-    /// Stops navigation and disables the NavMeshAgent so the corpse stays put.
-    /// </summary>
+    // Terminal state. Stops navigation so the corpse stays where it fell.
     public class DeathState : BaseState
     {
         public override void EnterState(NpcFSM npc)
@@ -15,12 +11,9 @@ namespace Game.Enemy
 
             if (agent != null)
             {
-                // Zero the velocity BEFORE disabling. NavMeshAgent.velocity freezes
-                // at its last value once the component is disabled rather than
-                // resetting to zero, so without this EnemyMotor keeps reading
-                // whatever speed the agent had at the moment of death — which is
-                // why the corpse kept sliding/walking instead of settling into
-                // the death pose.
+                // Zero the velocity before disabling. A disabled agent freezes
+                // its velocity at the last value rather than resetting, and
+                // EnemyMotor would keep reading it and animate a walking corpse.
                 agent.velocity = Vector3.zero;
                 agent.isStopped = true;
                 agent.enabled = false;
@@ -29,7 +22,6 @@ namespace Game.Enemy
 
         public override void UpdateState(NpcFSM npc)
         {
-            // No per-frame work — enemy is dead.
         }
     }
 }

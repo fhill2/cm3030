@@ -6,6 +6,8 @@ using Game.Shared;
 
 namespace Game.Combat
 {
+    // Added to a weapon when the player throws it. Flies forward, damages the
+    // first thing it hits, then drops to the ground to be collected.
     public class ThrownWeapon : MonoBehaviour
     {
         [Tooltip("Metres per second the weapon flies.")]
@@ -46,8 +48,12 @@ namespace Game.Combat
         {
             thrower = source;
             flightDirection = direction.sqrMagnitude > 0.001f ? direction.normalized : Vector3.forward;
+
+            // Throws hit harder than a swing, and a slow heavy weapon hits
+            // hardest, so damage is scaled by the weapon's swing speed.
             WeaponDef def = GetComponent<Weapon>()?.Def;
             strikeDamage = def != null && def.Speed > 0f ? def.Damage / def.Speed * 3f : 0f;
+
             roll = Random.Range(-rollSpin, rollSpin);
             fallSpeed = 0f;
             launchedAt = Time.time;
@@ -109,6 +115,8 @@ namespace Game.Combat
                 OneShotAudio.Play2D(clip, Vector3.zero);
         }
 
+        // Hands the weapon over to Gravity so it tumbles to the floor and can
+        // be picked up again.
         private void Fall()
         {
             spent = true;
@@ -120,15 +128,15 @@ namespace Game.Combat
                 whooshSource = null;
             }
 
-            var gravity = GetComponent<Gravity>();
-            if (gravity == null) gravity = gameObject.AddComponent<Gravity>();
-            gravity.SelfRighting = true;
+            Gravity fall = GetComponent<Gravity>();
+            if (fall == null) fall = gameObject.AddComponent<Gravity>();
+            fall.SelfRighting = true;
 
             Vector3 lateral = Random.insideUnitSphere;
             lateral.y = 0f;
             lateral = lateral.sqrMagnitude > 0.001f ? lateral.normalized : Vector3.forward;
 
-            gravity.Launch(
+            fall.Launch(
                 Vector3.up * 2.5f + lateral * 2f,
                 Random.insideUnitSphere * 300f,
                 thrower != null ? thrower.transform : null);
@@ -136,6 +144,7 @@ namespace Game.Combat
             StartCoroutine(HaloAfterDelay());
         }
 
+        // Waits for it to land before marking it, so the halo isn't in mid-air.
         private IEnumerator HaloAfterDelay()
         {
             yield return new WaitForSeconds(1f);

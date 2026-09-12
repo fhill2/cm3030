@@ -6,6 +6,8 @@ using Game.Shared;
 
 namespace Game.Combat
 {
+    // R throws the equipped weapon where the camera is pointing, leaving the
+    // player unarmed until they collect it or buy another.
     public class WeaponThrower : MonoBehaviour
     {
         [Tooltip("Height above the player's origin the weapon leaves from.")]
@@ -29,9 +31,9 @@ namespace Game.Combat
 
         void Update()
         {
-            var kb = Keyboard.current;
-            if (kb == null) return;
-            if (!kb.rKey.wasPressedThisFrame) return;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return;
+            if (!keyboard.rKey.wasPressedThisFrame) return;
             if (PlayerInputLock.InputLocked) return;
             if (stamina != null && !stamina.CanAct) return;
 
@@ -46,6 +48,8 @@ namespace Game.Combat
             if (animator != null) animator.SetTrigger(AnimParams.Throw);
             if (actorAudio != null) actorAudio.PlayEffort();
 
+            // Flattened, so the throw goes level rather than into the ground
+            // or the sky depending on the camera pitch.
             Camera camera = Camera.main;
             Vector3 aim = camera != null ? camera.transform.forward : transform.forward;
             aim.y = 0f;
@@ -59,8 +63,8 @@ namespace Game.Combat
                              + Vector3.up * throwHeight
                              + direction * throwForward;
 
-            foreach (var wc in weapon.GetComponentsInChildren<WeaponCollider>())
-                wc.enabled = false;
+            foreach (WeaponCollider collider in weapon.GetComponentsInChildren<WeaponCollider>())
+                collider.enabled = false;
 
             weapon.transform.SetParent(null);
             weapon.transform.position = origin;
@@ -71,7 +75,7 @@ namespace Game.Combat
             if (thrown == null) thrown = weapon.AddComponent<ThrownWeapon>();
             thrown.Launch(gameObject, direction);
 
-            Debug.Log($"[WeaponThrower] Threw {weapon.name} — unarmed until collected or bought.");
+            Debug.Log($"[WeaponThrower] Threw {weapon.name}, unarmed until collected or bought.");
         }
     }
 }

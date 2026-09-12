@@ -6,37 +6,24 @@ using Game.Combat;
 
 namespace Game.Core
 {
-    // Spawns a wave, tracks how many are left, tells the state machine
-    // when the wave is cleared.
-    //
-    // A wave is one or more EnemySets. Sets are interleaved when spawning:
-    // three from the first set (the grunts), then one from each following
-    // set (the elites), repeating — so tough enemies are interspersed
-    // through the wave instead of arriving in one clump.
-    //
-    // Equipment is picked per enemy from every weapon/shield prefab under
-    // Resources/Equipment, filtered by the set's level range. Enemies with
-    // no eligible equipment keep their prefab's defaults.
-    //
-    // Counting is done by listening to OnDeath rather than searching the
-    // scene every frame. We keep a list of what we spawned so we only count
-    // deaths that belong to this wave.
-    //
-    // Goes on the GameManager object.
+    // Spawns a wave, tracks how many are left, and reports the clear.
+    // Sets are interleaved when spawning: three grunts, then one from each
+    // following set, repeating, so elites are spread through the wave.
+    // Counting works off OnDeath rather than searching the scene each frame.
+    // Sits on the GameManager.
     public class WaveSpawner : MonoBehaviour
     {
         [Header("References")]
         [Tooltip("Parent whose direct children are the spawn points.")]
         [SerializeField] private Transform spawnPointRoot;
 
-        // Runtime cache of the spawn points, collected from spawnPointRoot in Awake.
         private Transform[] spawnPoints;
 
         [Header("Waves")]
         [SerializeField] private WaveConfig[] waves;
 
         [Header("Spawning")]
-        [SerializeField] private float spawnRadius = 2f;   // scatter around the point so they don't stack
+        [SerializeField] private float spawnRadius = 2f;   // scatter so they don't stack
 
         [Header("Hunt")]
         [Tooltip("Once at most this many enemies remain in the wave, every enemy hunts the player regardless of distance. Ends the player chasing a lone patrol around the castle at the tail end of a wave.")]
@@ -49,36 +36,31 @@ namespace Game.Core
         [Tooltip("Parent of patrol path groups. Each direct child is a path (e.g. Patrol1), and ITS children are the waypoints. Enemies cycle through paths in order.")]
         [SerializeField] private Transform patrolPathsRoot;
 
-        // Which patrol path to assign next (cycles through patrolPathsRoot's children).
         private int patrolPathIndex;
 
-        // How many enemies have already been put on each path this wave, keyed
-        // by path index. Used to stagger where on the loop each one starts, so
-        // enemies sharing a path don't all walk toward waypoint 0 at once.
+        // How many enemies are already on each path this wave, keyed by path
+        // index, so enemies sharing a path start at different waypoints.
         private readonly Dictionary<int, int> patrolPathAssignCounts = new Dictionary<int, int>();
 
-        // Enemies from the current wave that are still alive.
         private readonly List<GameObject> liveEnemies = new List<GameObject>();
 
-        // Read-only view for anything that just needs to know who's alive
-        // right now (e.g. the minimap, to place enemy dots).
+        // Read by the minimap to place enemy dots.
         public IReadOnlyList<GameObject> LiveEnemies => liveEnemies;
 
-        // True once the wave is down to its last few enemies: they abandon
-        // patrol and chase the player no matter the distance. Static so the
-        // enemy states can read it without a reference to this component.
+        // True on the last few enemies: they drop patrol and chase the player.
+        // Static so the enemy states can read it without a reference here.
         public static bool HuntMode { get; private set; }
 
-        // Wave number captured from the GameStateChanged payload (GSM owns it).
         private int currentWave;
 
-        // True once the spawn coroutine has finished producing the whole wave.
-        // Without this, killing the first enemy before the second spawns leaves
-        // the list empty and fires a false "wave cleared".
+        // Without this, killing the first enemy before the second spawns
+        // leaves the list empty and fires a false wave clear.
         private bool spawningFinished;
 
-        // Stops the wave being reported clear more than once.
         private bool waveAlreadyCleared;
+
+        // NpcFSM is looked up by name so Core doesn't reference Game.Enemy.
+        private static System.Type npcFsmType;
 
         private void Awake()
         {
@@ -88,6 +70,8 @@ namespace Game.Core
                 for (int i = 0; i < spawnPointRoot.childCount; i++)
                     spawnPoints[i] = spawnPointRoot.GetChild(i);
             }
+
+            npcFsmType = System.Type.GetType("Game.Enemy.NpcFSM, Assembly-CSharp");
         }
 
         private void OnEnable()
@@ -102,7 +86,6 @@ namespace Game.Core
             EventManager.OnGameStateChanged -= HandleStateChanged;
         }
 
-        // Capture the wave number from the payload, then spawn on WaveActive.
         private void HandleStateChanged(GameStateChangedArgs e)
         {
             currentWave = e.Wave;
@@ -135,22 +118,20 @@ namespace Game.Core
             spawningFinished = true;
             UpdateHuntMode();
 
-            // Covers the case where the player killed everything while we were
-            // still spawning, or where the wave was configured with no enemies.
+            // Covers the player killing everything mid-spawn, or a wave
+            // configured with no enemies.
             CheckWaveCleared();
         }
 
-        // Expands the wave's sets into one entry per enemy, interleaved:
-        // three from the first set, then one from each following set,
-        // repeating until every set's count is spent. Keeps at least one
-        // elite per three grunts without any randomness.
+        // One entry per enemy, interleaved: three from the first set, then one
+        // from each following set, until every count is spent.
         private static List<EnemySet> BuildSpawnQueue(WaveConfig config)
         {
-            var queue = new List<EnemySet>();
-            var sets = config.Sets;
+            List<EnemySet> queue = new List<EnemySet>();
+            EnemySet[] sets = config.Sets;
             if (sets == null) return queue;
 
-            var remaining = new int[sets.Length];
+            int[] remaining = new int[sets.Length];
             for (int i = 0; i < sets.Length; i++) remaining[i] = sets[i].Count;
 
             bool anyLeft = true;
@@ -200,7 +181,6 @@ namespace Game.Core
             Transform point = spawnPoints[Random.Range(0, spawnPoints.Length)];
             GameObject enemy = Instantiate(prefab, SpawnPositionNear(point), point.rotation);
 
-            // Scale difficulty by bumping health above whatever the prefab has.
             EnemyHealth health = enemy.GetComponent<EnemyHealth>();
             if (health != null)
             {
@@ -208,7 +188,7 @@ namespace Game.Core
                 if (set.GoldReward > 0) health.GoldReward = set.GoldReward;
             }
 
-            var equipment = enemy.GetComponent<Equipment>();
+            Equipment equipment = enemy.GetComponent<Equipment>();
             if (equipment != null)
             {
                 GameObject weapon = EquipmentCatalog.PickWeapon(set.EquipmentLevelMin, set.EquipmentLevelMax);
@@ -218,79 +198,65 @@ namespace Game.Core
                 if (shield != null) equipment.ShieldPrefab = shield;
             }
 
-            // Assign an individual patrol path to this enemy.
             AssignPatrolPath(enemy);
 
-            // Scale difficulty by overriding how often these enemies try
-            // to block. 0 (the set default) means "leave the prefab's own
-            // blockChance alone" rather than forcing blocking off entirely.
+            // 0 means leave the prefab's own blockChance alone rather than
+            // forcing blocking off.
             if (set.BlockChance > 0f) ApplyBlockChance(enemy, set.BlockChance);
 
             liveEnemies.Add(enemy);
         }
 
-        // Random point inside a circle around the spawn point, so several
-        // enemies from the same point don't end up inside each other.
         private Vector3 SpawnPositionNear(Transform point)
         {
             Vector2 offset = Random.insideUnitCircle * spawnRadius;
             return point.position + new Vector3(offset.x, 0f, offset.y);
         }
 
-        // Assigns the next patrol path's waypoints to the enemy's NpcFSM.
-        // Cycles through patrolPathsRoot's children: enemy 1 → Patrol1, enemy 2 → Patrol2, etc.
-        //
-        // Once enemy count outgrows the number of paths, the cycle wraps and a
-        // path ends up with more than one enemy on it. Rather than start every
-        // one of them at waypoint 0 — which walks them all into the same spot
-        // at the same time — each additional enemy on a path starts further
-        // around the loop, so they're spread out from the moment they spawn.
+        // Gives the enemy one patrol path's waypoints, cycling through the
+        // paths. Once there are more enemies than paths, each extra enemy on a
+        // path starts further round the loop so they don't bunch up.
         private void AssignPatrolPath(GameObject enemy)
         {
             if (patrolPathsRoot == null || patrolPathsRoot.childCount == 0) return;
+            if (npcFsmType == null) return;
 
-            var fsmType = System.Type.GetType("Game.Enemy.NpcFSM, Assembly-CSharp");
-            if (fsmType == null) return;
-            var fsm = enemy.GetComponent(fsmType);
+            Component fsm = enemy.GetComponent(npcFsmType);
             if (fsm == null) return;
 
             int pathIndex = patrolPathIndex % patrolPathsRoot.childCount;
             Transform path = patrolPathsRoot.GetChild(pathIndex);
             patrolPathIndex++;
 
-            var list = fsmType.GetField("patrolTargets")?.GetValue(fsm) as List<Transform>;
-            if (list == null) return;
+            List<Transform> waypoints = npcFsmType.GetField("patrolTargets")?.GetValue(fsm) as List<Transform>;
+            if (waypoints == null) return;
 
-            list.Clear();
-            foreach (Transform wp in path)
-                list.Add(wp);
+            waypoints.Clear();
+            foreach (Transform waypoint in path)
+                waypoints.Add(waypoint);
 
             int assignedSoFar = patrolPathAssignCounts.TryGetValue(pathIndex, out int count) ? count : 0;
             patrolPathAssignCounts[pathIndex] = assignedSoFar + 1;
 
-            if (list.Count > 0)
+            if (waypoints.Count > 0)
             {
-                int startIndex = assignedSoFar % list.Count;
-                fsmType.GetField("targetIndex")?.SetValue(fsm, startIndex);
+                int startIndex = assignedSoFar % waypoints.Count;
+                npcFsmType.GetField("targetIndex")?.SetValue(fsm, startIndex);
             }
         }
 
-        // Same reflection approach as AssignPatrolPath — avoids a hard dependency
-        // from Core -> Enemy across the assembly boundary.
         private void ApplyBlockChance(GameObject enemy, float blockChance)
         {
-            var fsmType = System.Type.GetType("Game.Enemy.NpcFSM, Assembly-CSharp");
-            if (fsmType == null) return;
-            var fsm = enemy.GetComponent(fsmType);
+            if (npcFsmType == null) return;
+
+            Component fsm = enemy.GetComponent(npcFsmType);
             if (fsm == null) return;
 
-            fsmType.GetField("blockChance")?.SetValue(fsm, blockChance);
+            npcFsmType.GetField("blockChance")?.SetValue(fsm, blockChance);
         }
 
-        // The remaining count only changes when spawning finishes or an enemy
-        // dies, so those two events are the only places this needs running.
-        // The spawningFinished gate stops the count dipping below the
-        // threshold mid-spawn from triggering the hunt early.
+        // The spawningFinished gate stops a mid-spawn dip below the threshold
+        // triggering the hunt early.
         private void UpdateHuntMode()
         {
             HuntMode = spawningFinished
@@ -302,7 +268,7 @@ namespace Game.Core
         {
             if (e.Entity == null) return;
 
-            if (!RemoveFromWave(e.Entity)) return;   // not one of ours, ignore
+            if (!RemoveFromWave(e.Entity)) return;   // not one of ours
 
             UpdateHuntMode();
 
@@ -314,8 +280,8 @@ namespace Game.Core
             CheckWaveCleared();
         }
 
-        // The health component that reports the death may sit on a child of the
-        // object we spawned, so fall back to matching on the root before giving up.
+        // The health component reporting the death can sit on a child of the
+        // spawned object, so try the root before giving up.
         private bool RemoveFromWave(GameObject dead)
         {
             if (liveEnemies.Remove(dead)) return true;
@@ -334,8 +300,7 @@ namespace Game.Core
             EventManager.RaiseWaveCleared(new WaveClearedArgs(currentWave));
         }
 
-        // Waves past the end of the array reuse the last one, so the game
-        // doesn't stop dead once we run out of configs.
+        // Waves past the end of the array reuse the last one.
         private WaveConfig ConfigForWave(int waveNumber)
         {
             if (waves == null || waves.Length == 0) return null;

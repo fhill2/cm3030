@@ -15,27 +15,27 @@ namespace Game.Core
         [MenuItem("Tools/Equipment/Report Orientations")]
         public static void ReportAll()
         {
-            var sb = new StringBuilder("[Orientation Report]\n");
+            StringBuilder report = new StringBuilder("[Orientation Report]\n");
             foreach (string path in AllPrefabs())
             {
                 GameObject root = PrefabUtility.LoadPrefabContents(path);
                 try
                 {
-                    Bounds b = RendererBounds(root);
-                    Vector3 thin = AxisOf(b.extents, true);
-                    Vector3 lon = AxisOf(b.extents, false);
-                    sb.AppendLine(string.Format(
+                    Bounds bounds = RendererBounds(root);
+                    Vector3 thinnestAxis = AxisOf(bounds.extents, true);
+                    Vector3 longestAxis = AxisOf(bounds.extents, false);
+                    report.AppendLine(string.Format(
                         "{0,-16} ext=({1:0.00},{2:0.00},{3:0.00}) thin={4} long={5}",
                         Path.GetFileNameWithoutExtension(path),
-                        b.extents.x, b.extents.y, b.extents.z,
-                        thin, lon));
+                        bounds.extents.x, bounds.extents.y, bounds.extents.z,
+                        thinnestAxis, longestAxis));
                 }
                 finally
                 {
                     PrefabUtility.UnloadPrefabContents(root);
                 }
             }
-            Debug.Log(sb.ToString());
+            Debug.Log(report.ToString());
         }
 
         [MenuItem("Tools/Equipment/Fix Orientations")]
@@ -53,6 +53,8 @@ namespace Game.Core
             Debug.Log($"[Orientation] Fixed {count} prefabs. Only files under Resources/Equipment were modified.");
         }
 
+        // Rotates the model so its blade runs along +Y and its flat face along
+        // +Z, which is what Equipment's single grip per kind expects.
         private static void FixOne(string path)
         {
             GameObject root = PrefabUtility.LoadPrefabContents(path);
@@ -67,7 +69,7 @@ namespace Game.Core
 
                 Quaternion corrective = CorrectiveRotation(root);
 
-                var children = new List<Transform>();
+                List<Transform> children = new List<Transform>();
                 foreach (Transform child in root.transform) children.Add(child);
 
                 foreach (Transform child in children)
@@ -77,7 +79,7 @@ namespace Game.Core
                 }
 
                 Bounds after = RendererBounds(root);
-                var collider = root.GetComponent<BoxCollider>();
+                BoxCollider collider = root.GetComponent<BoxCollider>();
                 if (collider != null)
                 {
                     collider.center = after.center;
@@ -95,13 +97,13 @@ namespace Game.Core
         [MenuItem("Tools/Equipment/Flip Vertical (Selection)")]
         public static void FlipVerticalSelection()
         {
-            var paths = new List<string>();
-            foreach (Object o in Selection.objects)
+            List<string> paths = new List<string>();
+            foreach (Object selected in Selection.objects)
             {
-                string p = AssetDatabase.GetAssetPath(o);
-                if (!string.IsNullOrEmpty(p) && p.EndsWith(".prefab") &&
-                    (p.StartsWith(WeaponsFolder) || p.StartsWith(ShieldsFolder)))
-                    paths.Add(p);
+                string assetPath = AssetDatabase.GetAssetPath(selected);
+                if (!string.IsNullOrEmpty(assetPath) && assetPath.EndsWith(".prefab") &&
+                    (assetPath.StartsWith(WeaponsFolder) || assetPath.StartsWith(ShieldsFolder)))
+                    paths.Add(assetPath);
             }
             FlipPrefabs(paths);
         }
@@ -119,6 +121,8 @@ namespace Game.Core
             Debug.Log($"[Orientation] Flipped {count} prefabs vertically.");
         }
 
+        // For models that come out upside down, since the axis test can't tell
+        // which end of a blade is the point.
         private static void FlipOne(string path)
         {
             GameObject root = PrefabUtility.LoadPrefabContents(path);
@@ -126,7 +130,7 @@ namespace Game.Core
             {
                 Quaternion flip = Quaternion.AngleAxis(180f, Vector3.forward);
 
-                var children = new List<Transform>();
+                List<Transform> children = new List<Transform>();
                 foreach (Transform child in root.transform) children.Add(child);
 
                 foreach (Transform child in children)
@@ -140,7 +144,7 @@ namespace Game.Core
                     child.localPosition -= after.center;
 
                 after = RendererBounds(root);
-                var collider = root.GetComponent<BoxCollider>();
+                BoxCollider collider = root.GetComponent<BoxCollider>();
                 if (collider != null)
                 {
                     collider.center = after.center;
@@ -157,10 +161,10 @@ namespace Game.Core
 
         private static Quaternion CorrectiveRotation(GameObject root)
         {
-            Bounds b = RendererBounds(root);
-            Vector3 thin = AxisOf(b.extents, true);
-            Vector3 lon = AxisOf(b.extents, false);
-            return Quaternion.Inverse(Quaternion.LookRotation(thin, lon));
+            Bounds bounds = RendererBounds(root);
+            Vector3 thinnestAxis = AxisOf(bounds.extents, true);
+            Vector3 longestAxis = AxisOf(bounds.extents, false);
+            return Quaternion.Inverse(Quaternion.LookRotation(thinnestAxis, longestAxis));
         }
 
         private static Vector3 AxisOf(Vector3 extents, bool smallest)
@@ -184,24 +188,21 @@ namespace Game.Core
         private static Bounds RendererBounds(GameObject root)
         {
             Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
-            bool any = false;
-            foreach (Renderer r in root.GetComponentsInChildren<Renderer>())
+            bool hasBounds = false;
+            foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>())
             {
-                if (!any)
+                if (!hasBounds)
                 {
-                    bounds = r.bounds;
-                    any = true;
+                    bounds = renderer.bounds;
+                    hasBounds = true;
                 }
                 else
                 {
-                    bounds.Encapsulate(r.bounds);
+                    bounds.Encapsulate(renderer.bounds);
                 }
             }
             return bounds;
         }
-
-
-
 
         private static IEnumerable<string> AllPrefabs()
         {

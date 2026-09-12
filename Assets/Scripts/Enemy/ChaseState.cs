@@ -3,11 +3,8 @@ using Game.Core;
 
 namespace Game.Enemy
 {
-    /// <summary>
-    /// Chase behaviour: pursue the player at chase speed using the NavMeshAgent.
-    /// Transitions to AttackState when within <c>attackRange</c>, and back to
-    /// PatrolState when the player escapes beyond <c>chaseQuitDistance</c>.
-    /// </summary>
+    // Runs the player down. Hands off to Attack once in range, or back to
+    // Patrol if the player gets away.
     public class ChaseState : BaseState
     {
         public override void EnterState(NpcFSM npc)
@@ -25,28 +22,24 @@ namespace Game.Enemy
         {
             if (player == null || agent == null) return;
 
-            // Player died — stop chasing, drop back to patrol (idle).
             if (!npc.playerAlive)
             {
                 npc.MoveToState(npc.s_Patrol);
                 return;
             }
 
-            // Pursue the player's current position. Skipped while the agent is
-            // disabled (e.g. a Knockback has the enemy airborne).
-            if (agent != null && agent.enabled)
+            // Skipped while the agent is off, e.g. mid-knockback.
+            if (agent.enabled)
                 agent.SetDestination(player.transform.position);
 
-            float dist = HorizontalDistance(npc.transform.position, player.transform.position);
+            float distance = HorizontalDistance(npc.transform.position, player.transform.position);
 
-            // Close enough to swing.
-            if (dist <= attackRange)
+            if (distance <= attackRange)
             {
                 npc.MoveToState(npc.s_Attack);
             }
-            // Player escaped beyond give-up range. Hunters (the wave's last
-            // few enemies) never drop back to patrol.
-            else if (dist > chaseQuitDistance && !WaveSpawner.HuntMode)
+            // Hunters, the wave's last few enemies, never drop back to patrol.
+            else if (distance > chaseQuitDistance && !WaveSpawner.HuntMode)
             {
                 npc.MoveToState(npc.s_Patrol);
             }
@@ -54,15 +47,15 @@ namespace Game.Enemy
 
         public override void ExitState(NpcFSM npc)
         {
-            // Halt when leaving chase; the next state drives movement itself.
+            // The next state drives movement itself.
             if (agent != null) agent.isStopped = true;
         }
 
-        private static float HorizontalDistance(Vector3 a, Vector3 b)
+        private static float HorizontalDistance(Vector3 from, Vector3 to)
         {
-            a.y = 0f;
-            b.y = 0f;
-            return Vector3.Distance(a, b);
+            from.y = 0f;
+            to.y = 0f;
+            return Vector3.Distance(from, to);
         }
     }
 }

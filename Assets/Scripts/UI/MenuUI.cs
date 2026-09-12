@@ -66,9 +66,9 @@ namespace Game.UI
         {
             if (!IsShowing()) return;
 
-            var kb = Keyboard.current;
-            if (kb == null) return;
-            if (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return;
+            if (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame)
                 Play();
         }
 
@@ -90,7 +90,7 @@ namespace Game.UI
                 AudioClip clip = Resources.Load<AudioClip>(playClip);
                 if (clip != null)
                 {
-                    var source = gameObject.AddComponent<AudioSource>();
+                    AudioSource source = gameObject.AddComponent<AudioSource>();
                     source.clip = clip;
                     source.loop = false;
                     source.volume = 0.9f;
@@ -109,16 +109,15 @@ namespace Game.UI
         {
             UIBuilder.EnsureEventSystem();
 
-            var canvas = UIBuilder.CreateOverlayCanvas("MenuUICanvas",
-                sortingOrder: 100);
+            Canvas canvas = UIBuilder.CreateOverlayCanvas("MenuUICanvas", sortingOrder: 100);
 
             panel = new GameObject("MenuPanel");
             panel.transform.SetParent(canvas.transform, false);
-            var panelRt = panel.AddComponent<RectTransform>();
-            UIBuilder.Stretch(panelRt);
-            var backdrop = panel.AddComponent<Image>();
-            backdrop.color = new Color(0f, 0f, 0f, backdropDim);
+            RectTransform panelRect = panel.AddComponent<RectTransform>();
+            UIBuilder.Stretch(panelRect);
 
+            Image backdrop = panel.AddComponent<Image>();
+            backdrop.color = new Color(0f, 0f, 0f, backdropDim);
             backdrop.raycastTarget = true;
 
             if (logo == null) logo = LoadLogo();
@@ -126,11 +125,13 @@ namespace Game.UI
             float playHeight = UIBuilder.MeasureButtonWidth(
                 new[] { playText }, ButtonPadding, 30, Theme) / UIBuilder.ButtonAspect;
 
+            // Whole block is measured first, then centred, so the title, button
+            // and hint stay together whichever header is used.
             float blockHeight = headerHeight + HeaderGap + playHeight + ButtonGap + HintHeight;
             float top = blockHeight * 0.5f;
 
             float buttonY = top - headerHeight - HeaderGap - playHeight * 0.5f;
-            float hintY   = buttonY - playHeight * 0.5f - ButtonGap - HintHeight * 0.5f;
+            float hintY = buttonY - playHeight * 0.5f - ButtonGap - HintHeight * 0.5f;
 
             CreateTitle(panel.transform, top);
             CreatePlayButton(panel.transform, buttonY);
@@ -159,41 +160,41 @@ namespace Game.UI
 
         void CreateLogo(Transform parent, float topY)
         {
-            var go = new GameObject("Logo");
-            go.transform.SetParent(parent, false);
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot     = new Vector2(0.5f, 1f);
+            GameObject logoGo = new GameObject("Logo");
+            logoGo.transform.SetParent(parent, false);
+            RectTransform rect = logoGo.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 1f);
 
             float aspect = logo.rect.height > 0f ? logo.rect.width / logo.rect.height : 1f;
-            rt.sizeDelta = new Vector2(logoHeight * aspect, logoHeight);
-            rt.anchoredPosition = new Vector2(0f, topY);
+            rect.sizeDelta = new Vector2(logoHeight * aspect, logoHeight);
+            rect.anchoredPosition = new Vector2(0f, topY);
 
-            var img = go.AddComponent<Image>();
-            img.sprite = logo;
-            img.preserveAspect = true;
-            img.raycastTarget = false;
+            Image image = logoGo.AddComponent<Image>();
+            image.sprite = logo;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
         }
 
         void CreateTitleText(Transform parent, float topY)
         {
-            var go = new GameObject("Title");
-            go.transform.SetParent(parent, false);
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot     = new Vector2(0.5f, 1f);
-            rt.sizeDelta = new Vector2(1200f, TitleHeight);
-            rt.anchoredPosition = new Vector2(0f, topY);
+            GameObject titleGo = new GameObject("Title");
+            titleGo.transform.SetParent(parent, false);
+            RectTransform rect = titleGo.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.sizeDelta = new Vector2(1200f, TitleHeight);
+            rect.anchoredPosition = new Vector2(0f, topY);
 
-            var txt = go.AddComponent<Text>();
-            txt.text = titleText;
-            txt.font = UIBuilder.GetFont(Theme);
-            txt.fontSize = titleFontSize;
-            txt.alignment = TextAnchor.MiddleCenter;
-            txt.color = Color.white;
-            txt.raycastTarget = false;
+            Text title = titleGo.AddComponent<Text>();
+            title.text = titleText;
+            title.font = UIBuilder.GetFont(Theme);
+            title.fontSize = titleFontSize;
+            title.alignment = TextAnchor.MiddleCenter;
+            title.color = Color.white;
+            title.raycastTarget = false;
         }
 
         void CreatePlayButton(Transform parent, float centreY)
@@ -206,22 +207,22 @@ namespace Game.UI
 
         void CreateHint(Transform parent, float centreY)
         {
-            var go = new GameObject("Hint");
-            go.transform.SetParent(parent, false);
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot     = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(600f, HintHeight);
-            rt.anchoredPosition = new Vector2(0f, centreY);
+            GameObject hintGo = new GameObject("Hint");
+            hintGo.transform.SetParent(parent, false);
+            RectTransform rect = hintGo.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = new Vector2(600f, HintHeight);
+            rect.anchoredPosition = new Vector2(0f, centreY);
 
-            var txt = go.AddComponent<Text>();
-            txt.text = hintText;
-            txt.font = UIBuilder.GetFont(Theme);
-            txt.fontSize = 20;
-            txt.alignment = TextAnchor.MiddleCenter;
-            txt.color = new Color(1f, 1f, 1f, 0.6f);
-            txt.raycastTarget = false;
+            Text hint = hintGo.AddComponent<Text>();
+            hint.text = hintText;
+            hint.font = UIBuilder.GetFont(Theme);
+            hint.fontSize = 20;
+            hint.alignment = TextAnchor.MiddleCenter;
+            hint.color = new Color(1f, 1f, 1f, 0.6f);
+            hint.raycastTarget = false;
         }
     }
 }

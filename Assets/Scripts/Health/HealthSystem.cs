@@ -46,29 +46,25 @@ namespace Game.Health
             {
                 Die();
             }
-            else
+            else if (animator != null)
             {
-                if (animator != null)
-                {
-                    animator.SetTrigger(AnimParams.Hit);
-                    getHitIndex = (getHitIndex + 1) % 2;
-                    animator.SetInteger(AnimParams.GetHitIndex, getHitIndex);
-                }
+                animator.SetTrigger(AnimParams.Hit);
+                getHitIndex = (getHitIndex + 1) % 2;
+                animator.SetInteger(AnimParams.GetHitIndex, getHitIndex);
             }
         }
 
-        // Restores health, capped at max. Raises a damage event with a
-        // negative amount so the health bar refreshes off the same signal it
-        // already listens to, rather than needing a separate one.
+        // Sends a damage event with a negative amount so the health bar picks
+        // healing up from the signal it already listens to.
         public virtual void Heal(float amount)
         {
             if (!alive || amount <= 0f) return;
 
-            float before = currentHealth;
+            float healthBefore = currentHealth;
             currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
 
-            float healed = currentHealth - before;
-            if (healed <= 0f) return;   // already at full
+            float healed = currentHealth - healthBefore;
+            if (healed <= 0f) return;
 
             EventManager.RaiseDamage(
                 new DamageArgs(gameObject, -healed, DamageType.Magic, gameObject));
@@ -93,7 +89,7 @@ namespace Game.Health
             OnDeath();
         }
 
-        /// <summary>Immediately set HP to zero and trigger death. Useful for testing or kill zones.</summary>
+        // Drops HP to zero straight away. Used by kill zones and testing.
         public virtual void Kill()
         {
             if (!alive) return;

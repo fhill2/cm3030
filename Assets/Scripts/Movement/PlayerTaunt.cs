@@ -27,9 +27,9 @@ namespace Game.Movement
 
         void Update()
         {
-            var kb = Keyboard.current;
-            if (kb == null) return;
-            if (!kb.eKey.wasPressedThisFrame) return;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return;
+            if (!keyboard.eKey.wasPressedThisFrame) return;
             if (Time.time < nextTauntTime) return;
 
             nextTauntTime = Time.time + cooldown;

@@ -1,15 +1,11 @@
 using UnityEngine;
-
 using Game.Audio;
 using Game.Health;
 
 namespace Game.Core
 {
-    // The tome lying on the ground. Walking into it unlocks the spell for
-    // purchase in the market.
-    //
-    // Goes on the tome pickup prefab, which needs a trigger collider and a
-    // kinematic Rigidbody.
+    // The tome on the ground. Walking into it unlocks the spell for purchase in the market.
+    // Goes on the tome pickup prefab, which needs a trigger collider and a kinematic Rigidbody.
     public class TomePickup : MonoBehaviour
     {
         [Header("Contents")]
@@ -52,6 +48,8 @@ namespace Game.Core
             transform.Rotate(Vector3.up, spinSpeed * Time.deltaTime, Space.World);
         }
 
+        // Drops the tome onto the first surface below it, ignoring bodies so
+        // it doesn't land on the corpse it came from.
         private void Ground()
         {
             Vector3 origin = transform.position + Vector3.up * 0.5f;
@@ -106,8 +104,8 @@ namespace Game.Core
             Destroy(gameObject);
         }
 
-        // The collider that enters can be a child of the player rather than the
-        // tagged root, so check the whole branch rather than just the collider.
+        // The collider that enters can be a child of the player rather than
+        // the tagged root, so check the whole branch.
         private bool IsPlayer(Collider other)
         {
             if (other.CompareTag("Player")) return true;

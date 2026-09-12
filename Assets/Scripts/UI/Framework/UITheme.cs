@@ -23,24 +23,26 @@ namespace Game.UI
         [Tooltip("Leave empty for the built-in runtime font.")]
         public Font font;
 
-        private static UITheme s_default;
+        private static UITheme defaultTheme;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
-            s_default = null;
+            defaultTheme = null;
         }
 
+        // Built in memory rather than loaded from an asset, so the UI works
+        // without a theme assigned.
         public static UITheme Default
         {
             get
             {
-                if (s_default == null)
+                if (defaultTheme == null)
                 {
-                    s_default = CreateInstance<UITheme>();
-                    s_default.hideFlags = HideFlags.HideAndDontSave;
+                    defaultTheme = CreateInstance<UITheme>();
+                    defaultTheme.hideFlags = HideFlags.HideAndDontSave;
                 }
-                return s_default;
+                return defaultTheme;
             }
         }
     }

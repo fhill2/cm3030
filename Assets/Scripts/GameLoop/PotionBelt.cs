@@ -9,6 +9,7 @@ using Game.Shared;
 
 namespace Game.Core
 {
+    // Health and stamina potions on C and V, each on its own cooldown.
     public class PotionBelt : MonoBehaviour
     {
         [Header("Stock")]
@@ -65,12 +66,12 @@ namespace Game.Core
 
         private void Update()
         {
-            var kb = Keyboard.current;
-            if (kb == null) return;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return;
             if (movement != null && !movement.ControlEnabled) return;
 
-            if (kb.cKey.wasPressedThisFrame) TryUseHealth();
-            if (kb.vKey.wasPressedThisFrame) TryUseStamina();
+            if (keyboard.cKey.wasPressedThisFrame) TryUseHealth();
+            if (keyboard.vKey.wasPressedThisFrame) TryUseStamina();
         }
 
         private void TryUseHealth()
@@ -83,11 +84,7 @@ namespace Game.Core
             healthReadyAt = Time.time + cooldown;
 
             if (health != null) health.Heal(healthRestore);
-            if (animator != null)
-            {
-                Debug.Log("[PotionBelt] Drink trigger sent (health)");
-                animator.SetTrigger(AnimParams.Drink);
-            }
+            if (animator != null) animator.SetTrigger(AnimParams.Drink);
             PlayDrinkSound();
         }
 
@@ -101,14 +98,11 @@ namespace Game.Core
             staminaReadyAt = Time.time + cooldown;
 
             if (stamina != null) stamina.Restore(staminaRestore);
-            if (animator != null)
-            {
-                Debug.Log("[PotionBelt] Drink trigger sent (stamina)");
-                animator.SetTrigger(AnimParams.Drink);
-            }
+            if (animator != null) animator.SetTrigger(AnimParams.Drink);
             PlayDrinkSound();
         }
 
+        // Cork pop first, then the drink, so they don't overlap.
         private void PlayDrinkSound()
         {
             AudioClip pop = LoadClip(openClip);

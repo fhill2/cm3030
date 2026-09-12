@@ -5,25 +5,16 @@ using Game.Core;
 
 namespace Game.Enemy
 {
-    /// <summary>
-    /// Patrol behaviour: cycle through <c>patrolTargets</c> waypoints in order,
-    /// pausing for <c>waitTime</c> seconds at each one, then wrapping back to the
-    /// first once the last is reached. If no waypoints are assigned, falls back
-    /// to standing guard on the spot.
-    ///
-    /// Player detection is polled on a <c>checkTime</c> interval instead of every
-    /// frame (cheap distance check, but no point running it 60x/sec per enemy).
-    /// As soon as the player is within <c>chaseTriggerDistance</c>, control hands
-    /// off to <see cref="ChaseState"/>.
-    /// </summary>
+    // Cycles through the waypoints, pausing at each. With no waypoints
+    // assigned, stands guard on the spot. 
     public class PatrolState : BaseState
     {
-        private const float TimeoutBuffer = 3f;      // grace period added on top of the estimated travel time for a valid path
-        private const float UnreachableTimeout = 3f; // short bail-out when the path is partial/invalid — waiting longer won't help
+        private const float TimeoutBuffer = 3f;       // grace on top of the estimated travel time
+        private const float UnreachableTimeout = 3f;  // short bail-out when the path is partial or invalid
 
-        private const float StuckCheckInterval = 1f;   // how often we sample position to detect a jam
-        private const float StuckMoveThreshold = 0.15f; // minimum real movement expected per interval to count as "making progress"
-        private const float StuckTimeout = 3f;          // consecutive time with no real progress before bailing, regardless of path status
+        private const float StuckCheckInterval = 1f;
+        private const float StuckMoveThreshold = 0.15f; // minimum movement per interval to count as progress
+        private const float StuckTimeout = 3f;
 
         private Coroutine patrolRoutine;
         private float nextCheckTime;
@@ -39,7 +30,7 @@ namespace Game.Enemy
             if (agent != null)
             {
                 agent.speed = patrolSpeed;
-                agent.isStopped = !hasWaypoints; // nothing to patrol to -> stand guard
+                agent.isStopped = !hasWaypoints;
             }
 
             if (hasWaypoints)
@@ -52,23 +43,21 @@ namespace Game.Enemy
         {
             if (player == null || agent == null) return;
 
-            // The wave is down to its last few enemies — hunt the player no
-            // matter how far away they are, so the wave doesn't end with the
-            // player chasing a lone patrol around the castle. The playerAlive
-            // guard stops a dead player flip-flopping us with ChaseState.
+            // Down to the wave's last few enemies, so hunt the player whatever
+            // the distance. The playerAlive guard stops a dead player
+            // flip-flopping us with ChaseState.
             if (WaveSpawner.HuntMode && npc.playerAlive)
             {
                 npc.MoveToState(npc.s_Chase);
                 return;
             }
 
-            // Poll on the checkTime interval instead of every frame.
+            // Polled on the checkTime interval, not every frame.
             if (Time.time < nextCheckTime) return;
             nextCheckTime = Time.time + Mathf.Max(checkTime, 0.05f);
 
-            // Player entered detection range -> break off patrol and chase.
-            float dist = HorizontalDistance(npc.transform.position, player.transform.position);
-            if (dist <= chaseTriggerDistance)
+            float distance = HorizontalDistance(npc.transform.position, player.transform.position);
+            if (distance <= chaseTriggerDistance)
             {
                 npc.MoveToState(npc.s_Chase);
             }
@@ -82,10 +71,8 @@ namespace Game.Enemy
                 patrolRoutine = null;
             }
 
-            if (agent != null) agent.isStopped = false;   // hand off to Chase
+            if (agent != null) agent.isStopped = false;
         }
-
-        // ── Waypoint loop ────────────────────────────────────────────
 
         private IEnumerator PatrolLoop(NpcFSM npc)
         {
@@ -100,14 +87,11 @@ namespace Game.Enemy
                         agent.SetDestination(target.position);
 
                     // Let the path finish computing before sizing the timeout,
-                    // so remainingDistance reflects the real leg length rather
-                    // than whatever was left over from the previous waypoint.
+                    // or remainingDistance is left over from the last waypoint.
                     while (agent.pathPending) yield return null;
 
-                    // Partial/invalid paths mean this point genuinely isn't
-                    // reachable from here (off-mesh, isolated island) — no
-                    // point waiting long. Complete paths get time proportional
-                    // to the real leg distance, however long that is.
+                    // A partial path means the point isn't reachable from here,
+                    // so there's no point waiting long.
                     float timeout = (agent.pathStatus == NavMeshPathStatus.PathComplete)
                         ? (agent.remainingDistance / Mathf.Max(agent.speed, 0.01f)) + TimeoutBuffer
                         : UnreachableTimeout;
@@ -115,26 +99,19 @@ namespace Game.Enemy
                     yield return WaitForArrival(npc, timeout);
                 }
 
-                // Idle at the waypoint before moving on.
                 agent.isStopped = true;
                 yield return new WaitForSeconds(waitTime);
 
-                // Advance to the next waypoint, wrapping back to the start.
                 npc.targetIndex = (npc.targetIndex + 1) % npc.patrolTargets.Count;
             }
         }
 
-        // Waits for the agent to arrive at its current destination, bailing
-        // out on either the overall timeout or a lack of real physical
-        // progress. The stuck check catches something a "complete" path
-        // status doesn't: a technically valid route through a tight archway
-        // or doorway that local avoidance can't actually push the agent
-        // through, so it just sits there jittering instead of arriving.
+        // Bails out on the timeout or on a lack of real movement. 
         private IEnumerator WaitForArrival(NpcFSM npc, float timeout)
         {
             float elapsed = 0f;
             float stuckFor = 0f;
-            Vector3 lastCheckPos = npc.transform.position;
+            Vector3 lastCheckPosition = npc.transform.position;
             float nextStuckCheck = Time.time + StuckCheckInterval;
 
             while (agent.remainingDistance > Mathf.Max(distanceToTarget, agent.stoppingDistance))
@@ -144,11 +121,11 @@ namespace Game.Enemy
 
                 if (Time.time >= nextStuckCheck)
                 {
-                    float moved = Vector3.Distance(npc.transform.position, lastCheckPos);
+                    float moved = Vector3.Distance(npc.transform.position, lastCheckPosition);
                     stuckFor = moved < StuckMoveThreshold ? stuckFor + StuckCheckInterval : 0f;
                     if (stuckFor > StuckTimeout) yield break;
 
-                    lastCheckPos = npc.transform.position;
+                    lastCheckPosition = npc.transform.position;
                     nextStuckCheck = Time.time + StuckCheckInterval;
                 }
 
@@ -156,11 +133,11 @@ namespace Game.Enemy
             }
         }
 
-        private static float HorizontalDistance(Vector3 a, Vector3 b)
+        private static float HorizontalDistance(Vector3 from, Vector3 to)
         {
-            a.y = 0f;
-            b.y = 0f;
-            return Vector3.Distance(a, b);
+            from.y = 0f;
+            to.y = 0f;
+            return Vector3.Distance(from, to);
         }
     }
 }

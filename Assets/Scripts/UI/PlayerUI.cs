@@ -32,14 +32,15 @@ namespace Game.UI
         [SerializeField] private string deathMessage = "Camelot has Fallen";
         [SerializeField] private int messageFontSize = 72;
 
-        // Loaded by name so no dragging is needed, same as MenuUI's logo
+        // Loaded by name so nothing needs dragging in, same as MenuUI's logo.
         private const string EndScreenResourcePath = "UI/End_Screen";
 
         // Gap between the bottom of the end-screen artwork and the restart prompt.
         private const float RestartGap = 48f;
-        // Drop used when falling back to the text message, which is far shorter
-        // than the artwork and so needs much less clearance
+        // Used with the text message instead, which is much shorter than the
+        // artwork and needs less clearance.
         private const float TextPromptOffset = 180f;
+
         [Header("Theme")]
         [Tooltip("Leave empty for the built-in default theme.")]
         [SerializeField] private UITheme theme;
@@ -73,21 +74,23 @@ namespace Game.UI
         private Text  waveLabel;
         private Image fadeOverlay;
         private Text  deathText;
-        // Whichever of the end-screen image or the text message got built
+
+        // Whichever of the end-screen image or the text message got built.
         private Graphic deathVisual;
         private Text  restartText;
         private Coroutine deathRoutine;
 
-        // Alessio's stamina system (sheet row 10), which replaced the
-        // PlayerStamina placeholder. Null-safe: the bar just shows its default
-        // text if the component isn't on the player
+        // Null-safe: the bar just shows its default text if the component
+        // isn't on the player.
         private StaminaSystem stamina;
         private Image staminaFill;
         private Text  staminaLabel;
 
         private RunController runController;
 
-        // Both live on the GameManager, not the player, so they're resolved in Start; Only used to seed the opening values — after that gold and wave arrive on the event bus
+        // On the GameManager rather than the player, so they're resolved in
+        // Start. Only used to seed the opening values; after that gold and wave
+        // arrive on the event bus.
         private PlayerWallet wallet;
         private GameStateMachine stateMachine;
 
@@ -96,8 +99,8 @@ namespace Game.UI
 
         private GameObject hudRoot;
 
-        private static Sprite s_speaker;
-        private static Sprite s_speakerOff;
+        private static Sprite speakerSprite;
+        private static Sprite speakerOffSprite;
 
         private UITheme Theme => theme != null ? theme : UITheme.Default;
 
@@ -162,7 +165,7 @@ namespace Game.UI
 
             Refresh();
 
-            // Guard against a second death event re-running the sequence
+            // Guard against a second death event re-running the sequence.
             if (deathRoutine == null) deathRoutine = StartCoroutine(DeathSequence());
         }
 
@@ -172,17 +175,15 @@ namespace Game.UI
             yield return FadeTo(deathVisual, 1f, messageFadeDuration);
         }
 
-        /// <summary>
-        /// Loads the end screen whichever way the texture is imported. Sprite
-        /// Mode "Single" answers Load&lt;Sprite&gt;; "Multiple" keeps the
-        /// Texture2D as the main asset and only LoadAll finds the sprites
-        /// </summary>
+        // Works whichever way the texture is imported. Sprite Mode "Single"
+        // answers Load<Sprite>; "Multiple" keeps the Texture2D as the main
+        // asset and only LoadAll finds the sprites.
         static Sprite LoadEndScreen()
         {
-            var single = Resources.Load<Sprite>(EndScreenResourcePath);
+            Sprite single = Resources.Load<Sprite>(EndScreenResourcePath);
             if (single != null) return single;
 
-            var sliced = Resources.LoadAll<Sprite>(EndScreenResourcePath);
+            Sprite[] sliced = Resources.LoadAll<Sprite>(EndScreenResourcePath);
             return sliced != null && sliced.Length > 0 ? sliced[0] : null;
         }
 
@@ -205,9 +206,9 @@ namespace Game.UI
 
         static void SetAlpha(Graphic target, float alpha)
         {
-            Color c = target.color;
-            c.a = alpha;
-            target.color = c;
+            Color colour = target.color;
+            colour.a = alpha;
+            target.color = colour;
         }
 
         void Refresh()
@@ -265,7 +266,7 @@ namespace Game.UI
             }
         }
 
-        // Only shown once the run is over and the restart delay has passed
+        // Only shown once the run is over and the restart delay has passed.
         void RefreshRestartPrompt()
         {
             if (restartText == null) return;
@@ -276,16 +277,18 @@ namespace Game.UI
 
         void PollVolumeHotkeys()
         {
-            var kb = Keyboard.current;
-            if (kb == null) return;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null) return;
 
-            if (kb.minusKey.wasPressedThisFrame || kb.numpadMinusKey.wasPressedThisFrame)
+            if (keyboard.minusKey.wasPressedThisFrame || keyboard.numpadMinusKey.wasPressedThisFrame)
                 ApplyVolume(volume - volumeStep);
 
-            if (kb.equalsKey.wasPressedThisFrame || kb.numpadPlusKey.wasPressedThisFrame)
+            if (keyboard.equalsKey.wasPressedThisFrame || keyboard.numpadPlusKey.wasPressedThisFrame)
                 ApplyVolume(volume + volumeStep);
         }
 
+        // Squared, so the slider tracks how loud it actually sounds rather than
+        // the raw value.
         void ApplyVolume(float value)
         {
             volume = Mathf.Clamp01(value);
@@ -305,9 +308,11 @@ namespace Game.UI
         {
             Sprite speaker = volume > 0f ? GetSpeakerIcon() : GetSpeakerOffIcon();
             if (speaker != null)
+            {
                 speakerImage = UIBuilder.CreateIcon(parent, "SpeakerIcon", speaker,
                     new Vector2(0, 0), new Vector2(Margin, Margin), 32f);
-                if (speakerImage != null) speakerImage.color = new Color(0.72f, 0.72f, 0.72f, 1f);
+            }
+            if (speakerImage != null) speakerImage.color = new Color(0.72f, 0.72f, 0.72f, 1f);
 
             CreateGlyph(parent, "-", new Vector2(Margin + 38f, Margin + 2f));
             volumeFill = UIBuilder.CreateBar(parent, new Vector2(0, 0),
@@ -321,158 +326,159 @@ namespace Game.UI
                 new Vector2(Margin, Margin + 38f), 214f);
         }
 
-        Text CreateGlyph(Transform parent, string content, Vector2 pos)
+        Text CreateGlyph(Transform parent, string content, Vector2 position)
         {
-            var rt = UIBuilder.CreateRect(parent, new Vector2(0, 0), new Vector2(0, 0), pos, new Vector2(16f, 28f));
-            var txt = rt.gameObject.AddComponent<Text>();
-            txt.text = content;
-            txt.alignment = TextAnchor.MiddleCenter;
-            txt.color = Color.white;
-            txt.font = UIBuilder.GetFont(Theme);
-            txt.fontSize = 22;
-            txt.raycastTarget = false;
-            return txt;
+            RectTransform rect = UIBuilder.CreateRect(parent, new Vector2(0, 0), new Vector2(0, 0), position, new Vector2(16f, 28f));
+            Text glyph = rect.gameObject.AddComponent<Text>();
+            glyph.text = content;
+            glyph.alignment = TextAnchor.MiddleCenter;
+            glyph.color = Color.white;
+            glyph.font = UIBuilder.GetFont(Theme);
+            glyph.fontSize = 22;
+            glyph.raycastTarget = false;
+            return glyph;
         }
 
-        Text CreatePlainText(Transform parent, string content, Vector2 pos, float width)
+        Text CreatePlainText(Transform parent, string content, Vector2 position, float width)
         {
-            var rt = UIBuilder.CreateRect(parent, new Vector2(0, 0), new Vector2(0, 0), pos, new Vector2(width, 16f));
-            var txt = rt.gameObject.AddComponent<Text>();
-            txt.text = content;
-            txt.alignment = TextAnchor.MiddleLeft;
-            txt.color = new Color(1f, 1f, 1f, 0.6f);
-            txt.font = UIBuilder.GetFont(Theme);
-            txt.fontSize = 12;
-            txt.raycastTarget = false;
-            return txt;
+            RectTransform rect = UIBuilder.CreateRect(parent, new Vector2(0, 0), new Vector2(0, 0), position, new Vector2(width, 16f));
+            Text label = rect.gameObject.AddComponent<Text>();
+            label.text = content;
+            label.alignment = TextAnchor.MiddleLeft;
+            label.color = new Color(1f, 1f, 1f, 0.6f);
+            label.font = UIBuilder.GetFont(Theme);
+            label.fontSize = 12;
+            label.raycastTarget = false;
+            return label;
         }
 
         Sprite GetSpeakerIcon()
         {
             if (speakerIcon != null) return speakerIcon;
-            if (s_speaker == null)
+            if (speakerSprite == null)
             {
-                s_speaker = UIBuilder.LoadIcon(SpeakerResourcePath);
-                if (s_speaker == null)
+                speakerSprite = UIBuilder.LoadIcon(SpeakerResourcePath);
+                if (speakerSprite == null)
                     Debug.LogWarning($"[PlayerUI] No sprite found at Resources/{SpeakerResourcePath}. " +
                                      "The volume control shows without its icon. " +
                                      "Set the texture's Texture Type to 'Sprite (2D and UI)'.");
             }
-            return s_speaker;
+            return speakerSprite;
         }
 
         Sprite GetSpeakerOffIcon()
         {
-            if (s_speakerOff == null)
-                s_speakerOff = UIBuilder.LoadIcon(SpeakerOffResourcePath);
-            return s_speakerOff;
+            if (speakerOffSprite == null)
+                speakerOffSprite = UIBuilder.LoadIcon(SpeakerOffResourcePath);
+            return speakerOffSprite;
         }
 
         void BuildUI()
         {
-            var canvas = UIBuilder.CreateOverlayCanvas("PlayerUICanvas");
+            Canvas canvas = UIBuilder.CreateOverlayCanvas("PlayerUICanvas");
             hudRoot = canvas.gameObject;
-            Transform t = canvas.transform;
+            Transform root = canvas.transform;
 
+            // Stacked upward from just above the hotbar.
             float barsY = 1080f * 0.04f + 32f + 16f;
-            staminaLabel = UIBuilder.CreateLabel(t, "STAMINA  --- / ---",
+            staminaLabel = UIBuilder.CreateLabel(root, "STAMINA  --- / ---",
                 new Vector2(0.5f, 0f), new Vector2(0f, barsY),
                 BarWidth, TextAnchor.MiddleCenter, Theme);
-            staminaFill = UIBuilder.CreateBar(t, new Vector2(0.5f, 0f), new Vector2(0f, barsY + RowStep),
+            staminaFill = UIBuilder.CreateBar(root, new Vector2(0.5f, 0f), new Vector2(0f, barsY + RowStep),
                 BarWidth, StaminaBarHeight, StaminaColor, Theme.panelBackground);
 
             float healthY = barsY + RowStep + StaminaBarHeight + 6f;
-            healthLabel = UIBuilder.CreateLabel(t, "PLAYER  --- / ---",
+            healthLabel = UIBuilder.CreateLabel(root, "PLAYER  --- / ---",
                 new Vector2(0.5f, 0f), new Vector2(0f, healthY),
                 BarWidth, TextAnchor.MiddleCenter, Theme);
-            healthFill = UIBuilder.CreateBar(t, new Vector2(0.5f, 0f), new Vector2(0f, healthY + RowStep),
+            healthFill = UIBuilder.CreateBar(root, new Vector2(0.5f, 0f), new Vector2(0f, healthY + RowStep),
                 BarWidth, BarHeight, Color.white, Theme.panelBackground);
 
             Vector2 topRight = new Vector2(1, 1);
-            goldLabel = UIBuilder.CreateLabel(t, "GOLD  --",
+            goldLabel = UIBuilder.CreateLabel(root, "GOLD  --",
                 topRight, new Vector2(-Margin, -Margin),
                 CounterWidth, TextAnchor.MiddleRight, Theme);
-            waveLabel = UIBuilder.CreateLabel(t, "WAVE  --",
+            waveLabel = UIBuilder.CreateLabel(root, "WAVE  --",
                 topRight, new Vector2(-Margin, -Margin - RowStep),
                 CounterWidth, TextAnchor.MiddleRight, Theme);
-            enemyLabel = UIBuilder.CreateLabel(t, "ENEMIES REMAINING  --",
+            enemyLabel = UIBuilder.CreateLabel(root, "ENEMIES REMAINING  --",
                 topRight, new Vector2(-Margin, -Margin - RowStep * 2f),
                 CounterWidth, TextAnchor.MiddleRight, Theme);
 
-            BuildVolumeControl(t);
+            BuildVolumeControl(root);
 
-            var hotbar = GetComponent<HotbarUI>();
+            HotbarUI hotbar = GetComponent<HotbarUI>();
             if (hotbar == null) hotbar = gameObject.AddComponent<HotbarUI>();
-            hotbar.BuildInto(t);
+            hotbar.BuildInto(root);
 
-            BuildDeathScreen(t);
+            BuildDeathScreen(root);
         }
 
         void BuildDeathScreen(Transform parent)
         {
-            var fadeGo = new GameObject("DeathFade");
+            GameObject fadeGo = new GameObject("DeathFade");
             fadeGo.transform.SetParent(parent, false);
-            var fadeRt = fadeGo.AddComponent<RectTransform>();
-            UIBuilder.Stretch(fadeRt);
+            RectTransform fadeRect = fadeGo.AddComponent<RectTransform>();
+            UIBuilder.Stretch(fadeRect);
             fadeOverlay = fadeGo.AddComponent<Image>();
             fadeOverlay.color = new Color(0f, 0f, 0f, 0f);
             fadeOverlay.raycastTarget = false;
 
-            // Artwork if we have it, the text message if error or missing. The image is centered and sized to its own aspect ratio, the text fills the screen
+            // Artwork if there is any, the text message otherwise. The image is
+            // centred and sized to its own aspect; the text fills the screen.
             if (endScreen == null) endScreen = LoadEndScreen();
 
             if (endScreen != null)
             {
-                var imgGo = new GameObject("EndScreen");
-                imgGo.transform.SetParent(fadeGo.transform, false);
-                var imgRt = imgGo.AddComponent<RectTransform>();
-                imgRt.anchorMin = new Vector2(0.5f, 0.5f);
-                imgRt.anchorMax = new Vector2(0.5f, 0.5f);
-                imgRt.pivot     = new Vector2(0.5f, 0.5f);
+                GameObject imageGo = new GameObject("EndScreen");
+                imageGo.transform.SetParent(fadeGo.transform, false);
+                RectTransform imageRect = imageGo.AddComponent<RectTransform>();
+                imageRect.anchorMin = new Vector2(0.5f, 0.5f);
+                imageRect.anchorMax = new Vector2(0.5f, 0.5f);
+                imageRect.pivot = new Vector2(0.5f, 0.5f);
 
-                // Size from the sprite's own aspect
                 float aspect = endScreen.rect.height > 0f
                     ? endScreen.rect.width / endScreen.rect.height : 1f;
-                imgRt.sizeDelta = new Vector2(endScreenHeight * aspect, endScreenHeight);
-                imgRt.anchoredPosition = Vector2.zero;
+                imageRect.sizeDelta = new Vector2(endScreenHeight * aspect, endScreenHeight);
+                imageRect.anchoredPosition = Vector2.zero;
 
-                var img = imgGo.AddComponent<Image>();
-                img.sprite = endScreen;
-                img.preserveAspect = true;
-                img.color = new Color(1f, 1f, 1f, 0f);
-                img.raycastTarget = false;
-                deathVisual = img;
+                Image image = imageGo.AddComponent<Image>();
+                image.sprite = endScreen;
+                image.preserveAspect = true;
+                image.color = new Color(1f, 1f, 1f, 0f);
+                image.raycastTarget = false;
+                deathVisual = image;
             }
             else
             {
-                // Parented to the sheet so it always draws above the black.
-                var textGo = new GameObject("DeathMessage");
+                // Parented to the black sheet so it always draws above it.
+                GameObject textGo = new GameObject("DeathMessage");
                 textGo.transform.SetParent(fadeGo.transform, false);
-                var textRt = textGo.AddComponent<RectTransform>();
-                UIBuilder.Stretch(textRt);
+                RectTransform textRect = textGo.AddComponent<RectTransform>();
+                UIBuilder.Stretch(textRect);
                 deathText = textGo.AddComponent<Text>();
                 deathText.text = deathMessage;
                 deathText.alignment = TextAnchor.MiddleCenter;
                 deathText.font = UIBuilder.GetFont(Theme);
                 deathText.fontSize = messageFontSize;
-                // Red, but starting fully transparent
+                // Red, starting fully transparent.
                 deathText.color = new Color(1f, 0f, 0f, 0f);
                 deathText.raycastTarget = false;
                 deathVisual = deathText;
             }
 
-            // Restart prompt, clear of whatever sits above it
+            // Dropped clear of whatever sits above it.
             float promptOffsetY = deathVisual is Image
                 ? -(endScreenHeight * 0.5f) - RestartGap
                 : -TextPromptOffset;
 
-            var restartGo = new GameObject("RestartPrompt");
+            GameObject restartGo = new GameObject("RestartPrompt");
             restartGo.transform.SetParent(fadeGo.transform, false);
-            var restartRt = restartGo.AddComponent<RectTransform>();
-            restartRt.anchorMin = Vector2.zero;
-            restartRt.anchorMax = Vector2.one;
-            restartRt.offsetMin = new Vector2(0f, promptOffsetY);
-            restartRt.offsetMax = new Vector2(0f, promptOffsetY);
+            RectTransform restartRect = restartGo.AddComponent<RectTransform>();
+            restartRect.anchorMin = Vector2.zero;
+            restartRect.anchorMax = Vector2.one;
+            restartRect.offsetMin = new Vector2(0f, promptOffsetY);
+            restartRect.offsetMax = new Vector2(0f, promptOffsetY);
             restartText = restartGo.AddComponent<Text>();
             restartText.text = restartMessage;
             restartText.alignment = TextAnchor.MiddleCenter;

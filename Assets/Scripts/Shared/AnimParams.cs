@@ -2,16 +2,17 @@ using UnityEngine;
 
 namespace Game.Shared
 {
+    // Cached animator parameter hashes. Faster than passing strings every frame.
     public static class AnimParams
     {
-        // ── Movement ───────────────────────────────
+        // Movement
         public static readonly int Speed       = Animator.StringToHash("Speed");
         public static readonly int MoveX       = Animator.StringToHash("MoveX");
         public static readonly int MoveZ       = Animator.StringToHash("MoveZ");
         public static readonly int Grounded    = Animator.StringToHash("Grounded");
         public static readonly int Jump        = Animator.StringToHash("Jump");
 
-        // ── Combat ─────────────────────────────────
+        // Combat
         public static readonly int Attack      = Animator.StringToHash("Attack");
         public static readonly int Knockback   = Animator.StringToHash("Knockback");
         public static readonly int ComboStep   = Animator.StringToHash("ComboStep");
@@ -24,7 +25,7 @@ namespace Game.Shared
         public static readonly int Throw       = Animator.StringToHash("Throw");
         public static readonly int Collect     = Animator.StringToHash("Collect");
 
-        // ── Health ─────────────────────────────────
+        // Health
         public static readonly int Hit         = Animator.StringToHash("Hit");
         public static readonly int GetHitIndex = Animator.StringToHash("GetHitIndex");
         public static readonly int DeathIndex  = Animator.StringToHash("DeathIndex");

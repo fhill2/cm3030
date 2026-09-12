@@ -3,11 +3,9 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    // Flashes the sky at random intervals to go with the rain.
-    // Drives the scene's directional light so the whole world lights up.
-    // Raises OnLightning for Freddie's thunder audio.
-    //
-    // Goes on the GameManager object.
+    // Flashes the scene's directional light at random intervals and raises
+    // OnLightning so the thunder audio can follow.
+    // Sits on the GameManager.
     public class Lightning : MonoBehaviour
     {
         [Tooltip("Leave empty to find the directional light automatically.")]
@@ -51,19 +49,19 @@ namespace Game.Core
 
                 EventManager.RaiseLightning(new LightningArgs(thunderDelay));
 
-                // Snap to full brightness, then fade. The sharp start is what
-                // makes it read as a strike rather than a pulse.
+                // Snap to full brightness then fade, so it reads as a strike
+                // rather than a pulse.
                 sunLight.intensity = flashIntensity;
                 sunLight.color = flashColour;
                 RenderSettings.ambientIntensity = baseAmbient * ambientBoost;
 
                 for (float t = 0f; t < flashDuration; t += Time.deltaTime)
                 {
-                    float k = t / flashDuration;
-                    sunLight.intensity = Mathf.Lerp(flashIntensity, baseIntensity, k);
-                    sunLight.color = Color.Lerp(flashColour, baseColour, k);
+                    float progress = t / flashDuration;
+                    sunLight.intensity = Mathf.Lerp(flashIntensity, baseIntensity, progress);
+                    sunLight.color = Color.Lerp(flashColour, baseColour, progress);
                     RenderSettings.ambientIntensity =
-                        Mathf.Lerp(baseAmbient * ambientBoost, baseAmbient, k);
+                        Mathf.Lerp(baseAmbient * ambientBoost, baseAmbient, progress);
                     yield return null;
                 }
 

@@ -2,12 +2,8 @@ using UnityEngine;
 
 namespace Game.Combat
 {
-    /// <summary>
-    /// Draws the attached collider in the Scene view (always visible) so hitboxes
-    /// can be sized and positioned by eye. Add to any GameObject that has a
-    /// BoxCollider / CapsuleCollider / SphereCollider. Set <see cref="color"/>
-    /// per instance (e.g. red = weapon, green = body).
-    /// </summary>
+    // Draws the attached collider in the Scene view so hitboxes can be sized
+    // by eye. Set the colour per instance, e.g. red for a weapon.
     public class ColliderGizmo : MonoBehaviour
     {
         [Tooltip("Wire colour for this collider in the Scene view.")]
@@ -15,50 +11,50 @@ namespace Game.Combat
 
         void OnDrawGizmos()
         {
-            var col = GetComponent<Collider>();
-            if (col == null) return;
+            Collider attachedCollider = GetComponent<Collider>();
+            if (attachedCollider == null) return;
 
             Gizmos.color = color;
             Gizmos.matrix = transform.localToWorldMatrix;
 
-            switch (col)
+            switch (attachedCollider)
             {
-                case BoxCollider b:
-                    Gizmos.DrawWireCube(b.center, b.size);
+                case BoxCollider box:
+                    Gizmos.DrawWireCube(box.center, box.size);
                     break;
-                case CapsuleCollider c:
-                    DrawWireCapsule(c);
+                case CapsuleCollider capsule:
+                    DrawWireCapsule(capsule);
                     break;
-                case SphereCollider s:
-                    Gizmos.DrawWireSphere(s.center, s.radius);
+                case SphereCollider sphere:
+                    Gizmos.DrawWireSphere(sphere.center, sphere.radius);
                     break;
             }
         }
 
-        // Approximates a capsule with two end spheres + side lines.
-        static void DrawWireCapsule(CapsuleCollider c)
+        // Approximated with two end spheres and four side lines.
+        static void DrawWireCapsule(CapsuleCollider capsule)
         {
-            float radius = c.radius;
-            float halfLen = Mathf.Max(0f, c.height * 0.5f - radius);
+            float radius = capsule.radius;
+            float halfLength = Mathf.Max(0f, capsule.height * 0.5f - radius);
 
-            Vector3 axis  = c.direction == 0 ? Vector3.right
-                          : c.direction == 1 ? Vector3.up
+            Vector3 axis  = capsule.direction == 0 ? Vector3.right
+                          : capsule.direction == 1 ? Vector3.up
                           : Vector3.forward;
-            Vector3 top    = c.center + axis * halfLen;
-            Vector3 bottom = c.center - axis * halfLen;
+            Vector3 top    = capsule.center + axis * halfLength;
+            Vector3 bottom = capsule.center - axis * halfLength;
 
             Gizmos.DrawWireSphere(top, radius);
             Gizmos.DrawWireSphere(bottom, radius);
 
-            Vector3 perp1 = axis == Vector3.up    ? Vector3.right
-                          : axis == Vector3.right ? Vector3.up
-                          : Vector3.right;
-            Vector3 perp2 = axis == Vector3.forward ? Vector3.up : Vector3.forward;
+            Vector3 sideAxis = axis == Vector3.up    ? Vector3.right
+                             : axis == Vector3.right ? Vector3.up
+                             : Vector3.right;
+            Vector3 otherSideAxis = axis == Vector3.forward ? Vector3.up : Vector3.forward;
 
-            Gizmos.DrawLine(top + perp1 * radius, bottom + perp1 * radius);
-            Gizmos.DrawLine(top - perp1 * radius, bottom - perp1 * radius);
-            Gizmos.DrawLine(top + perp2 * radius, bottom + perp2 * radius);
-            Gizmos.DrawLine(top - perp2 * radius, bottom - perp2 * radius);
+            Gizmos.DrawLine(top + sideAxis * radius, bottom + sideAxis * radius);
+            Gizmos.DrawLine(top - sideAxis * radius, bottom - sideAxis * radius);
+            Gizmos.DrawLine(top + otherSideAxis * radius, bottom + otherSideAxis * radius);
+            Gizmos.DrawLine(top - otherSideAxis * radius, bottom - otherSideAxis * radius);
         }
     }
 }

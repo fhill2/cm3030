@@ -13,24 +13,24 @@ namespace Game.Audio
         [Tooltip("Loudness of the ambient loop relative to combat SFX.")]
         [SerializeField, Range(0f,1f)] private float volume = 0.5f;
 
-        private static AudioSource MakeSource(GameObject host, AudioClip clip, float vol)
+        private static AudioSource MakeSource(GameObject host, AudioClip clip, float sourceVolume)
         {
-            var source = host.AddComponent<AudioSource>();
+            AudioSource source = host.AddComponent<AudioSource>();
             source.clip = clip;
             source.loop = true;
-            source.volume = vol;
+            source.volume = sourceVolume;
             return source;
         }
 
         private void Awake()
         {
-            bool any = false;
+            bool anyPlaying = false;
 
             AudioClip primary = Resources.Load<AudioClip>(clipPath);
             if (primary != null)
             {
                 MakeSource(gameObject, primary, volume).Play();
-                any = true;
+                anyPlaying = true;
             }
 
             if (clipPaths != null)
@@ -45,11 +45,11 @@ namespace Game.Audio
                         continue;
                     }
                     MakeSource(gameObject, clip, volume).Play();
-                    any = true;
+                    anyPlaying = true;
                 }
             }
 
-            if (!any)
+            if (!anyPlaying)
                 Debug.LogWarning($"[AmbientAudio] No clip at Resources/{clipPath}");
         }
     }

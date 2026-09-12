@@ -12,7 +12,7 @@ namespace Game.UI
         [SerializeField] private WaveSpawner waveSpawner;
 
         [Header("UI")]
-        [Tooltip("The minimap's RawImage rect — dots and the player icon are positioned relative to this.")]
+        [Tooltip("The minimap's RawImage rect. Dots and the player icon are positioned relative to this.")]
         [SerializeField] private RectTransform mapRect;
         [SerializeField] private RectTransform playerIcon;
         [Tooltip("Prefab for one enemy dot. A small red UI Image is enough.")]
@@ -31,9 +31,8 @@ namespace Game.UI
         [SerializeField] private float edgePadding = 8f;
 
         [Header("Visibility")]
-        [Tooltip("Optional. If set, the minimap fades in/out with a CanvasGroup instead of always being visible — hidden during Menu, shown for every other state. Leave empty to keep the old always-on behaviour.")]
+        [Tooltip("Optional. If set, the minimap fades in and out with a CanvasGroup: hidden during Menu, shown for every other state. Leave empty to keep it always visible.")]
         [SerializeField] private CanvasGroup visibilityGroup;
-
 
         private Camera cam;
         private bool isVisible = true;
@@ -45,13 +44,12 @@ namespace Game.UI
         {
             cam = minimapCamera != null ? minimapCamera.GetComponent<Camera>() : null;
 
-            // The camera component stays disabled so Unity never auto-renders it
-            // every frame; RenderMinimap() forces a manual render on a timer.
+            // Disabled so Unity never auto-renders it every frame. RenderMinimap
+            // forces a manual render on a timer instead.
             if (cam != null) cam.enabled = false;
 
-            // Hidden by default the instant the scene loads, before the game
-            // state machine's first OnGameStateChanged has a chance to fire —
-            // avoids a one-frame flash of the map over the start screen.
+            // Hidden before the state machine's first event fires, so the map
+            // doesn't flash over the start screen for a frame.
             if (visibilityGroup != null) SetVisible(false);
         }
 
@@ -65,8 +63,7 @@ namespace Game.UI
             EventManager.OnGameStateChanged -= HandleGameStateChanged;
         }
 
-        // Only the Menu (start screen) hides the map — every other state
-        // (WaveActive, WaveComplete, Shop, GameOver) shows it.
+        // Only the start screen hides the map.
         private void HandleGameStateChanged(GameStateChangedArgs e)
         {
             SetVisible(e.Current != GameStateId.Menu);
@@ -102,16 +99,17 @@ namespace Game.UI
 
             FollowPlayer();
 
-            bool fog = RenderSettings.fog;
+            // Fog would grey out the whole map from above.
+            bool fogWasOn = RenderSettings.fog;
             RenderSettings.fog = false;
             cam.Render();
-            RenderSettings.fog = fog;
+            RenderSettings.fog = fogWasOn;
         }
 
         private void FollowPlayer()
         {
-            Vector3 pos = player.position;
-            minimapCamera.position = new Vector3(pos.x, pos.y + cameraHeight, pos.z);
+            Vector3 playerPosition = player.position;
+            minimapCamera.position = new Vector3(playerPosition.x, playerPosition.y + cameraHeight, playerPosition.z);
         }
 
         private void UpdatePlayerIcon()
@@ -149,15 +147,17 @@ namespace Game.UI
             }
         }
 
+        // Collected into a buffer first, since the dictionary can't be modified
+        // while it's being walked.
         private void RemoveStaleDots(IReadOnlyList<GameObject> liveEnemies)
         {
             if (dots.Count == 0) return;
 
             staleBuffer.Clear();
-            foreach (KeyValuePair<GameObject, RectTransform> kvp in dots)
+            foreach (KeyValuePair<GameObject, RectTransform> entry in dots)
             {
-                if (kvp.Key == null || !Contains(liveEnemies, kvp.Key))
-                    staleBuffer.Add(kvp.Key);
+                if (entry.Key == null || !Contains(liveEnemies, entry.Key))
+                    staleBuffer.Add(entry.Key);
             }
 
             foreach (GameObject key in staleBuffer)
@@ -182,18 +182,20 @@ namespace Game.UI
             dots.Clear();
         }
 
-        private void PositionOnMap(RectTransform icon, Vector3 worldPos)
+        // Anything past the rim gets pinned to it, so distant enemies still
+        // show a direction rather than vanishing.
+        private void PositionOnMap(RectTransform icon, Vector3 worldPosition)
         {
-            Vector3 viewport = cam.WorldToViewportPoint(worldPos);
+            Vector3 viewport = cam.WorldToViewportPoint(worldPosition);
 
-            float x = (viewport.x - 0.5f) * mapRect.rect.width;
-            float y = (viewport.y - 0.5f) * mapRect.rect.height;
+            float offsetX = (viewport.x - 0.5f) * mapRect.rect.width;
+            float offsetY = (viewport.y - 0.5f) * mapRect.rect.height;
 
             float radius = Mathf.Min(mapRect.rect.width, mapRect.rect.height) * 0.5f - edgePadding;
-            Vector2 pos = new Vector2(x, y);
-            if (pos.magnitude > radius) pos = pos.normalized * radius;
+            Vector2 dotPosition = new Vector2(offsetX, offsetY);
+            if (dotPosition.magnitude > radius) dotPosition = dotPosition.normalized * radius;
 
-            icon.anchoredPosition = pos;
+            icon.anchoredPosition = dotPosition;
         }
 
         private void OnDestroy()

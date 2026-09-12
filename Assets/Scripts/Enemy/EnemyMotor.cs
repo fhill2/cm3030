@@ -4,15 +4,8 @@ using Game.Movement;
 
 namespace Game.Enemy
 {
-    /// <summary>
-    /// Drives the enemy's locomotion animation from the NavMeshAgent's velocity.
-    /// Inherits <see cref="AnimationMotor.UpdateAnimator"/> (the shared animation
-    /// code) so Speed/Grounded/Jump are pushed exactly like the player does.
-    ///
-    /// This class does NOT apply gravity — the NavMeshAgent pins the enemy to the
-    /// NavMesh, so the enemy is always grounded. Combat animation (the Attack
-    /// trigger) is still fired by <see cref="AttackState"/>.
-    /// </summary>
+    // Drives the enemy's locomotion animation from the NavMeshAgent's velocity,
+    // using the same shared animation code as the player. 
     [RequireComponent(typeof(NavMeshAgent))]
     public class EnemyMotor : AnimationMotor
     {
@@ -29,10 +22,8 @@ namespace Game.Enemy
         {
             if (agent == null) return;
 
-            // DeathState disables the agent on death. Push one final Speed=0
-            // update so the blend tree settles on Idle/Death instead of holding
-            // whatever value it last had, then stop doing per-frame work —
-            // belt-and-suspenders alongside DeathState zeroing agent.velocity.
+            // DeathState disables the agent. Push one last Speed of 0 so the
+            // blend tree settles instead of holding its last value.
             if (!agent.enabled)
             {
                 if (agentWasEnabled)
@@ -44,13 +35,10 @@ namespace Game.Enemy
             }
             agentWasEnabled = true;
 
-            // Normalise the agent's actual speed against its configured max speed,
-            // so the blend tree gets 0 (idle) .. 1 (full chase).
-            float speed01 = agent.speed > 0f ? agent.velocity.magnitude / agent.speed : 0f;
+            // 0 is idle, 1 is full chase.
+            float normalisedSpeed = agent.speed > 0f ? agent.velocity.magnitude / agent.speed : 0f;
 
-            // The NavMeshAgent keeps the enemy on the walkable surface, so it is
-            // always grounded from the animator's point of view.
-            UpdateAnimator(speed01, true, false);
+            UpdateAnimator(normalisedSpeed, true, false);
         }
     }
 }

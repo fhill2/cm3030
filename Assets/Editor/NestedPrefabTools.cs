@@ -37,21 +37,24 @@ public static class NestedPrefabTools
             Debug.LogWarning("[NestedPrefabTools] Could not load " + path);
             return;
         }
-        var nested = new List<GameObject>();
+
+        List<GameObject> nested = new List<GameObject>();
         CollectOutermostInstanceRoots(root, nested);
+
         if (nested.Count == 0)
         {
             Debug.Log("[NestedPrefabTools] " + path + ": no nested prefab instances.");
         }
         else
         {
-            foreach (GameObject go in nested)
+            foreach (GameObject instance in nested)
             {
-                Object source = PrefabUtility.GetCorrespondingObjectFromSource(go);
-                string srcPath = source != null ? AssetDatabase.GetAssetPath(source) : "<unknown>";
-                Debug.Log("[NestedPrefabTools] " + path + " -> nested instance at '" + GetHierarchyPath(go.transform) + "' source: " + srcPath);
+                Object source = PrefabUtility.GetCorrespondingObjectFromSource(instance);
+                string sourcePath = source != null ? AssetDatabase.GetAssetPath(source) : "<unknown>";
+                Debug.Log("[NestedPrefabTools] " + path + " -> nested instance at '" + GetHierarchyPath(instance.transform) + "' source: " + sourcePath);
             }
         }
+
         PrefabUtility.UnloadPrefabContents(root);
     }
 
@@ -63,26 +66,32 @@ public static class NestedPrefabTools
             Debug.LogWarning("[NestedPrefabTools] Could not load " + path);
             return false;
         }
+
         int unpacked = 0;
+
+        // Unpacking one level can expose another underneath, so this repeats.
+        // The guard stops it looping forever if something never resolves.
         for (int guard = 0; guard < 100; guard++)
         {
-            var nested = new List<GameObject>();
+            List<GameObject> nested = new List<GameObject>();
             CollectOutermostInstanceRoots(root, nested);
             if (nested.Count == 0) break;
+
             for (int i = nested.Count - 1; i >= 0; i--)
             {
-                GameObject go = nested[i];
-                if (go == null) continue;
-                if (PrefabUtility.IsOutermostPrefabInstanceRoot(go))
+                GameObject instance = nested[i];
+                if (instance == null) continue;
+                if (PrefabUtility.IsOutermostPrefabInstanceRoot(instance))
                 {
-                    Object source = PrefabUtility.GetCorrespondingObjectFromSource(go);
-                    string srcPath = source != null ? AssetDatabase.GetAssetPath(source) : "<unknown>";
-                    Debug.Log("[NestedPrefabTools] Unpacking " + srcPath + " inside " + path);
-                    PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                    Object source = PrefabUtility.GetCorrespondingObjectFromSource(instance);
+                    string sourcePath = source != null ? AssetDatabase.GetAssetPath(source) : "<unknown>";
+                    Debug.Log("[NestedPrefabTools] Unpacking " + sourcePath + " inside " + path);
+                    PrefabUtility.UnpackPrefabInstance(instance, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
                     unpacked++;
                 }
             }
         }
+
         bool changed = unpacked > 0;
         if (changed)
         {
@@ -96,6 +105,7 @@ public static class NestedPrefabTools
         {
             Debug.Log("[NestedPrefabTools] " + path + ": nothing to unpack.");
         }
+
         PrefabUtility.UnloadPrefabContents(root);
         return changed;
     }
@@ -104,57 +114,66 @@ public static class NestedPrefabTools
     {
         GameObject root = PrefabUtility.LoadPrefabContents(path);
         if (root == null) return;
+
         int instanceParts = 0;
-        foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
-            if (PrefabUtility.IsPartOfPrefabInstance(t.gameObject))
+        foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+            if (PrefabUtility.IsPartOfPrefabInstance(child.gameObject))
                 instanceParts++;
+
         Cloth[] cloths = root.GetComponentsInChildren<Cloth>(true);
-        var sb = new StringBuilder();
-        sb.Append("[NestedPrefabTools] Verify ").Append(path)
-          .Append(": remaining instance parts=").Append(instanceParts)
-          .Append(", Cloth components=").Append(cloths.Length);
+
+        StringBuilder report = new StringBuilder();
+        report.Append("[NestedPrefabTools] Verify ").Append(path)
+              .Append(": remaining instance parts=").Append(instanceParts)
+              .Append(", Cloth components=").Append(cloths.Length);
         for (int i = 0; i < cloths.Length; i++)
-            sb.Append(" [").Append(cloths[i].gameObject.name).Append(" enabled=").Append(cloths[i].enabled).Append("]");
-        Debug.Log(sb.ToString());
+            report.Append(" [").Append(cloths[i].gameObject.name).Append(" enabled=").Append(cloths[i].enabled).Append("]");
+
+        Debug.Log(report.ToString());
         PrefabUtility.UnloadPrefabContents(root);
     }
 
     private static int StripMissingScripts(GameObject root)
     {
         int total = 0;
-        foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
+        foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
         {
-            int count = GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(t.gameObject);
+            int count = GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(child.gameObject);
             if (count > 0)
-                total += GameObjectUtility.RemoveMonoBehavioursWithMissingScript(t.gameObject);
+                total += GameObjectUtility.RemoveMonoBehavioursWithMissingScript(child.gameObject);
         }
         return total;
     }
 
+    // Only prefabs directly in Assets/Prefabs, not in its subfolders.
     private static List<string> ListRootPrefabs()
     {
-        var result = new List<string>();
+        List<string> result = new List<string>();
         foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs" }))
         {
-            string p = AssetDatabase.GUIDToAssetPath(guid);
-            if (Path.GetDirectoryName(p).Replace('\\', '/') == "Assets/Prefabs")
-                result.Add(p);
+            string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+            if (Path.GetDirectoryName(assetPath).Replace('\\', '/') == "Assets/Prefabs")
+                result.Add(assetPath);
         }
         return result;
     }
 
-    private static void CollectOutermostInstanceRoots(GameObject go, List<GameObject> acc)
+    private static void CollectOutermostInstanceRoots(GameObject go, List<GameObject> results)
     {
         if (PrefabUtility.IsOutermostPrefabInstanceRoot(go))
-            acc.Add(go);
+            results.Add(go);
         for (int i = 0; i < go.transform.childCount; i++)
-            CollectOutermostInstanceRoots(go.transform.GetChild(i).gameObject, acc);
+            CollectOutermostInstanceRoots(go.transform.GetChild(i).gameObject, results);
     }
 
-    private static string GetHierarchyPath(Transform t)
+    private static string GetHierarchyPath(Transform target)
     {
-        string s = t.name;
-        while (t.parent != null) { t = t.parent; s = t.name + "/" + s; }
-        return s;
+        string path = target.name;
+        while (target.parent != null)
+        {
+            target = target.parent;
+            path = target.name + "/" + path;
+        }
+        return path;
     }
 }
